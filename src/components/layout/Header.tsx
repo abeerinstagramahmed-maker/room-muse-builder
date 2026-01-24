@@ -1,9 +1,17 @@
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Sparkles } from 'lucide-react';
+import { ShoppingBag, Menu, X, Sparkles, User, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
+import { useAuthContext } from '@/contexts/AuthContext';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const navLinks = [
   { href: '/catalog', label: 'Shop' },
@@ -15,8 +23,13 @@ const navLinks = [
 
 export const Header = () => {
   const { totalItems } = useCart();
+  const { isAuthenticated, user, signOut } = useAuthContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl">
@@ -54,6 +67,49 @@ export const Header = () => {
 
         {/* Right Section */}
         <div className="flex items-center gap-2">
+          {/* Auth */}
+          {isAuthenticated ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <User className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <div className="px-2 py-1.5 text-sm">
+                  <p className="font-medium truncate">{user?.email}</p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/account" className="cursor-pointer">
+                    My Account
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/account?tab=designs" className="cursor-pointer">
+                    My Designs
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/account?tab=orders" className="cursor-pointer">
+                    My Orders
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-destructive">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Link to="/auth">
+              <Button variant="ghost" size="sm" className="hidden md:flex">
+                Sign In
+              </Button>
+            </Link>
+          )}
+
           <Link to="/cart">
             <Button variant="ghost" size="icon" className="relative">
               <ShoppingBag className="h-5 w-5" />
@@ -92,6 +148,16 @@ export const Header = () => {
                 {link.label}
               </Link>
             ))}
+            {!isAuthenticated && (
+              <Link
+                to="/auth"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-primary transition-colors hover:bg-muted"
+              >
+                <User className="h-4 w-4" />
+                Sign In
+              </Link>
+            )}
           </nav>
         </div>
       )}
