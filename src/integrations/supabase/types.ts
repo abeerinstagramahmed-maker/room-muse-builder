@@ -121,6 +121,72 @@ export type Database = {
         }
         Relationships: []
       }
+      products: {
+        Row: {
+          category: string
+          colors: string[] | null
+          commission_percent: number
+          created_at: string
+          description: string | null
+          dimensions: Json | null
+          id: string
+          images: string[]
+          in_stock: boolean
+          materials: string[] | null
+          name: string
+          original_price: number | null
+          price: number
+          rating: number | null
+          review_count: number | null
+          subcategory: string | null
+          tags: string[] | null
+          updated_at: string
+          vendor: string
+        }
+        Insert: {
+          category: string
+          colors?: string[] | null
+          commission_percent?: number
+          created_at?: string
+          description?: string | null
+          dimensions?: Json | null
+          id?: string
+          images?: string[]
+          in_stock?: boolean
+          materials?: string[] | null
+          name: string
+          original_price?: number | null
+          price: number
+          rating?: number | null
+          review_count?: number | null
+          subcategory?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          vendor: string
+        }
+        Update: {
+          category?: string
+          colors?: string[] | null
+          commission_percent?: number
+          created_at?: string
+          description?: string | null
+          dimensions?: Json | null
+          id?: string
+          images?: string[]
+          in_stock?: boolean
+          materials?: string[] | null
+          name?: string
+          original_price?: number | null
+          price?: number
+          rating?: number | null
+          review_count?: number | null
+          subcategory?: string | null
+          tags?: string[] | null
+          updated_at?: string
+          vendor?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
