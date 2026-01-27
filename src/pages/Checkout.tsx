@@ -5,38 +5,40 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCart } from '@/contexts/CartContext';
-import { useToast } from '@/hooks/use-toast';
+import { useCheckout } from '@/hooks/useCheckout';
 import { ChevronLeft, Lock, CreditCard, Truck } from 'lucide-react';
 
 const Checkout = () => {
-  const { items, totalPrice, clearCart } = useCart();
-  const { toast } = useToast();
+  const { items, totalPrice } = useCart();
+  const { isProcessing, shipping, tax, orderTotal, processOrder } = useCheckout();
   const navigate = useNavigate();
-  const [isProcessing, setIsProcessing] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    email: '',
+    phone: '',
+    firstName: '',
+    lastName: '',
+    address: '',
+    city: '',
+    state: '',
+    zip: '',
+  });
 
   if (items.length === 0) {
     navigate('/cart');
     return null;
   }
 
-  const shipping = totalPrice >= 100 ? 0 : 15;
-  const tax = totalPrice * 0.08;
-  const orderTotal = totalPrice + shipping + tax;
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.id]: e.target.value,
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsProcessing(true);
-
-    // Simulate order processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    clearCart();
-    toast({
-      title: "Order placed successfully! 🎉",
-      description: "You'll receive a confirmation email shortly.",
-    });
-    navigate('/');
-    setIsProcessing(false);
+    await processOrder(formData);
   };
 
   return (
@@ -70,6 +72,8 @@ const Checkout = () => {
                       placeholder="you@example.com"
                       required
                       className="mt-1"
+                      value={formData.email}
+                      onChange={handleChange}
                     />
                   </div>
                   <div>
@@ -80,6 +84,8 @@ const Checkout = () => {
                       placeholder="(555) 555-5555"
                       required
                       className="mt-1"
+                      value={formData.phone}
+                      onChange={handleChange}
                     />
                   </div>
                 </div>
@@ -95,29 +101,29 @@ const Checkout = () => {
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" required className="mt-1" />
+                      <Input id="firstName" required className="mt-1" value={formData.firstName} onChange={handleChange} />
                     </div>
                     <div>
                       <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" required className="mt-1" />
+                      <Input id="lastName" required className="mt-1" value={formData.lastName} onChange={handleChange} />
                     </div>
                   </div>
                   <div>
                     <Label htmlFor="address">Address</Label>
-                    <Input id="address" required className="mt-1" />
+                    <Input id="address" required className="mt-1" value={formData.address} onChange={handleChange} />
                   </div>
                   <div className="grid gap-4 sm:grid-cols-3">
                     <div>
                       <Label htmlFor="city">City</Label>
-                      <Input id="city" required className="mt-1" />
+                      <Input id="city" required className="mt-1" value={formData.city} onChange={handleChange} />
                     </div>
                     <div>
                       <Label htmlFor="state">State</Label>
-                      <Input id="state" required className="mt-1" />
+                      <Input id="state" required className="mt-1" value={formData.state} onChange={handleChange} />
                     </div>
                     <div>
                       <Label htmlFor="zip">ZIP Code</Label>
-                      <Input id="zip" required className="mt-1" />
+                      <Input id="zip" required className="mt-1" value={formData.zip} onChange={handleChange} />
                     </div>
                   </div>
                 </div>

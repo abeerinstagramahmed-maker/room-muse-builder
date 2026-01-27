@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { products } from '@/lib/data';
+import { useProducts } from '@/hooks/useProducts';
 import { Product } from '@/lib/types';
 import { toast } from 'sonner';
 
@@ -30,6 +30,8 @@ export function useRoomDesigner() {
   const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [designResult, setDesignResult] = useState<DesignResult | null>(null);
+  
+  const { products, getProductsByIds } = useProducts();
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -82,21 +84,32 @@ export function useRoomDesigner() {
         return;
       }
 
-      // Map product IDs to actual products
-      const recommendedProducts = data.productIds
-        .map(id => products.find(p => p.id === id))
-        .filter((p): p is Product => p !== undefined);
+      // Map product IDs to actual products from database
+      const recommendedProducts = await getProductsByIds(data.productIds);
 
       if (recommendedProducts.length === 0) {
-        toast.error('No matching products found. Please try a different style.');
-        return;
+        // Fallback to products from current cache if fetch failed
+        const cachedProducts = data.productIds
+          .map(id => products.find(p => p.id === id))
+          .filter((p): p is Product => p !== undefined);
+        
+        if (cachedProducts.length === 0) {
+          toast.error('No matching products found. Please try a different style.');
+          return;
+        }
+        
+        setDesignResult({
+          products: cachedProducts,
+          aiNote: data.designNote,
+          styleNotes: data.styleNotes,
+        });
+      } else {
+        setDesignResult({
+          products: recommendedProducts,
+          aiNote: data.designNote,
+          styleNotes: data.styleNotes,
+        });
       }
-
-      setDesignResult({
-        products: recommendedProducts,
-        aiNote: data.designNote,
-        styleNotes: data.styleNotes,
-      });
 
       toast.success('Design complete! Check out your personalized recommendations.');
       

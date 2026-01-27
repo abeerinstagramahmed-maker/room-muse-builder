@@ -1,19 +1,55 @@
 import { useParams, Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
-import { getProductById, products } from '@/lib/data';
+import { useProducts } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/contexts/CartContext';
 import { ShoppingBag, Star, Truck, RotateCcw, Shield, ChevronLeft } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { ProductCard } from '@/components/product/ProductCard';
+import { Product } from '@/lib/types';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const product = getProductById(id || '');
+  const { products, loading, getProductById } = useProducts();
   const { addItem } = useCart();
-  const [selectedColor, setSelectedColor] = useState(product?.colors?.[0]);
+  const [product, setProduct] = useState<Product | null>(null);
+  const [productLoading, setProductLoading] = useState(true);
+  const [selectedColor, setSelectedColor] = useState<string | undefined>();
   const [selectedImage, setSelectedImage] = useState(0);
+
+  useEffect(() => {
+    const loadProduct = async () => {
+      if (id) {
+        setProductLoading(true);
+        const fetchedProduct = await getProductById(id);
+        setProduct(fetchedProduct);
+        setSelectedColor(fetchedProduct?.colors?.[0]);
+        setProductLoading(false);
+      }
+    };
+    loadProduct();
+  }, [id, getProductById]);
+
+  if (productLoading || loading) {
+    return (
+      <Layout>
+        <div className="container py-8">
+          <Skeleton className="mb-6 h-6 w-24" />
+          <div className="grid gap-8 lg:grid-cols-2 lg:gap-16">
+            <Skeleton className="aspect-square rounded-2xl" />
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-24" />
+              <Skeleton className="h-10 w-3/4" />
+              <Skeleton className="h-8 w-32" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   if (!product) {
     return (
