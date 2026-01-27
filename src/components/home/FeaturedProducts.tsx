@@ -1,10 +1,12 @@
 import { Link } from 'react-router-dom';
-import { getFeaturedProducts } from '@/lib/data';
+import { useProducts } from '@/hooks/useProducts';
 import { ProductCard } from '@/components/product/ProductCard';
+import { Skeleton } from '@/components/ui/skeleton';
 import { ArrowRight } from 'lucide-react';
 
 export const FeaturedProducts = () => {
-  const products = getFeaturedProducts();
+  const { products, loading } = useProducts();
+  const featuredProducts = products.filter(p => p.tags?.includes('bestseller')).slice(0, 4);
 
   return (
     <section className="bg-cream-dark py-16 md:py-24">
@@ -28,15 +30,25 @@ export const FeaturedProducts = () => {
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {products.map((product, index) => (
-            <div
-              key={product.id}
-              className="animate-slide-up"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <ProductCard product={product} />
-            </div>
-          ))}
+          {loading ? (
+            [...Array(4)].map((_, i) => (
+              <div key={i} className="space-y-4">
+                <Skeleton className="aspect-square rounded-2xl" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
+              </div>
+            ))
+          ) : (
+            featuredProducts.map((product, index) => (
+              <div
+                key={product.id}
+                className="animate-slide-up"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <ProductCard product={product} />
+              </div>
+            ))
+          )}
         </div>
       </div>
     </section>

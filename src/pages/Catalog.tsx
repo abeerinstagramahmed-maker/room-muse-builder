@@ -1,9 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/product/ProductCard';
-import { products, collections } from '@/lib/data';
+import { collections } from '@/lib/data';
+import { useProducts } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { SlidersHorizontal, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -18,10 +20,15 @@ const priceRanges = [
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
+  const { products, loading } = useProducts();
   
   const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam);
   const [selectedPriceRange, setSelectedPriceRange] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
+
+  useEffect(() => {
+    setSelectedCategory(categoryParam);
+  }, [categoryParam]);
 
   const filteredProducts = useMemo(() => {
     let result = products;
@@ -37,7 +44,7 @@ const Catalog = () => {
     result = result.filter(p => p.price >= priceRange.min && p.price < priceRange.max);
 
     return result;
-  }, [selectedCategory, selectedPriceRange]);
+  }, [products, selectedCategory, selectedPriceRange]);
 
   const handleCategoryChange = (slug: string | null) => {
     setSelectedCategory(slug);
@@ -68,7 +75,7 @@ const Catalog = () => {
             }
           </h1>
           <p className="mt-2 text-muted-foreground">
-            {filteredProducts.length} products
+            {loading ? 'Loading...' : `${filteredProducts.length} products`}
           </p>
         </div>
 
@@ -170,7 +177,17 @@ const Catalog = () => {
 
           {/* Product Grid */}
           <div className="flex-1">
-            {filteredProducts.length > 0 ? (
+            {loading ? (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="space-y-4">
+                    <Skeleton className="aspect-square rounded-2xl" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                  </div>
+                ))}
+              </div>
+            ) : filteredProducts.length > 0 ? (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {filteredProducts.map((product, index) => (
                   <div

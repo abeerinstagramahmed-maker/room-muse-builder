@@ -1,25 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-// Product catalog for AI to recommend from
-const productCatalog = [
-  { id: '1', name: 'Aria Modular Sofa', category: 'Living Room', subcategory: 'Sofas', price: 2499, style: ['modern', 'scandinavian'], colors: ['Oatmeal', 'Charcoal', 'Sage'] },
-  { id: '2', name: 'Luna Accent Chair', category: 'Living Room', subcategory: 'Chairs', price: 899, style: ['modern', 'bohemian'], colors: ['Terracotta', 'Forest Green', 'Navy'] },
-  { id: '3', name: 'Halo Round Coffee Table', category: 'Living Room', subcategory: 'Tables', price: 1299, style: ['modern', 'scandinavian'], colors: ['White Marble', 'Black Marble'] },
-  { id: '4', name: 'Haven Platform Bed', category: 'Bedroom', subcategory: 'Beds', price: 1899, style: ['modern', 'scandinavian'], colors: ['Natural Oak', 'Walnut', 'White Oak'] },
-  { id: '5', name: 'Serenity Nightstand', category: 'Bedroom', subcategory: 'Nightstands', price: 449, style: ['modern', 'scandinavian'], colors: ['Natural Oak', 'Walnut'] },
-  { id: '6', name: 'Grace Dining Table', category: 'Dining', subcategory: 'Tables', price: 1799, style: ['traditional', 'scandinavian'], colors: ['Natural Oak', 'Dark Walnut'] },
-  { id: '7', name: 'Curve Dining Chair', category: 'Dining', subcategory: 'Chairs', price: 349, style: ['modern', 'scandinavian'], colors: ['Cream', 'Black', 'Terracotta'] },
-  { id: '8', name: 'Focus Desk', category: 'Home Office', subcategory: 'Desks', price: 999, style: ['modern', 'industrial'], colors: ['White/Oak', 'Black/Walnut'] },
-  { id: '9', name: 'Ergo Task Chair', category: 'Home Office', subcategory: 'Chairs', price: 749, style: ['modern'], colors: ['Black', 'Gray'] },
-  { id: '10', name: 'Arc Floor Lamp', category: 'Living Room', subcategory: 'Lighting', price: 599, style: ['modern', 'industrial'], colors: ['Brass', 'Matte Black'] },
-  { id: '11', name: 'Woven Storage Basket Set', category: 'Living Room', subcategory: 'Storage', price: 149, style: ['bohemian', 'coastal'], colors: ['Natural'] },
-  { id: '12', name: 'Cloud Sectional', category: 'Living Room', subcategory: 'Sofas', price: 4299, style: ['modern', 'coastal'], colors: ['Cream', 'Stone', 'Charcoal'] },
-];
+interface Product {
+  id: string;
+  name: string;
+  category: string;
+  subcategory: string | null;
+  price: number;
+  colors: string[] | null;
+  tags: string[] | null;
+}
 
 const styleDescriptions: Record<string, string> = {
   modern: 'Modern Minimal - Clean lines, neutral palette, functional design',
@@ -34,6 +29,16 @@ const budgetRanges: Record<string, { min: number; max: number }> = {
   budget: { min: 0, max: 2000 },
   mid: { min: 2000, max: 5000 },
   luxury: { min: 5000, max: 50000 },
+};
+
+// Style mapping - which styles work well with which product categories/tags
+const styleCompatibility: Record<string, string[]> = {
+  modern: ['bestseller', 'new', 'ergonomic'],
+  scandinavian: ['sustainable', 'bestseller'],
+  industrial: ['bestseller', 'new'],
+  bohemian: ['sustainable', 'new'],
+  traditional: ['bestseller', 'luxury'],
+  coastal: ['sustainable', 'new'],
 };
 
 serve(async (req) => {
@@ -57,16 +62,33 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
+    // Create Supabase client to fetch products
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Fetch products from the database
+    const { data: products, error: dbError } = await supabase
+      .from('products')
+      .select('id, name, category, subcategory, price, colors, tags')
+      .eq('in_stock', true);
+
+    if (dbError) {
+      console.error('Database error fetching products:', dbError);
+      throw new Error('Failed to fetch products from database');
+    }
+
+    if (!products || products.length === 0) {
+      throw new Error('No products available in the database');
+    }
+
     const budgetRange = budgetRanges[budget];
     const styleDesc = styleDescriptions[style];
+    const compatibleTags = styleCompatibility[style] || ['bestseller'];
 
-    // Filter products by style and create a catalog string for the AI
-    const relevantProducts = productCatalog.filter(p => 
-      p.style.includes(style) || p.style.includes('modern')
-    );
-
-    const catalogDescription = relevantProducts.map(p => 
-      `- ID: ${p.id}, Name: "${p.name}", Category: ${p.category}, Price: $${p.price}, Colors: ${p.colors.join(', ')}`
+    // Create catalog description for AI
+    const catalogDescription = products.map((p: Product) => 
+      `- ID: ${p.id}, Name: "${p.name}", Category: ${p.category}, Subcategory: ${p.subcategory || 'N/A'}, Price: $${p.price}, Colors: ${p.colors?.join(', ') || 'Standard'}`
     ).join('\n');
 
     const systemPrompt = `You are a friendly, professional AI interior designer for Roomly, a furniture e-commerce platform.
@@ -84,6 +106,7 @@ CRITICAL RULES:
 4. Match the user's selected style: ${styleDesc}
 5. Stay within budget range: $${budgetRange.min} - $${budgetRange.max} total
 6. Explain WHY each piece works in the space
+7. Use the exact product IDs from the catalog
 
 AVAILABLE PRODUCT CATALOG:
 ${catalogDescription}
@@ -93,7 +116,7 @@ Respond with valid JSON in this exact format:
   "designNote": "A warm, personalized paragraph (2-3 sentences) about the room and your design approach. Comment on what you notice about the space.",
   "recommendations": [
     {
-      "productId": "1",
+      "productId": "exact-uuid-from-catalog",
       "reason": "Brief explanation of why this piece works"
     }
   ],
@@ -102,6 +125,7 @@ Respond with valid JSON in this exact format:
 
     console.log('Calling AI gateway for room analysis...');
     console.log('Style:', style, 'Budget:', budget);
+    console.log('Available products:', products.length);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -176,9 +200,10 @@ Respond with valid JSON in this exact format:
     }
 
     // Validate and map product IDs to actual products
+    const productIds = products.map((p: Product) => p.id);
     const recommendedProductIds = parsedResponse.recommendations
       .map((r: { productId: string }) => r.productId)
-      .filter((id: string) => productCatalog.some(p => p.id === id));
+      .filter((id: string) => productIds.includes(id));
 
     console.log('Recommended product IDs:', recommendedProductIds);
 
