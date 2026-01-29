@@ -14,6 +14,8 @@ export interface OrderItem {
   unit_price: number;
   total_price: number;
   selected_color: string | null;
+  commission_percent: number | null;
+  commission_amount: number | null;
   created_at: string;
 }
 
