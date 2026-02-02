@@ -30,6 +30,7 @@ import {
 import { Product } from '@/lib/types';
 import { ProductFormData } from '@/hooks/useAdminProducts';
 import { Loader2 } from 'lucide-react';
+import { ProductImageUpload } from './ProductImageUpload';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -38,7 +39,6 @@ const formSchema = z.object({
   original_price: z.coerce.number().optional(),
   category: z.string().min(1, 'Category is required'),
   subcategory: z.string().optional(),
-  images: z.string().min(1, 'At least one image URL is required'),
   colors: z.string().optional(),
   materials: z.string().optional(),
   vendor: z.string().min(1, 'Vendor is required'),
@@ -75,6 +75,7 @@ export function ProductFormDialog({
   saving,
 }: ProductFormDialogProps) {
   const isEdit = !!product;
+  const [images, setImages] = useState<string[]>([]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -85,7 +86,6 @@ export function ProductFormDialog({
       original_price: undefined,
       category: '',
       subcategory: '',
-      images: '',
       colors: '',
       materials: '',
       vendor: '',
@@ -104,7 +104,6 @@ export function ProductFormDialog({
         original_price: product.originalPrice,
         category: product.category,
         subcategory: product.subcategory || '',
-        images: product.images.join(', '),
         colors: product.colors?.join(', ') || '',
         materials: product.materials?.join(', ') || '',
         vendor: product.vendor,
@@ -112,6 +111,7 @@ export function ProductFormDialog({
         in_stock: product.inStock,
         commission_percent: 15,
       });
+      setImages(product.images || []);
     } else {
       form.reset({
         name: '',
@@ -120,7 +120,6 @@ export function ProductFormDialog({
         original_price: undefined,
         category: '',
         subcategory: '',
-        images: '',
         colors: '',
         materials: '',
         vendor: '',
@@ -128,10 +127,16 @@ export function ProductFormDialog({
         in_stock: true,
         commission_percent: 15,
       });
+      setImages([]);
     }
   }, [product, form]);
 
   const handleSubmit = async (values: FormValues) => {
+    if (images.length === 0) {
+      form.setError('name', { message: 'At least one image is required' });
+      return;
+    }
+
     const data: ProductFormData = {
       name: values.name,
       description: values.description,
@@ -139,7 +144,7 @@ export function ProductFormDialog({
       original_price: values.original_price || undefined,
       category: values.category,
       subcategory: values.subcategory || undefined,
-      images: values.images.split(',').map(s => s.trim()).filter(Boolean),
+      images: images,
       colors: values.colors ? values.colors.split(',').map(s => s.trim()).filter(Boolean) : undefined,
       materials: values.materials ? values.materials.split(',').map(s => s.trim()).filter(Boolean) : undefined,
       vendor: values.vendor,
@@ -296,22 +301,18 @@ export function ProductFormDialog({
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="images"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Image URLs (comma-separated)</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+            {/* Image Upload Section */}
+            <div className="space-y-2">
+              <FormLabel>Product Images</FormLabel>
+              <ProductImageUpload
+                images={images}
+                onImagesChange={setImages}
+                disabled={saving}
+              />
+              {images.length === 0 && (
+                <p className="text-sm text-destructive">At least one image is required</p>
               )}
-            />
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <FormField
@@ -382,7 +383,7 @@ export function ProductFormDialog({
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={saving}>
+              <Button type="submit" disabled={saving || images.length === 0}>
                 {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {isEdit ? 'Update Product' : 'Create Product'}
               </Button>
