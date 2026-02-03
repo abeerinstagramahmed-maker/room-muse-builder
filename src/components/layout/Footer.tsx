@@ -1,51 +1,72 @@
 import { Link } from 'react-router-dom';
+import { Sparkles, Instagram, Twitter, Facebook, Mail } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const footerLinks = {
   shop: [
+    { label: 'All Products', href: '/catalog' },
     { label: 'Living Room', href: '/catalog?category=living-room' },
     { label: 'Bedroom', href: '/catalog?category=bedroom' },
     { label: 'Dining', href: '/catalog?category=dining' },
-    { label: 'Home Office', href: '/catalog?category=office' },
   ],
   company: [
-    { label: 'About Us', href: '/about' },
-    { label: 'Careers', href: '/careers' },
-    { label: 'Press', href: '/press' },
+    { label: 'About Us', href: '#' },
+    { label: 'Careers', href: '#' },
+    { label: 'Press', href: '#' },
+    { label: 'Blog', href: '#' },
   ],
   support: [
-    { label: 'Contact', href: '/contact' },
-    { label: 'Shipping', href: '/shipping' },
-    { label: 'Returns', href: '/returns' },
-    { label: 'FAQ', href: '/faq' },
+    { label: 'Contact', href: '#' },
+    { label: 'FAQ', href: '#' },
+    { label: 'Shipping', href: '#' },
+    { label: 'Returns', href: '#' },
   ],
 };
 
 export const Footer = () => {
   return (
-    <footer className="border-t border-border bg-cream-dark">
-      <div className="container py-12 md:py-16">
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+    <footer className="border-t border-border bg-muted/30">
+      <div className="container py-16 md:py-20">
+        <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-5">
           {/* Brand */}
-          <div className="lg:col-span-1">
-            <Link to="/" className="inline-block">
-              <span className="font-display text-2xl font-semibold tracking-tight">
+          <div className="lg:col-span-2">
+            <Link to="/" className="flex items-center gap-2">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-ai-coral">
+                <Sparkles className="h-5 w-5 text-white" />
+              </div>
+              <span className="font-display text-xl font-bold tracking-tight">
                 Roomly
               </span>
             </Link>
-            <p className="mt-4 text-sm text-muted-foreground">
-              Design your dream space with AI-powered room design and curated furniture collections.
+            <p className="mt-4 max-w-sm text-muted-foreground">
+              Design your dream space with AI-powered interior design. 
+              Upload your room, get personalized suggestions, and shop the look instantly.
             </p>
+            
+            {/* Newsletter */}
+            <div className="mt-6">
+              <p className="mb-3 text-sm font-medium">Stay inspired</p>
+              <div className="flex gap-2">
+                <Input 
+                  type="email" 
+                  placeholder="Enter your email" 
+                  className="max-w-[240px] rounded-xl"
+                />
+                <Button className="rounded-xl">
+                  <Mail className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
           </div>
 
-          {/* Shop Links */}
+          {/* Links */}
           <div>
-            <h4 className="font-display text-sm font-semibold uppercase tracking-wider">
-              Shop
-            </h4>
-            <ul className="mt-4 space-y-2">
+            <h4 className="mb-4 font-display font-semibold">Shop</h4>
+            <ul className="space-y-3">
               {footerLinks.shop.map((link) => (
-                <li key={link.href}>
-                  <Link
+                <li key={link.label}>
+                  <Link 
                     to={link.href}
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
@@ -56,15 +77,12 @@ export const Footer = () => {
             </ul>
           </div>
 
-          {/* Company Links */}
           <div>
-            <h4 className="font-display text-sm font-semibold uppercase tracking-wider">
-              Company
-            </h4>
-            <ul className="mt-4 space-y-2">
+            <h4 className="mb-4 font-display font-semibold">Company</h4>
+            <ul className="space-y-3">
               {footerLinks.company.map((link) => (
-                <li key={link.href}>
-                  <Link
+                <li key={link.label}>
+                  <Link 
                     to={link.href}
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
@@ -75,15 +93,12 @@ export const Footer = () => {
             </ul>
           </div>
 
-          {/* Support Links */}
           <div>
-            <h4 className="font-display text-sm font-semibold uppercase tracking-wider">
-              Support
-            </h4>
-            <ul className="mt-4 space-y-2">
+            <h4 className="mb-4 font-display font-semibold">Support</h4>
+            <ul className="space-y-3">
               {footerLinks.support.map((link) => (
-                <li key={link.href}>
-                  <Link
+                <li key={link.label}>
+                  <Link 
                     to={link.href}
                     className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                   >
@@ -95,17 +110,30 @@ export const Footer = () => {
           </div>
         </div>
 
+        {/* Bottom */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 md:flex-row">
           <p className="text-sm text-muted-foreground">
             © {new Date().getFullYear()} Roomly. All rights reserved.
           </p>
-          <div className="flex gap-6">
-            <Link to="/privacy" className="text-sm text-muted-foreground hover:text-foreground">
-              Privacy
-            </Link>
-            <Link to="/terms" className="text-sm text-muted-foreground hover:text-foreground">
-              Terms
-            </Link>
+          
+          {/* Social */}
+          <div className="flex items-center gap-4">
+            <a href="#" className="text-muted-foreground transition-colors hover:text-foreground">
+              <Instagram className="h-5 w-5" />
+            </a>
+            <a href="#" className="text-muted-foreground transition-colors hover:text-foreground">
+              <Twitter className="h-5 w-5" />
+            </a>
+            <a href="#" className="text-muted-foreground transition-colors hover:text-foreground">
+              <Facebook className="h-5 w-5" />
+            </a>
+          </div>
+
+          {/* Legal */}
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <Link to="#" className="hover:text-foreground">Privacy</Link>
+            <Link to="#" className="hover:text-foreground">Terms</Link>
+            <Link to="#" className="hover:text-foreground">Cookies</Link>
           </div>
         </div>
       </div>

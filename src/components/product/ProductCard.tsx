@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import { Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { ShoppingBag, Star } from 'lucide-react';
+import { ShoppingBag, Star, Sparkles, Heart } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 interface ProductCardProps {
   product: Product;
@@ -27,7 +28,7 @@ export const ProductCard = ({ product, className }: ProductCardProps) => {
     <Link
       to={`/product/${product.id}`}
       className={cn(
-        "group flex flex-col overflow-hidden rounded-2xl bg-card transition-all duration-300 hover:shadow-card-hover",
+        "group relative flex flex-col overflow-hidden rounded-3xl bg-background shadow-card transition-all duration-300 hover:shadow-elevated",
         className
       )}
     >
@@ -42,23 +43,40 @@ export const ProductCard = ({ product, className }: ProductCardProps) => {
         {/* Badges */}
         <div className="absolute left-3 top-3 flex flex-col gap-2">
           {discount && (
-            <span className="rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground">
+            <span className="rounded-full bg-gradient-to-r from-primary to-ai-coral px-3 py-1 text-xs font-semibold text-white shadow-sm">
               -{discount}%
             </span>
           )}
           {product.tags?.includes('new') && (
-            <span className="rounded-full bg-sage px-2.5 py-1 text-xs font-semibold text-primary-foreground">
+            <span className="rounded-full bg-charcoal px-3 py-1 text-xs font-semibold text-white shadow-sm">
               New
+            </span>
+          )}
+          {product.tags?.includes('ai-recommended') && (
+            <span className="flex items-center gap-1 rounded-full bg-ai-purple/90 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+              <Sparkles className="h-3 w-3" />
+              AI Pick
             </span>
           )}
         </div>
 
+        {/* Wishlist button */}
+        <button 
+          className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-background/80 text-muted-foreground opacity-0 backdrop-blur-sm transition-all duration-300 hover:bg-background hover:text-primary group-hover:opacity-100"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // TODO: Add wishlist functionality
+          }}
+        >
+          <Heart className="h-5 w-5" />
+        </button>
+
         {/* Quick Add Button */}
-        <div className="absolute bottom-3 left-3 right-3 translate-y-2 opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+        <div className="absolute inset-x-0 bottom-0 translate-y-full bg-gradient-to-t from-background/95 to-background/80 p-4 backdrop-blur-sm transition-transform duration-300 group-hover:translate-y-0">
           <Button
             onClick={handleAddToCart}
-            variant="default"
-            className="w-full gap-2 bg-background/95 text-foreground backdrop-blur-sm hover:bg-background"
+            className="w-full gap-2 rounded-xl"
           >
             <ShoppingBag className="h-4 w-4" />
             Add to Cart
@@ -68,10 +86,10 @@ export const ProductCard = ({ product, className }: ProductCardProps) => {
 
       {/* Content */}
       <div className="flex flex-1 flex-col p-4">
-        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-          <Star className="h-3.5 w-3.5 fill-current text-amber-500" />
-          <span>{product.rating}</span>
-          <span className="mx-1">·</span>
+        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <Star className="h-4 w-4 fill-ai-amber text-ai-amber" />
+          <span className="font-medium">{product.rating}</span>
+          <span className="text-muted-foreground/50">·</span>
           <span>{product.reviewCount} reviews</span>
         </div>
         
@@ -85,7 +103,7 @@ export const ProductCard = ({ product, className }: ProductCardProps) => {
         
         <div className="mt-auto pt-3">
           <div className="flex items-center gap-2">
-            <span className="font-semibold">${product.price.toLocaleString()}</span>
+            <span className="text-lg font-bold">${product.price.toLocaleString()}</span>
             {product.originalPrice && (
               <span className="text-sm text-muted-foreground line-through">
                 ${product.originalPrice.toLocaleString()}
