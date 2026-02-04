@@ -1,23 +1,24 @@
 import { Layout } from '@/components/layout/Layout';
-import { HeroSection } from '@/components/home/HeroSection';
-import { HowItWorksSection } from '@/components/home/HowItWorksSection';
-import { AIShowcaseSection } from '@/components/home/AIShowcaseSection';
-import { ShopByRoomSection } from '@/components/home/ShopByRoomSection';
-import { FeaturedProductsSection } from '@/components/home/FeaturedProductsSection';
+import { AICanvas } from '@/components/canvas/AICanvas';
+import { ProductDiscoverySection } from '@/components/home/ProductDiscoverySection';
 import { TrustSection } from '@/components/home/TrustSection';
-import { CTASection } from '@/components/home/CTASection';
+import { AIRevealSection } from '@/components/home/AIRevealSection';
 
 const Index = () => {
   return (
-    <Layout>
-      <HeroSection />
-      <HowItWorksSection />
-      <AIShowcaseSection />
-      <ShopByRoomSection />
-      <FeaturedProductsSection />
+    <div className="flex min-h-screen flex-col">
+      {/* AI Canvas - Full screen hero that IS the interface */}
+      <AICanvas />
+      
+      {/* Product Discovery - Spotlight cards, not store grid */}
+      <ProductDiscoverySection />
+      
+      {/* Trust indicators */}
       <TrustSection />
-      <CTASection />
-    </Layout>
+      
+      {/* AI Reveal CTA - Not a traditional CTA, an experience */}
+      <AIRevealSection />
+    </div>
   );
 };
 
