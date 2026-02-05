@@ -15,6 +15,7 @@ const products = [
     store: 'Article',
     isAIRecommended: true,
     matchScore: 94,
+     aiReason: 'Selected for your open floor plan. The modular design adapts to your L-shaped living area while maximizing seating capacity.',
   },
   {
     id: '2',
@@ -25,6 +26,7 @@ const products = [
     store: 'West Elm',
     isAIRecommended: true,
     matchScore: 91,
+     aiReason: 'Complements the natural oak tones detected in your space. Perfect reading corner addition with optimal lumbar support.',
   },
   {
     id: '3',
@@ -35,6 +37,7 @@ const products = [
     store: 'CB2',
     isAIRecommended: false,
     matchScore: 0,
+     aiReason: undefined,
   },
   {
     id: '4',
@@ -45,6 +48,7 @@ const products = [
     store: 'Pottery Barn',
     isAIRecommended: true,
     matchScore: 88,
+     aiReason: 'Low profile maintains sightlines to your west-facing window. Marble reflects natural light, brightening the central space.',
   },
   {
     id: '5',
@@ -55,6 +59,7 @@ const products = [
     store: 'Crate & Barrel',
     isAIRecommended: false,
     matchScore: 0,
+     aiReason: undefined,
   },
   {
     id: '6',
@@ -65,6 +70,7 @@ const products = [
     store: 'Room & Board',
     isAIRecommended: true,
     matchScore: 86,
+     aiReason: 'Earth tones create visual warmth without overwhelming. Varied heights add layered interest to your shelving.',
   },
 ];
 
@@ -187,6 +193,7 @@ export const ProductDiscoverySection = () => {
                 key={product.id}
                 {...product}
                 delay={index * 0.1}
+               aiReason={product.aiReason}
               />
             ))}
           </AnimatePresence>
