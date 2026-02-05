@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { 
@@ -19,13 +19,55 @@ import {
 import { Button } from '@/components/ui/button';
 import { AIInspectorPanel } from './AIInspectorPanel';
 import { AICommandBar } from './AICommandBar';
-import { RoomProductOverlay } from './RoomProductOverlay';
+ import { IntelligentHotspot } from './IntelligentHotspot';
+ import { AmbientBackground } from './AmbientBackground';
+ import { AIVoice } from './AIVoice';
 
-const sampleProducts = [
-  { id: '1', name: 'Nordic Lounge Chair', price: 899, x: 15, y: 55, store: 'Article' },
-  { id: '2', name: 'Minimalist Coffee Table', price: 649, x: 45, y: 70, store: 'West Elm' },
-  { id: '3', name: 'Arc Floor Lamp', price: 299, x: 75, y: 35, store: 'CB2' },
-  { id: '4', name: 'Velvet Modular Sofa', price: 2499, x: 55, y: 50, store: 'Article' },
+ const intelligentProducts = [
+   { 
+     id: '1', 
+     name: 'Nordic Lounge Chair', 
+     price: 899, 
+     x: 18, 
+     y: 58, 
+     store: 'Article',
+     matchScore: 94,
+     reason: 'Ergonomic design complements your preference for comfort. The oak frame matches existing wood tones detected in your space.',
+     category: 'Seating',
+   },
+   { 
+     id: '2', 
+     name: 'Minimalist Coffee Table', 
+     price: 649, 
+     x: 48, 
+     y: 72, 
+     store: 'West Elm',
+     matchScore: 88,
+     reason: 'Low profile maintains sightlines to the window. Marble top reflects natural light, brightening the central space.',
+     category: 'Tables',
+   },
+   { 
+     id: '3', 
+     name: 'Arc Floor Lamp', 
+     price: 299, 
+     x: 78, 
+     y: 38, 
+     store: 'CB2',
+     matchScore: 96,
+     reason: 'Provides ambient lighting for the reading corner. Arc design doesn\'t compete with the window view.',
+     category: 'Lighting',
+   },
+   { 
+     id: '4', 
+     name: 'Velvet Modular Sofa', 
+     price: 2499, 
+     x: 52, 
+     y: 52, 
+     store: 'Article',
+     matchScore: 91,
+     reason: 'Sectional configuration maximizes seating in the L-shaped arrangement. Velvet adds warmth without overwhelming.',
+     category: 'Seating',
+   },
 ];
 
 const aiSuggestions = [
@@ -44,6 +86,10 @@ export const AICanvas = () => {
   const [commandOpen, setCommandOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'after' | 'before'>('after');
+   const [hotspotsRevealed, setHotspotsRevealed] = useState(false);
+   const [isAnyHotspotHovered, setIsAnyHotspotHovered] = useState(false);
+   const [currentStyle, setCurrentStyle] = useState('scandinavian');
+   const [isRecalibrating, setIsRecalibrating] = useState(false);
 
   // Rotate AI suggestions
   useEffect(() => {
@@ -52,6 +98,14 @@ export const AICanvas = () => {
     }, 4000);
     return () => clearInterval(interval);
   }, []);
+ 
+   // Reveal hotspots with staggered animation after initial load
+   useEffect(() => {
+     const timer = setTimeout(() => {
+       setHotspotsRevealed(true);
+     }, 1200);
+     return () => clearTimeout(timer);
+   }, []);
 
   // Keyboard shortcut for command palette
   useEffect(() => {
@@ -69,39 +123,27 @@ export const AICanvas = () => {
     setAiThinking(true);
     setTimeout(() => {
       setAiThinking(false);
+       // Trigger recalibration effect
+       setIsRecalibrating(true);
+       setTimeout(() => setIsRecalibrating(false), 2000);
     }, 2000);
     setCommandOpen(false);
+     
+     // Update style based on command
+     if (command.toLowerCase().includes('scandinavian')) setCurrentStyle('scandinavian');
+     else if (command.toLowerCase().includes('modern')) setCurrentStyle('modern');
+     else if (command.toLowerCase().includes('bohemian')) setCurrentStyle('bohemian');
+     else if (command.toLowerCase().includes('minimalist')) setCurrentStyle('minimalist');
   };
+ 
+   const handleHotspotHover = useCallback((isHovered: boolean) => {
+     setIsAnyHotspotHovered(isHovered);
+   }, []);
 
   return (
     <section className="relative h-screen w-full overflow-hidden bg-charcoal">
-      {/* Ambient background */}
-      <div className="absolute inset-0">
-        <motion.div
-          className="absolute -left-1/4 -top-1/4 h-[80%] w-[80%] rounded-full bg-ai-purple/5 blur-[150px]"
-          animate={{
-            scale: [1, 1.1, 1],
-            opacity: [0.3, 0.5, 0.3],
-          }}
-          transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <motion.div
-          className="absolute -bottom-1/4 -right-1/4 h-[80%] w-[80%] rounded-full bg-ai-coral/5 blur-[150px]"
-          animate={{
-            scale: [1.1, 1, 1.1],
-            opacity: [0.4, 0.3, 0.4],
-          }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-        />
-      </div>
-
-      {/* Noise texture overlay */}
-      <div 
-        className="absolute inset-0 opacity-[0.015]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-        }}
-      />
+       {/* Living ambient background */}
+       <AmbientBackground />
 
       {/* Navigation Rail - Left */}
       <motion.div
@@ -173,13 +215,19 @@ export const AICanvas = () => {
               />
             </AnimatePresence>
 
-            {/* Product hotspots */}
-            <RoomProductOverlay
-              products={sampleProducts}
-              selectedProduct={selectedProduct}
-              onSelectProduct={setSelectedProduct}
-              isHovered={isHovered}
-            />
+             {/* Intelligent product hotspots */}
+             {intelligentProducts.map((product, index) => (
+               <IntelligentHotspot
+                 key={product.id}
+                 product={product}
+                 index={index}
+                 isRevealed={hotspotsRevealed && !aiThinking}
+                 isSelected={selectedProduct === product.id}
+                 onSelect={() => setSelectedProduct(selectedProduct === product.id ? null : product.id)}
+                 onHover={handleHotspotHover}
+                 isAnyHovered={isAnyHotspotHovered}
+               />
+             ))}
 
             {/* AI Thinking overlay */}
             <AnimatePresence>
@@ -261,9 +309,17 @@ export const AICanvas = () => {
             onClose={() => setShowInspector(false)}
             selectedProduct={selectedProduct}
             onClearProduct={() => setSelectedProduct(null)}
+             isRecalibrating={isRecalibrating}
           />
         )}
       </AnimatePresence>
+ 
+       {/* AI Voice - contextual observations */}
+       <AIVoice
+         selectedProduct={selectedProduct}
+         currentStyle={currentStyle}
+         isAnalyzing={aiThinking}
+       />
 
       {/* Command Bar - Bottom */}
       <AICommandBar

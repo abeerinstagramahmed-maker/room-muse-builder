@@ -1,35 +1,47 @@
-import { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Sparkles, ShoppingBag, Heart, ArrowRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-
-interface SpotlightCardProps {
-  id: string;
-  title: string;
-  subtitle: string;
-  image: string;
-  price: number;
-  store: string;
-  isAIRecommended?: boolean;
-  matchScore?: number;
-  delay?: number;
-}
-
-export const SpotlightCard = ({
-  id,
-  title,
-  subtitle,
-  image,
-  price,
-  store,
-  isAIRecommended = false,
-  matchScore = 0,
-  delay = 0,
-}: SpotlightCardProps) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+ import { useState, useRef, useEffect } from 'react';
+ import { motion } from 'framer-motion';
+ import { Sparkles, ShoppingBag, Heart, ArrowRight, Lightbulb, Zap } from 'lucide-react';
+ import { Button } from '@/components/ui/button';
+ import { Link } from 'react-router-dom';
+ 
+ interface SpotlightCardProps {
+   id: string;
+   title: string;
+   subtitle: string;
+   image: string;
+   price: number;
+   store: string;
+   isAIRecommended?: boolean;
+   matchScore?: number;
+   delay?: number;
+   aiReason?: string;
+ }
+ 
+ export const SpotlightCard = ({
+   id,
+   title,
+   subtitle,
+   image,
+   price,
+   store,
+   isAIRecommended = false,
+   matchScore = 0,
+   delay = 0,
+   aiReason,
+ }: SpotlightCardProps) => {
+   const [isHovered, setIsHovered] = useState(false);
+   const cardRef = useRef<HTMLDivElement>(null);
+   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+   const [showReason, setShowReason] = useState(false);
+ 
+   useEffect(() => {
+     if (isHovered && aiReason) {
+       const timer = setTimeout(() => setShowReason(true), 400);
+       return () => clearTimeout(timer);
+     } else {
+       setShowReason(false);
+     }
+   }, [isHovered, aiReason]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
@@ -108,8 +120,8 @@ export const SpotlightCard = ({
                   }}
                 />
                 <div className="relative flex items-center gap-1.5 rounded-full bg-gradient-to-r from-ai-amber to-ai-coral px-3 py-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-white" />
-                  <span className="text-xs font-semibold text-white">{matchScore}% Match</span>
+                   <Zap className="h-3.5 w-3.5 text-white" />
+                   <span className="text-xs font-semibold text-white">{matchScore}%</span>
                 </div>
               </div>
             </motion.div>
@@ -146,9 +158,33 @@ export const SpotlightCard = ({
             <span className="rounded-lg bg-white/10 px-2 py-0.5 text-xs font-medium text-white/60">
               {store}
             </span>
+             {matchScore > 90 && (
+               <span className="flex items-center gap-1 rounded-lg bg-ai-amber/20 px-2 py-0.5 text-xs font-medium text-ai-amber">
+                 <Sparkles className="h-3 w-3" />
+                 Top Pick
+               </span>
+             )}
           </div>
           <h3 className="font-display text-lg font-semibold text-white">{title}</h3>
           <p className="mt-1 text-sm text-white/60">{subtitle}</p>
+           {aiReason && (
+             <motion.div
+               initial={{ opacity: 0, height: 0 }}
+               animate={{ 
+                 opacity: showReason ? 1 : 0, 
+                 height: showReason ? 'auto' : 0,
+               }}
+               transition={{ duration: 0.3 }}
+               className="mt-3 overflow-hidden"
+             >
+               <div className="rounded-xl bg-gradient-to-br from-ai-amber/10 to-ai-coral/10 p-3">
+                 <div className="flex items-start gap-2">
+                   <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-ai-amber" />
+                   <p className="text-xs leading-relaxed text-white/70">{aiReason}</p>
+                 </div>
+               </div>
+             </motion.div>
+           )}
           <div className="mt-4 flex items-center justify-between">
             <span className="text-xl font-bold text-white">${price.toLocaleString()}</span>
             <motion.div
