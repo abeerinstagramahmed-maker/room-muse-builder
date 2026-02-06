@@ -5,8 +5,9 @@ import { ProductCard } from '@/components/product/ProductCard';
 import { collections } from '@/lib/data';
 import { useProducts } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { SlidersHorizontal, X, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const priceRanges = [
@@ -20,19 +21,38 @@ const priceRanges = [
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
+  const searchParam = searchParams.get('q') || '';
   const { products, loading } = useProducts();
   
   const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam);
   const [selectedPriceRange, setSelectedPriceRange] = useState(0);
   const [showFilters, setShowFilters] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(searchParam);
 
   useEffect(() => {
     setSelectedCategory(categoryParam);
   }, [categoryParam]);
 
+  useEffect(() => {
+    setSearchQuery(searchParam);
+  }, [searchParam]);
+
   const filteredProducts = useMemo(() => {
     let result = products;
 
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter(p => 
+        p.name.toLowerCase().includes(query) ||
+        p.description?.toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query) ||
+        p.vendor.toLowerCase().includes(query) ||
+        p.tags?.some(tag => tag.toLowerCase().includes(query))
+      );
+    }
+
+    // Category filter
     if (selectedCategory) {
       const categoryName = collections.find(c => c.slug === selectedCategory)?.name;
       if (categoryName) {
@@ -40,28 +60,43 @@ const Catalog = () => {
       }
     }
 
+    // Price filter
     const priceRange = priceRanges[selectedPriceRange];
     result = result.filter(p => p.price >= priceRange.min && p.price < priceRange.max);
 
     return result;
-  }, [products, selectedCategory, selectedPriceRange]);
+  }, [products, selectedCategory, selectedPriceRange, searchQuery]);
 
   const handleCategoryChange = (slug: string | null) => {
     setSelectedCategory(slug);
+    const params = new URLSearchParams(searchParams);
     if (slug) {
-      setSearchParams({ category: slug });
+      params.set('category', slug);
     } else {
-      setSearchParams({});
+      params.delete('category');
     }
+    setSearchParams(params);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    const params = new URLSearchParams(searchParams);
+    if (value.trim()) {
+      params.set('q', value);
+    } else {
+      params.delete('q');
+    }
+    setSearchParams(params);
   };
 
   const clearFilters = () => {
     setSelectedCategory(null);
     setSelectedPriceRange(0);
+    setSearchQuery('');
     setSearchParams({});
   };
 
-  const hasActiveFilters = selectedCategory || selectedPriceRange > 0;
+  const hasActiveFilters = selectedCategory || selectedPriceRange > 0 || searchQuery.trim();
 
   return (
     <Layout>
@@ -77,6 +112,28 @@ const Catalog = () => {
           <p className="mt-2 text-muted-foreground">
             {loading ? 'Loading...' : `${filteredProducts.length} products`}
           </p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="mb-6">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search products..."
+              className="pl-10"
+              value={searchQuery}
+              onChange={(e) => handleSearchChange(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => handleSearchChange('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Mobile Filter Toggle */}

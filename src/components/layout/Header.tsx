@@ -21,12 +21,18 @@ const navLinks = [
   { href: '/catalog?category=dining', label: 'Dining' },
 ];
 
-export const Header = () => {
+interface HeaderProps {
+  variant?: 'default' | 'canvas';
+}
+
+export const Header = ({ variant = 'default' }: HeaderProps) => {
   const { totalItems } = useCart();
   const { isAuthenticated, user, signOut } = useAuthContext();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+
+  const isCanvas = variant === 'canvas';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -44,9 +50,11 @@ export const Header = () => {
     <header 
       className={cn(
         "fixed top-0 z-50 w-full transition-all duration-300",
-        scrolled 
-          ? "border-b border-border/50 bg-background/80 shadow-sm backdrop-blur-xl" 
-          : "bg-transparent"
+        isCanvas && !scrolled
+          ? "bg-transparent text-white"
+          : scrolled 
+            ? "border-b border-border/50 bg-background/80 shadow-sm backdrop-blur-xl" 
+            : "bg-transparent"
       )}
     >
       <div className="container flex h-16 items-center justify-between md:h-20">
