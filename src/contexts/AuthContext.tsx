@@ -10,6 +10,8 @@ interface AuthContextType {
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null; data?: any }>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null; data?: any }>;
   signOut: () => Promise<{ error: Error | null }>;
+  resetPassword: (email: string) => Promise<{ error: Error | null }>;
+  updatePassword: (newPassword: string) => Promise<{ error: Error | null }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);

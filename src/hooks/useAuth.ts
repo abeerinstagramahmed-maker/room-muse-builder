@@ -123,6 +123,52 @@ export function useAuth() {
     return { error: null };
   }, [toast]);
 
+  const resetPassword = useCallback(async (email: string) => {
+    const redirectUrl = `${window.location.origin}/reset-password`;
+    
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl,
+    });
+
+    if (error) {
+      toast({
+        title: 'Password reset failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return { error };
+    }
+
+    toast({
+      title: 'Check your email',
+      description: 'We sent you a password reset link.',
+    });
+    
+    return { error: null };
+  }, [toast]);
+
+  const updatePassword = useCallback(async (newPassword: string) => {
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (error) {
+      toast({
+        title: 'Password update failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return { error };
+    }
+
+    toast({
+      title: 'Password updated',
+      description: 'Your password has been successfully changed.',
+    });
+    
+    return { error: null };
+  }, [toast]);
+
   return {
     user: authState.user,
     session: authState.session,
@@ -131,5 +177,7 @@ export function useAuth() {
     signUp,
     signIn,
     signOut,
+    resetPassword,
+    updatePassword,
   };
 }
