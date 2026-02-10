@@ -6,6 +6,7 @@ interface StripeSettings {
   enabled: boolean;
   testMode: boolean;
   publishableKey: string;
+  secretKey: string;
 }
 
 interface StoreSettings {
@@ -21,6 +22,7 @@ const defaultStripeSettings: StripeSettings = {
   enabled: false,
   testMode: true,
   publishableKey: '',
+  secretKey: '',
 };
 
 const defaultStoreSettings: StoreSettings = {
