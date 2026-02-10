@@ -40,12 +40,12 @@ export function useCheckout() {
     setIsProcessing(true);
 
     try {
-      // Create the order
+      // Create the order with pending status
       const { data: order, error: orderError } = await supabase
         .from('orders')
         .insert({
           user_id: user?.id || null,
-          status: 'confirmed',
+          status: 'pending',
           subtotal: totalPrice,
           shipping,
           tax,
@@ -85,16 +85,67 @@ export function useCheckout() {
 
       if (itemsError) throw itemsError;
 
-      // Clear cart and redirect
-      clearCart();
-      
-      toast({
-        title: 'Order placed successfully! 🎉',
-        description: "You'll receive a confirmation email shortly.",
+      // Try Stripe checkout
+      const stripeItems = items.map((item) => ({
+        name: item.product.name,
+        price: item.product.price,
+        quantity: item.quantity,
+        image: item.product.images[0] || undefined,
+      }));
+
+      // Add shipping as a line item if applicable
+      if (shipping > 0) {
+        stripeItems.push({
+          name: 'Shipping',
+          price: shipping,
+          quantity: 1,
+          image: undefined,
+        });
+      }
+
+      // Add tax as a line item
+      stripeItems.push({
+        name: 'Tax',
+        price: Math.round(tax * 100) / 100,
+        quantity: 1,
+        image: undefined,
       });
 
-      navigate(`/order-confirmation?order=${order.id}`);
+      const origin = window.location.origin;
+      const { data: sessionData, error: sessionError } = await supabase.functions.invoke(
+        'create-checkout-session',
+        {
+          body: {
+            orderId: order.id,
+            items: stripeItems,
+            successUrl: `${origin}/order-confirmation`,
+            cancelUrl: `${origin}/checkout`,
+          },
+        }
+      );
 
+      if (sessionError || sessionData?.error) {
+        // Stripe not configured - fall back to direct confirmation
+        const errorMsg = sessionData?.error || sessionError?.message || '';
+        console.warn('Stripe not available, confirming order directly:', errorMsg);
+
+        await supabase
+          .from('orders')
+          .update({ status: 'confirmed' })
+          .eq('id', order.id);
+
+        clearCart();
+        toast({
+          title: 'Order placed successfully! 🎉',
+          description: "Stripe payments aren't configured yet. Order confirmed without payment.",
+        });
+        navigate(`/order-confirmation?order=${order.id}`);
+        return order;
+      }
+
+      // Redirect to Stripe Checkout
+      clearCart();
+      window.location.href = sessionData.url;
       return order;
     } catch (error: any) {
       console.error('Checkout error:', error);
