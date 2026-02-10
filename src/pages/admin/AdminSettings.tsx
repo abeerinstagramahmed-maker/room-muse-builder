@@ -23,6 +23,7 @@ export default function AdminSettings() {
   const [stripeEnabled, setStripeEnabled] = useState(false);
   const [stripeTestMode, setStripeTestMode] = useState(true);
   const [publishableKey, setPublishableKey] = useState('');
+  const [secretKey, setSecretKey] = useState('');
   
   const [storeName, setStoreName] = useState('');
   const [supportEmail, setSupportEmail] = useState('');
@@ -37,6 +38,7 @@ export default function AdminSettings() {
       setStripeEnabled(stripeSettings.enabled);
       setStripeTestMode(stripeSettings.testMode);
       setPublishableKey(stripeSettings.publishableKey);
+      setSecretKey(stripeSettings.secretKey || '');
       
       setStoreName(storeSettings.name);
       setSupportEmail(storeSettings.supportEmail);
@@ -53,6 +55,7 @@ export default function AdminSettings() {
         enabled: stripeEnabled,
         testMode: stripeTestMode,
         publishableKey,
+        secretKey,
       },
       {
         name: storeName,
@@ -141,6 +144,19 @@ export default function AdminSettings() {
                       />
                       <p className="text-xs text-muted-foreground mt-1">
                         This key is safe to use in frontend code
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Secret Key</Label>
+                      <Input 
+                        type="password"
+                        value={secretKey}
+                        onChange={(e) => setSecretKey(e.target.value)}
+                        placeholder={stripeTestMode ? "sk_test_..." : "sk_live_..."}
+                        className="mt-1 font-mono text-sm"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Used server-side for payment processing
                       </p>
                     </div>
                   </div>
