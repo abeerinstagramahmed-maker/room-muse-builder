@@ -129,43 +129,15 @@ const Checkout = () => {
                 </div>
               </div>
 
-              {/* Payment */}
-              <div>
-                <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-semibold">
+              {/* Payment Info */}
+              <div className="rounded-xl bg-muted/50 p-4">
+                <h2 className="mb-2 flex items-center gap-2 font-display text-lg font-semibold">
                   <CreditCard className="h-5 w-5 text-primary" />
                   Payment
                 </h2>
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="cardNumber">Card Number</Label>
-                    <Input
-                      id="cardNumber"
-                      placeholder="4242 4242 4242 4242"
-                      required
-                      className="mt-1"
-                    />
-                  </div>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <div>
-                      <Label htmlFor="expiry">Expiry Date</Label>
-                      <Input
-                        id="expiry"
-                        placeholder="MM/YY"
-                        required
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="cvc">CVC</Label>
-                      <Input
-                        id="cvc"
-                        placeholder="123"
-                        required
-                        className="mt-1"
-                      />
-                    </div>
-                  </div>
-                </div>
+                <p className="text-sm text-muted-foreground">
+                  You'll be securely redirected to Stripe to complete payment. If Stripe isn't configured yet, your order will be confirmed directly.
+                </p>
               </div>
 
               <Button
