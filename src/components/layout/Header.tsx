@@ -130,6 +130,11 @@ export const Header = ({ variant = 'default' }: HeaderProps) => {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
+                  <Link to="/profile" className="cursor-pointer">
+                    Edit Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link to="/account?tab=designs" className="cursor-pointer">
                     My Designs
                   </Link>

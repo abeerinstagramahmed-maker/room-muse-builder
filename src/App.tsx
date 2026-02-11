@@ -15,6 +15,7 @@ import OrderConfirmation from "./pages/OrderConfirmation";
 import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Account from "./pages/Account";
+import Profile from "./pages/Profile";
 import OrderDetail from "./pages/OrderDetail";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -43,6 +44,7 @@ const App = () => (
               <Route path="/auth" element={<Auth />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/account" element={<Account />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/order/:id" element={<OrderDetail />} />
               {/* Admin Routes */}
               <Route path="/admin" element={<AdminDashboard />} />
