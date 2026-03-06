@@ -16,6 +16,7 @@ import Auth from "./pages/Auth";
 import ResetPassword from "./pages/ResetPassword";
 import Account from "./pages/Account";
 import Profile from "./pages/Profile";
+import Pricing from "./pages/Pricing";
 import OrderDetail from "./pages/OrderDetail";
 import NotFound from "./pages/NotFound";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -45,6 +46,7 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/account" element={<Account />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/pricing" element={<Pricing />} />
               <Route path="/order/:id" element={<OrderDetail />} />
               {/* Admin Routes */}
               <Route path="/admin" element={<AdminDashboard />} />

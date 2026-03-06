@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CreditCard, Key, Save, ExternalLink, Loader2 } from 'lucide-react';
+import { CreditCard, Key, Save, ExternalLink, Loader2, Crown } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,6 +16,7 @@ export default function AdminSettings() {
     saving, 
     stripeSettings, 
     storeSettings, 
+    subscriptionPricing,
     saveSettings 
   } = useStoreSettings();
 
@@ -32,6 +33,10 @@ export default function AdminSettings() {
   const [freeShippingThreshold, setFreeShippingThreshold] = useState('100');
   const [taxRate, setTaxRate] = useState('8.875');
 
+  const [monthlyPrice, setMonthlyPrice] = useState('9.99');
+  const [yearlyPrice, setYearlyPrice] = useState('99');
+  const [freeDesigns, setFreeDesigns] = useState('1');
+
   // Sync form state with fetched settings
   useEffect(() => {
     if (!loading) {
@@ -46,8 +51,12 @@ export default function AdminSettings() {
       setShippingRate(storeSettings.shippingRate.toString());
       setFreeShippingThreshold(storeSettings.freeShippingThreshold.toString());
       setTaxRate(storeSettings.taxRate.toString());
+
+      setMonthlyPrice(subscriptionPricing.monthlyPrice.toString());
+      setYearlyPrice(subscriptionPricing.yearlyPrice.toString());
+      setFreeDesigns(subscriptionPricing.freeDesigns.toString());
     }
-  }, [loading, stripeSettings, storeSettings]);
+  }, [loading, stripeSettings, storeSettings, subscriptionPricing]);
 
   const handleSaveSettings = async () => {
     await saveSettings(
@@ -64,6 +73,11 @@ export default function AdminSettings() {
         shippingRate: parseFloat(shippingRate) || 9.99,
         freeShippingThreshold: parseFloat(freeShippingThreshold) || 100,
         taxRate: parseFloat(taxRate) || 8.875,
+      },
+      {
+        monthlyPrice: parseFloat(monthlyPrice) || 9.99,
+        yearlyPrice: parseFloat(yearlyPrice) || 99,
+        freeDesigns: parseInt(freeDesigns) || 1,
       }
     );
   };
@@ -85,6 +99,58 @@ export default function AdminSettings() {
           <h1 className="text-3xl font-display font-bold text-foreground">Settings</h1>
           <p className="text-muted-foreground">Configure your store settings</p>
         </div>
+
+        {/* Subscription Pricing */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-[hsl(var(--ai-amber))]/10 flex items-center justify-center">
+                <Crown className="h-5 w-5 text-[hsl(var(--ai-amber))]" />
+              </div>
+              <div>
+                <CardTitle className="font-display">Subscription Pricing</CardTitle>
+                <CardDescription>Configure Pro plan pricing and free tier limits</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Monthly Price ($)</Label>
+                <Input
+                  type="number"
+                  value={monthlyPrice}
+                  onChange={(e) => setMonthlyPrice(e.target.value)}
+                  step="0.01"
+                  min="0"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Yearly Price ($)</Label>
+                <Input
+                  type="number"
+                  value={yearlyPrice}
+                  onChange={(e) => setYearlyPrice(e.target.value)}
+                  step="0.01"
+                  min="0"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Free Designs (per user)</Label>
+              <Input
+                type="number"
+                value={freeDesigns}
+                onChange={(e) => setFreeDesigns(e.target.value)}
+                min="0"
+                max="100"
+              />
+              <p className="text-xs text-muted-foreground">
+                Number of room designs free users can generate before requiring a subscription
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Stripe Settings */}
         <Card>
@@ -113,13 +179,10 @@ export default function AdminSettings() {
             {stripeEnabled && (
               <>
                 <Separator />
-
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label>Test Mode</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Use Stripe test keys for development
-                    </p>
+                    <p className="text-sm text-muted-foreground">Use Stripe test keys for development</p>
                   </div>
                   <Switch checked={stripeTestMode} onCheckedChange={setStripeTestMode} />
                 </div>
@@ -127,8 +190,7 @@ export default function AdminSettings() {
                 <Alert>
                   <Key className="h-4 w-4" />
                   <AlertDescription>
-                    Enter your Stripe {stripeTestMode ? 'test' : 'live'} publishable key below. 
-                    The secret key should be configured securely in the backend.
+                    Enter your Stripe {stripeTestMode ? 'test' : 'live'} keys below.
                   </AlertDescription>
                 </Alert>
 
@@ -142,9 +204,6 @@ export default function AdminSettings() {
                         placeholder={stripeTestMode ? "pk_test_..." : "pk_live_..."}
                         className="mt-1 font-mono text-sm"
                       />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        This key is safe to use in frontend code
-                      </p>
                     </div>
                     <div>
                       <Label className="text-xs text-muted-foreground">Secret Key</Label>
@@ -155,18 +214,10 @@ export default function AdminSettings() {
                         placeholder={stripeTestMode ? "sk_test_..." : "sk_live_..."}
                         className="mt-1 font-mono text-sm"
                       />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Used server-side for payment processing
-                      </p>
                     </div>
                   </div>
-
                   <Button variant="outline" size="sm" asChild>
-                    <a 
-                      href="https://dashboard.stripe.com/apikeys" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                    >
+                    <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="h-4 w-4 mr-2" />
                       Get API Keys from Stripe
                     </a>
@@ -187,34 +238,17 @@ export default function AdminSettings() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Store Name</Label>
-                <Input 
-                  value={storeName}
-                  onChange={(e) => setStoreName(e.target.value)}
-                />
+                <Input value={storeName} onChange={(e) => setStoreName(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label>Support Email</Label>
-                <Input 
-                  type="email" 
-                  value={supportEmail}
-                  onChange={(e) => setSupportEmail(e.target.value)}
-                  placeholder="support@roommuse.com" 
-                />
+                <Input type="email" value={supportEmail} onChange={(e) => setSupportEmail(e.target.value)} placeholder="support@roomly.com" />
               </div>
             </div>
 
             <div className="space-y-2">
               <Label>Default Commission Rate (%)</Label>
-              <Input 
-                type="number" 
-                value={defaultCommission}
-                onChange={(e) => setDefaultCommission(e.target.value)}
-                min="0" 
-                max="100" 
-              />
-              <p className="text-xs text-muted-foreground">
-                Applied to new products unless overridden
-              </p>
+              <Input type="number" value={defaultCommission} onChange={(e) => setDefaultCommission(e.target.value)} min="0" max="100" />
             </div>
 
             <Separator />
@@ -222,46 +256,24 @@ export default function AdminSettings() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Shipping Rate ($)</Label>
-                <Input 
-                  type="number" 
-                  value={shippingRate}
-                  onChange={(e) => setShippingRate(e.target.value)}
-                  step="0.01" 
-                  min="0" 
-                />
+                <Input type="number" value={shippingRate} onChange={(e) => setShippingRate(e.target.value)} step="0.01" min="0" />
               </div>
               <div className="space-y-2">
                 <Label>Free Shipping Threshold ($)</Label>
-                <Input 
-                  type="number" 
-                  value={freeShippingThreshold}
-                  onChange={(e) => setFreeShippingThreshold(e.target.value)}
-                  min="0" 
-                />
+                <Input type="number" value={freeShippingThreshold} onChange={(e) => setFreeShippingThreshold(e.target.value)} min="0" />
               </div>
             </div>
 
             <div className="space-y-2">
               <Label>Tax Rate (%)</Label>
-              <Input 
-                type="number" 
-                value={taxRate}
-                onChange={(e) => setTaxRate(e.target.value)}
-                step="0.001" 
-                min="0" 
-              />
+              <Input type="number" value={taxRate} onChange={(e) => setTaxRate(e.target.value)} step="0.001" min="0" />
             </div>
           </CardContent>
         </Card>
 
-        {/* Save Button */}
         <div className="flex justify-end">
           <Button onClick={handleSaveSettings} disabled={saving}>
-            {saving ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <Save className="h-4 w-4 mr-2" />
-            )}
+            {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
             Save Settings
           </Button>
         </div>

@@ -191,6 +191,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           created_at: string
+          design_count: number
           email: string | null
           full_name: string | null
           id: string
@@ -200,6 +201,7 @@ export type Database = {
         Insert: {
           avatar_url?: string | null
           created_at?: string
+          design_count?: number
           email?: string | null
           full_name?: string | null
           id?: string
@@ -209,6 +211,7 @@ export type Database = {
         Update: {
           avatar_url?: string | null
           created_at?: string
+          design_count?: number
           email?: string | null
           full_name?: string | null
           id?: string
@@ -286,6 +289,48 @@ export type Database = {
         }
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          billing_period: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          plan: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          billing_period?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          billing_period?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -319,6 +364,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_design_count: { Args: { p_user_id: string }; Returns: number }
     }
     Enums: {
       app_role: "admin" | "user"
