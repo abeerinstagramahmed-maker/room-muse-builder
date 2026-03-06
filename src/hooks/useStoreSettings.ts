@@ -18,6 +18,12 @@ interface StoreSettings {
   taxRate: number;
 }
 
+interface SubscriptionPricing {
+  monthlyPrice: number;
+  yearlyPrice: number;
+  freeDesigns: number;
+}
+
 const defaultStripeSettings: StripeSettings = {
   enabled: false,
   testMode: true,
@@ -26,12 +32,18 @@ const defaultStripeSettings: StripeSettings = {
 };
 
 const defaultStoreSettings: StoreSettings = {
-  name: 'RoomMuse',
+  name: 'Roomly',
   supportEmail: '',
   defaultCommission: 15,
   shippingRate: 9.99,
   freeShippingThreshold: 100,
   taxRate: 8.875,
+};
+
+const defaultSubscriptionPricing: SubscriptionPricing = {
+  monthlyPrice: 9.99,
+  yearlyPrice: 99,
+  freeDesigns: 1,
 };
 
 export function useStoreSettings() {
@@ -40,6 +52,7 @@ export function useStoreSettings() {
   const [saving, setSaving] = useState(false);
   const [stripeSettings, setStripeSettings] = useState<StripeSettings>(defaultStripeSettings);
   const [storeSettings, setStoreSettings] = useState<StoreSettings>(defaultStoreSettings);
+  const [subscriptionPricing, setSubscriptionPricing] = useState<SubscriptionPricing>(defaultSubscriptionPricing);
 
   useEffect(() => {
     fetchSettings();
@@ -58,6 +71,8 @@ export function useStoreSettings() {
           setStripeSettings(setting.value as unknown as StripeSettings);
         } else if (setting.key === 'store') {
           setStoreSettings(setting.value as unknown as StoreSettings);
+        } else if (setting.key === 'subscription_pricing') {
+          setSubscriptionPricing(setting.value as unknown as SubscriptionPricing);
         }
       });
     } catch (error: any) {
@@ -67,24 +82,33 @@ export function useStoreSettings() {
     }
   };
 
-  const saveSettings = async (stripe: StripeSettings, store: StoreSettings) => {
+  const upsertSetting = async (key: string, value: any) => {
+    // Try update first, then insert if no rows affected
+    const { data, error: updateError } = await supabase
+      .from('store_settings')
+      .update({ value: JSON.parse(JSON.stringify(value)) })
+      .eq('key', key)
+      .select();
+
+    if (updateError) throw updateError;
+
+    if (!data || data.length === 0) {
+      const { error: insertError } = await supabase
+        .from('store_settings')
+        .insert({ key, value: JSON.parse(JSON.stringify(value)) });
+      if (insertError) throw insertError;
+    }
+  };
+
+  const saveSettings = async (stripe: StripeSettings, store: StoreSettings, pricing?: SubscriptionPricing) => {
     setSaving(true);
     try {
-      // Update stripe settings
-      const { error: stripeError } = await supabase
-        .from('store_settings')
-        .update({ value: JSON.parse(JSON.stringify(stripe)) })
-        .eq('key', 'stripe');
-
-      if (stripeError) throw stripeError;
-
-      // Update store settings
-      const { error: storeError } = await supabase
-        .from('store_settings')
-        .update({ value: JSON.parse(JSON.stringify(store)) })
-        .eq('key', 'store');
-
-      if (storeError) throw storeError;
+      await upsertSetting('stripe', stripe);
+      await upsertSetting('store', store);
+      if (pricing) {
+        await upsertSetting('subscription_pricing', pricing);
+        setSubscriptionPricing(pricing);
+      }
 
       setStripeSettings(stripe);
       setStoreSettings(store);
@@ -113,6 +137,7 @@ export function useStoreSettings() {
     saving,
     stripeSettings,
     storeSettings,
+    subscriptionPricing,
     setStripeSettings,
     setStoreSettings,
     saveSettings,

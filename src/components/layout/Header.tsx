@@ -18,7 +18,7 @@ const navLinks = [
   { href: '/catalog', label: 'Shop' },
   { href: '/catalog?category=living-room', label: 'Living Room' },
   { href: '/catalog?category=bedroom', label: 'Bedroom' },
-  { href: '/catalog?category=dining', label: 'Dining' },
+  { href: '/pricing', label: 'Pricing' },
 ];
 
 interface HeaderProps {
