@@ -11,3 +11,9 @@ verify_jwt = false
 
 [functions.create-subscription-checkout]
 verify_jwt = false
+
+[functions.fetch-amazon-products]
+verify_jwt = false
+
+[functions.scrape-furniture-store]
+verify_jwt = false
