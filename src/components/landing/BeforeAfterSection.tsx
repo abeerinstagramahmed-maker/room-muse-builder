@@ -1,20 +1,33 @@
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 
+import beforeLivingRoom from '@/assets/before-living-room.jpg';
+import afterLivingRoom from '@/assets/after-living-room.jpg';
+import beforeBedroom from '@/assets/before-bedroom.jpg';
+import afterBedroom from '@/assets/after-bedroom.jpg';
+import beforeDining from '@/assets/before-dining.jpg';
+import afterDining from '@/assets/after-dining.jpg';
+
 const comparisons = [
   {
-    before: 'Empty, uninspired living room',
-    after: 'Modern minimalist design with curated furniture',
+    before: beforeLivingRoom,
+    after: afterLivingRoom,
+    beforeLabel: 'Empty, uninspired living room',
+    afterLabel: 'Modern minimalist with curated furniture',
     style: 'Modern Minimalist',
   },
   {
-    before: 'Outdated bedroom furniture',
-    after: 'Warm Scandinavian retreat with natural materials',
+    before: beforeBedroom,
+    after: afterBedroom,
+    beforeLabel: 'Bare bedroom with old mattress',
+    afterLabel: 'Warm Scandinavian retreat',
     style: 'Scandinavian',
   },
   {
-    before: 'Basic dining space',
-    after: 'Elegant industrial dining with statement lighting',
+    before: beforeDining,
+    after: afterDining,
+    beforeLabel: 'Basic outdated dining space',
+    afterLabel: 'Elegant industrial dining room',
     style: 'Industrial Chic',
   },
 ];
@@ -48,26 +61,46 @@ export const BeforeAfterSection = () => {
               className="overflow-hidden rounded-2xl border border-border/50 bg-card shadow-card"
             >
               <div className="grid grid-rows-2">
-                <div className="flex items-center justify-center bg-muted/50 p-8">
-                  <div className="text-center">
-                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Before</p>
-                    <p className="mt-2 text-sm text-muted-foreground">{item.before}</p>
+                {/* Before Image */}
+                <div className="relative">
+                  <img
+                    src={item.before}
+                    alt={item.beforeLabel}
+                    className="h-48 w-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <div className="absolute bottom-3 left-3">
+                    <span className="rounded-full bg-background/90 px-3 py-1 text-xs font-medium uppercase tracking-wider text-muted-foreground backdrop-blur-sm">
+                      Before
+                    </span>
                   </div>
                 </div>
-                <div className="relative flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5 p-8">
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary">
+
+                {/* After Image */}
+                <div className="relative">
+                  <div className="absolute -top-3 left-1/2 z-10 -translate-x-1/2">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary shadow-md">
                       <ArrowRight className="h-3 w-3 rotate-90 text-primary-foreground" />
                     </div>
                   </div>
-                  <div className="text-center">
-                    <p className="text-xs font-medium uppercase tracking-wider text-primary">After</p>
-                    <p className="mt-2 text-sm font-medium">{item.after}</p>
+                  <img
+                    src={item.after}
+                    alt={item.afterLabel}
+                    className="h-48 w-full object-cover"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <div className="absolute bottom-3 left-3">
+                    <span className="rounded-full bg-primary/90 px-3 py-1 text-xs font-medium uppercase tracking-wider text-primary-foreground backdrop-blur-sm">
+                      After
+                    </span>
                   </div>
                 </div>
               </div>
               <div className="border-t border-border/50 px-4 py-3 text-center">
                 <span className="text-xs font-medium text-primary">{item.style}</span>
+                <p className="mt-1 text-xs text-muted-foreground">{item.afterLabel}</p>
               </div>
             </motion.div>
           ))}

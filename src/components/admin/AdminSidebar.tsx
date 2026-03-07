@@ -1,17 +1,9 @@
-import { LayoutDashboard, Package, ShoppingCart, Settings, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, Package, ShoppingCart, Settings, ArrowLeft, Users, FileText } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useLocation } from 'react-router-dom';
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
 } from '@/components/ui/sidebar';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -20,6 +12,8 @@ const menuItems = [
   { title: 'Dashboard', url: '/admin', icon: LayoutDashboard },
   { title: 'Products', url: '/admin/products', icon: Package },
   { title: 'Orders', url: '/admin/orders', icon: ShoppingCart },
+  { title: 'Users', url: '/admin/users', icon: Users },
+  { title: 'Content', url: '/admin/content', icon: FileText },
   { title: 'Settings', url: '/admin/settings', icon: Settings },
 ];
 
@@ -27,9 +21,7 @@ export function AdminSidebar() {
   const location = useLocation();
 
   const isActive = (path: string) => {
-    if (path === '/admin') {
-      return location.pathname === '/admin';
-    }
+    if (path === '/admin') return location.pathname === '/admin';
     return location.pathname.startsWith(path);
   };
 
