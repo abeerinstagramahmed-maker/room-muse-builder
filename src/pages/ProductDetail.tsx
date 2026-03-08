@@ -4,7 +4,7 @@ import { useProducts } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/contexts/CartContext';
-import { ShoppingBag, Star, Truck, RotateCcw, Shield, ChevronLeft } from 'lucide-react';
+import { ShoppingBag, Star, Truck, RotateCcw, Shield, Home } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { RecentlyViewedSection } from '@/components/product/RecentlyViewedSection';
@@ -13,6 +13,14 @@ import { ProductCard } from '@/components/product/ProductCard';
 import { ReviewSection } from '@/components/product/ReviewSection';
 import { SEOHead } from '@/components/SEOHead';
 import { Product } from '@/lib/types';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
