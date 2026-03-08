@@ -1,27 +1,23 @@
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import { Product } from '@/lib/types';
 import { toast } from 'sonner';
+import { 
+  runDesignPipeline, 
+  AIDesignResult, 
+  RoomAnalysis, 
+  FurniturePlan, 
+  GeneratedDesign 
+} from '@/services/aiProvider';
 
-interface DesignResult {
+export interface DesignResult {
   products: Product[];
   aiNote: string;
   styleNotes?: string;
-}
-
-interface AIRecommendation {
-  productId: string;
-  reason: string;
-}
-
-interface AnalyzeRoomResponse {
-  success: boolean;
-  designNote: string;
-  productIds: string[];
-  styleNotes: string;
-  recommendations: AIRecommendation[];
-  error?: string;
+  generatedImageUrl?: string;
+  roomAnalysis?: RoomAnalysis;
+  furniturePlan?: FurniturePlan;
+  generatedDesign?: GeneratedDesign;
 }
 
 export function useRoomDesigner() {
@@ -36,12 +32,10 @@ export function useRoomDesigner() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Check file size (max 10MB)
       if (file.size > 10 * 1024 * 1024) {
         toast.error('Image too large. Please upload an image under 10MB.');
         return;
       }
-
       const reader = new FileReader();
       reader.onload = (event) => {
         setUploadedImage(event.target?.result as string);
@@ -62,59 +56,46 @@ export function useRoomDesigner() {
     setIsGenerating(true);
 
     try {
-      console.log('Calling analyze-room function...');
+      console.log('[Designer] Running AI design pipeline...');
       
-      const { data, error } = await supabase.functions.invoke<AnalyzeRoomResponse>('analyze-room', {
-        body: {
-          imageBase64: uploadedImage,
-          style: selectedStyle,
-          budget: selectedBudget,
-        },
+      const aiResult: AIDesignResult = await runDesignPipeline({
+        imageBase64: uploadedImage,
+        style: selectedStyle,
+        budget: selectedBudget,
       });
 
-      if (error) {
-        console.error('Edge function error:', error);
-        toast.error('Failed to analyze room. Please try again.');
-        return;
-      }
+      // Map product recommendations to actual products
+      const productIds = aiResult.productRecommendations.map(r => r.productId);
+      let recommendedProducts = await getProductsByIds(productIds);
 
-      if (!data?.success) {
-        console.error('Analysis failed:', data?.error);
-        toast.error(data?.error || 'Failed to generate design recommendations.');
-        return;
-      }
-
-      // Map product IDs to actual products from database
-      const recommendedProducts = await getProductsByIds(data.productIds);
-
+      // Fallback: if no products matched by ID, use cached products
       if (recommendedProducts.length === 0) {
-        // Fallback to products from current cache if fetch failed
-        const cachedProducts = data.productIds
+        const cachedProducts = productIds
           .map(id => products.find(p => p.id === id))
           .filter((p): p is Product => p !== undefined);
         
-        if (cachedProducts.length === 0) {
-          toast.error('No matching products found. Please try a different style.');
-          return;
+        if (cachedProducts.length > 0) {
+          recommendedProducts = cachedProducts;
+        } else {
+          // Last fallback: pick products from catalog matching budget
+          recommendedProducts = products.slice(0, 5);
         }
-        
-        setDesignResult({
-          products: cachedProducts,
-          aiNote: data.designNote,
-          styleNotes: data.styleNotes,
-        });
-      } else {
-        setDesignResult({
-          products: recommendedProducts,
-          aiNote: data.designNote,
-          styleNotes: data.styleNotes,
-        });
       }
+
+      setDesignResult({
+        products: recommendedProducts,
+        aiNote: aiResult.aiNote,
+        styleNotes: aiResult.styleNotes,
+        generatedImageUrl: aiResult.generatedDesign.imageUrl,
+        roomAnalysis: aiResult.roomAnalysis,
+        furniturePlan: aiResult.furniturePlan,
+        generatedDesign: aiResult.generatedDesign,
+      });
 
       toast.success('Design complete! Check out your personalized recommendations.');
       
     } catch (err) {
-      console.error('Error generating design:', err);
+      console.error('[Designer] Pipeline error:', err);
       toast.error('Something went wrong. Please try again.');
     } finally {
       setIsGenerating(false);

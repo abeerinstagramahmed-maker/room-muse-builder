@@ -1,0 +1,173 @@
+/**
+ * AI Provider Service Layer
+ * 
+ * Modular abstraction over multiple AI providers (Replicate, OpenAI, Anthropic).
+ * Currently returns mock data for development. When API keys are configured
+ * via Admin → AI Settings, the system will route to real providers.
+ */
+
+import { supabase } from '@/integrations/supabase/client';
+import { Product } from '@/lib/types';
+
+// ─── Types ───────────────────────────────────────────────────────────
+
+export interface DetectedFurniture {
+  label: string;
+  confidence: number;
+  boundingBox: { x: number; y: number; width: number; height: number };
+  category: string;
+}
+
+export interface RoomAnalysis {
+  roomType: string;
+  description: string;
+  detectedFurniture: DetectedFurniture[];
+  lighting: string;
+  colorPalette: string[];
+  layoutNotes: string;
+}
+
+export interface FurniturePlan {
+  roomStyle: string;
+  budget: string;
+  recommendedFurniture: {
+    type: string;
+    placement: string;
+    reason: string;
+    priority: 'must-have' | 'nice-to-have';
+  }[];
+  removalSuggestions: string[];
+}
+
+export interface GeneratedDesign {
+  imageUrl: string;
+  prompt: string;
+  controlNetType: 'depth' | 'canny';
+}
+
+export interface ProductRecommendation {
+  productId: string;
+  matchScore: number;
+  reason: string;
+}
+
+export interface AIDesignResult {
+  roomAnalysis: RoomAnalysis;
+  furniturePlan: FurniturePlan;
+  generatedDesign: GeneratedDesign;
+  productRecommendations: ProductRecommendation[];
+  aiNote: string;
+  styleNotes: string;
+}
+
+export type AIProvider = 'replicate' | 'openai' | 'anthropic';
+
+// ─── Edge Function Callers ───────────────────────────────────────────
+
+async function callEdgeFunction<T>(name: string, body: Record<string, unknown>): Promise<T> {
+  const { data, error } = await supabase.functions.invoke<T>(name, { body });
+  if (error) throw new Error(`Edge function "${name}" failed: ${error.message}`);
+  return data as T;
+}
+
+// ─── Public API ──────────────────────────────────────────────────────
+
+export async function analyzeRoom(imageBase64: string): Promise<RoomAnalysis> {
+  return callEdgeFunction<RoomAnalysis>('analyze-room-image', { imageBase64 });
+}
+
+export async function detectFurniture(imageBase64: string): Promise<DetectedFurniture[]> {
+  const result = await callEdgeFunction<{ objects: DetectedFurniture[] }>('detect-furniture', { imageBase64 });
+  return result.objects;
+}
+
+export async function generateRoomDesign(params: {
+  imageBase64: string;
+  style: string;
+  budget: string;
+  roomAnalysis: RoomAnalysis;
+  furniturePlan: FurniturePlan;
+}): Promise<GeneratedDesign> {
+  return callEdgeFunction<GeneratedDesign>('generate-room-design', params);
+}
+
+export async function recommendProducts(params: {
+  furniturePlan: FurniturePlan;
+  style: string;
+  budget: string;
+}): Promise<ProductRecommendation[]> {
+  const result = await callEdgeFunction<{ recommendations: ProductRecommendation[] }>('recommend-products', params);
+  return result.recommendations;
+}
+
+/**
+ * Full AI design pipeline — orchestrates all steps.
+ * Upload → Analyze → Detect → Plan → Generate → Recommend
+ */
+export async function runDesignPipeline(params: {
+  imageBase64: string;
+  style: string;
+  budget: string;
+}): Promise<AIDesignResult> {
+  const { imageBase64, style, budget } = params;
+
+  // Step 1 & 2: Analyze room + detect furniture (parallel)
+  const [roomAnalysis, detectedFurniture] = await Promise.all([
+    analyzeRoom(imageBase64),
+    detectFurniture(imageBase64),
+  ]);
+
+  // Merge detected furniture into analysis
+  roomAnalysis.detectedFurniture = detectedFurniture;
+
+  // Step 3: Generate furniture plan (uses LLM)
+  const furniturePlan = await callEdgeFunction<FurniturePlan>('recommend-products', {
+    roomAnalysis,
+    style,
+    budget,
+    planOnly: true,
+  });
+
+  // Step 4 & 5: Generate room image + product recommendations (parallel)
+  const [generatedDesign, productRecommendations] = await Promise.all([
+    generateRoomDesign({ imageBase64, style, budget, roomAnalysis, furniturePlan }),
+    recommendProducts({ furniturePlan, style, budget }),
+  ]);
+
+  return {
+    roomAnalysis,
+    furniturePlan,
+    generatedDesign,
+    productRecommendations,
+    aiNote: `We analyzed your ${roomAnalysis.roomType} and created a ${style} design within your ${budget} budget. The AI detected ${detectedFurniture.length} existing furniture items and suggested ${furniturePlan.recommendedFurniture.length} changes.`,
+    styleNotes: roomAnalysis.layoutNotes,
+  };
+}
+
+// ─── AI Settings helpers ─────────────────────────────────────────────
+
+export interface AISettings {
+  replicateApiKey: string;
+  openaiApiKey: string;
+  anthropicApiKey: string;
+  roomAnalysisModel: string;
+  furnitureDetectionModel: string;
+  roomGenerationModel: string;
+  productRecommendationModel: string;
+  enableAIGeneration: boolean;
+  enableFurnitureDetection: boolean;
+  enableProductScraping: boolean;
+}
+
+export const defaultAISettings: AISettings = {
+  replicateApiKey: '',
+  openaiApiKey: '',
+  anthropicApiKey: '',
+  roomAnalysisModel: 'blip2',
+  furnitureDetectionModel: 'grounding-dino-sam',
+  roomGenerationModel: 'sdxl-controlnet',
+  productRecommendationModel: 'gpt-4o-mini',
+  enableAIGeneration: true,
+  enableFurnitureDetection: true,
+  enableProductScraping: true,
+};

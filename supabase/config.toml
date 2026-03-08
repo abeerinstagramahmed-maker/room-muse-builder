@@ -3,6 +3,24 @@ project_id = "lfjloklcapfduyrliihq"
 [functions.analyze-room]
 verify_jwt = false
 
+[functions.analyze-room-image]
+verify_jwt = false
+
+[functions.detect-furniture]
+verify_jwt = false
+
+[functions.generate-room-design]
+verify_jwt = false
+
+[functions.recommend-products]
+verify_jwt = false
+
+[functions.scrape-furniture-products]
+verify_jwt = false
+
+[functions.scrape-furniture-store]
+verify_jwt = false
+
 [functions.create-checkout-session]
 verify_jwt = false
 
@@ -13,7 +31,4 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.fetch-amazon-products]
-verify_jwt = false
-
-[functions.scrape-furniture-store]
 verify_jwt = false
