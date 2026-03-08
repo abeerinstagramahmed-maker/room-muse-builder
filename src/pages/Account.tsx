@@ -1,26 +1,52 @@
-import { useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useSavedDesigns } from '@/hooks/useSavedDesigns';
 import { useOrders } from '@/hooks/useOrders';
-import { Loader2, LogOut, Palette, Package, User, Trash2, ShoppingCart, ExternalLink } from 'lucide-react';
+import { useWishlist } from '@/hooks/useWishlist';
+import { useProducts } from '@/hooks/useProducts';
+import { Loader2, LogOut, Palette, Package, Heart, Trash2, ExternalLink, ShoppingBag } from 'lucide-react';
 import { format } from 'date-fns';
+import { useCart } from '@/contexts/CartContext';
+import { Product } from '@/lib/types';
 
 const Account = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const defaultTab = searchParams.get('tab') || 'designs';
   const { user, isAuthenticated, loading, signOut } = useAuthContext();
   const { designs, loading: designsLoading, deleteDesign } = useSavedDesigns();
   const { orders, loading: ordersLoading } = useOrders();
+  const { wishlistIds, loading: wishlistLoading, toggleWishlist } = useWishlist();
+  const { getProductsByIds } = useProducts();
+  const { addItem } = useCart();
+  const [wishlistProducts, setWishlistProducts] = useState<Product[]>([]);
+  const [wishlistProductsLoading, setWishlistProductsLoading] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated && !loading) {
       navigate('/auth');
     }
   }, [isAuthenticated, loading, navigate]);
+
+  useEffect(() => {
+    const loadWishlistProducts = async () => {
+      if (wishlistIds.length === 0) {
+        setWishlistProducts([]);
+        return;
+      }
+      setWishlistProductsLoading(true);
+      const products = await getProductsByIds(wishlistIds);
+      setWishlistProducts(products);
+      setWishlistProductsLoading(false);
+    };
+    loadWishlistProducts();
+  }, [wishlistIds, getProductsByIds]);
 
   const handleSignOut = async () => {
     await signOut();
@@ -43,6 +69,7 @@ const Account = () => {
 
   return (
     <Layout>
+      <SEOHead title="My Account" description="Manage your designs, orders, and favorites on Roomly." />
       <div className="container py-8 md:py-12">
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -56,25 +83,36 @@ const Account = () => {
           </Button>
         </div>
 
-        <Tabs defaultValue="designs" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2 lg:w-[400px]">
+        <Tabs defaultValue={defaultTab} className="space-y-6">
+          <TabsList className="grid w-full grid-cols-3 lg:w-[500px]">
             <TabsTrigger value="designs" className="gap-2">
               <Palette className="h-4 w-4" />
-              My Designs
+              <span className="hidden sm:inline">My Designs</span>
+              <span className="sm:hidden">Designs</span>
+            </TabsTrigger>
+            <TabsTrigger value="favorites" className="gap-2">
+              <Heart className="h-4 w-4" />
+              <span className="hidden sm:inline">Favorites</span>
+              <span className="sm:hidden">Favs</span>
+              {wishlistIds.length > 0 && (
+                <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                  {wishlistIds.length}
+                </span>
+              )}
             </TabsTrigger>
             <TabsTrigger value="orders" className="gap-2">
               <Package className="h-4 w-4" />
-              My Orders
+              <span className="hidden sm:inline">My Orders</span>
+              <span className="sm:hidden">Orders</span>
             </TabsTrigger>
           </TabsList>
 
+          {/* Designs Tab */}
           <TabsContent value="designs">
             <Card>
               <CardHeader>
                 <CardTitle>Saved Designs</CardTitle>
-                <CardDescription>
-                  Your AI-generated room designs
-                </CardDescription>
+                <CardDescription>Your AI-generated room designs</CardDescription>
               </CardHeader>
               <CardContent>
                 {designsLoading ? (
@@ -95,11 +133,7 @@ const Account = () => {
                       <Card key={design.id} className="overflow-hidden">
                         {design.image_url && (
                           <div className="aspect-video overflow-hidden bg-muted">
-                            <img
-                              src={design.image_url}
-                              alt={design.name}
-                              className="h-full w-full object-cover"
-                            />
+                            <img src={design.image_url} alt={design.name} className="h-full w-full object-cover" />
                           </div>
                         )}
                         <CardContent className="p-4">
@@ -113,12 +147,7 @@ const Account = () => {
                             ${design.total_price?.toFixed(2) || '0.00'}
                           </p>
                           <div className="mt-3 flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="flex-1 gap-1"
-                              onClick={() => deleteDesign(design.id)}
-                            >
+                            <Button variant="outline" size="sm" className="flex-1 gap-1" onClick={() => deleteDesign(design.id)}>
                               <Trash2 className="h-3 w-3" />
                               Delete
                             </Button>
@@ -132,13 +161,71 @@ const Account = () => {
             </Card>
           </TabsContent>
 
+          {/* Favorites Tab */}
+          <TabsContent value="favorites">
+            <Card>
+              <CardHeader>
+                <CardTitle>My Favorites</CardTitle>
+                <CardDescription>Products you've saved for later</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {wishlistLoading || wishlistProductsLoading ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  </div>
+                ) : wishlistProducts.length === 0 ? (
+                  <div className="py-12 text-center">
+                    <Heart className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                    <p className="mt-4 text-muted-foreground">No favorites yet</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Browse products and tap the heart icon to save them here</p>
+                    <Link to="/catalog">
+                      <Button className="mt-4">Browse Products</Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {wishlistProducts.map((product) => (
+                      <Card key={product.id} className="overflow-hidden">
+                        <Link to={`/product/${product.id}`}>
+                          <div className="aspect-square overflow-hidden bg-muted">
+                            <img src={product.images[0]} alt={product.name} className="h-full w-full object-cover transition-transform duration-300 hover:scale-105" />
+                          </div>
+                        </Link>
+                        <CardContent className="p-4">
+                          <Link to={`/product/${product.id}`}>
+                            <h3 className="font-medium hover:text-primary transition-colors">{product.name}</h3>
+                          </Link>
+                          <p className="mt-1 text-sm text-muted-foreground line-clamp-1">{product.description}</p>
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="font-bold">${product.price.toLocaleString()}</span>
+                            {product.originalPrice && (
+                              <span className="text-sm text-muted-foreground line-through">${product.originalPrice.toLocaleString()}</span>
+                            )}
+                          </div>
+                          <div className="mt-3 flex gap-2">
+                            <Button size="sm" className="flex-1 gap-1" onClick={() => addItem(product)}>
+                              <ShoppingBag className="h-3 w-3" />
+                              Add to Cart
+                            </Button>
+                            <Button variant="outline" size="sm" className="gap-1 text-destructive hover:text-destructive" onClick={() => toggleWishlist(product.id)}>
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Orders Tab */}
           <TabsContent value="orders">
             <Card>
               <CardHeader>
                 <CardTitle>Order History</CardTitle>
-                <CardDescription>
-                  Your past purchases
-                </CardDescription>
+                <CardDescription>Your past purchases</CardDescription>
               </CardHeader>
               <CardContent>
                 {ordersLoading ? (
@@ -163,23 +250,17 @@ const Account = () => {
                               <p className="text-sm text-muted-foreground">
                                 Order #{order.id.slice(0, 8).toUpperCase()}
                               </p>
-                              <p className="font-medium">
-                                ${order.total.toFixed(2)}
-                              </p>
+                              <p className="font-medium">${order.total.toFixed(2)}</p>
                               <p className="text-sm text-muted-foreground">
                                 {format(new Date(order.created_at), 'MMM d, yyyy')}
                               </p>
                             </div>
                             <div className="flex items-center gap-3">
-                              <span
-                                className={`rounded-full px-3 py-1 text-xs font-medium ${
-                                  order.status === 'completed'
-                                    ? 'bg-green-100 text-green-700'
-                                    : order.status === 'pending'
-                                    ? 'bg-yellow-100 text-yellow-700'
-                                    : 'bg-muted text-muted-foreground'
-                                }`}
-                              >
+                              <span className={`rounded-full px-3 py-1 text-xs font-medium ${
+                                order.status === 'completed' ? 'bg-primary/10 text-primary'
+                                  : order.status === 'pending' ? 'bg-accent text-accent-foreground'
+                                  : 'bg-muted text-muted-foreground'
+                              }`}>
                                 {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                               </span>
                               <Link to={`/order/${order.id}`}>
