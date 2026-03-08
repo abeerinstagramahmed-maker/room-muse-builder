@@ -31,11 +31,12 @@ const ProductDetail = () => {
         const fetchedProduct = await getProductById(id);
         setProduct(fetchedProduct);
         setSelectedColor(fetchedProduct?.colors?.[0]);
+        if (fetchedProduct) addToRecentlyViewed(fetchedProduct.id);
         setProductLoading(false);
       }
     };
     loadProduct();
-  }, [id, getProductById]);
+  }, [id, getProductById, addToRecentlyViewed]);
 
   if (productLoading || loading) {
     return (
