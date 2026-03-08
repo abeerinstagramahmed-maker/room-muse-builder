@@ -23,6 +23,16 @@ export default function AdminSettings() {
   const [stripeTestMode, setStripeTestMode] = useState(true);
   const [publishableKey, setPublishableKey] = useState('');
   const [secretKey, setSecretKey] = useState('');
+  const [webhookSigningSecret, setWebhookSigningSecret] = useState('');
+
+  // Email settings
+  const [emailEnabled, setEmailEnabled] = useState(false);
+  const [resendApiKey, setResendApiKey] = useState('');
+  const [fromEmail, setFromEmail] = useState('');
+  const [fromName, setFromName] = useState('');
+  const [emailOnConfirmation, setEmailOnConfirmation] = useState(true);
+  const [emailOnShipped, setEmailOnShipped] = useState(true);
+  const [emailOnDelivered, setEmailOnDelivered] = useState(true);
   
   const [storeName, setStoreName] = useState('');
   const [supportEmail, setSupportEmail] = useState('');
