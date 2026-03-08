@@ -19,6 +19,9 @@ const priceRanges = [
   { label: '$2,000+', min: 2000, max: Infinity },
 ];
 
+const styleOptions = ['modern', 'scandinavian', 'industrial', 'bohemian', 'traditional', 'coastal'];
+const materialOptions = ['wood', 'metal', 'fabric', 'leather', 'glass', 'marble', 'rattan'];
+
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
@@ -27,8 +30,11 @@ const Catalog = () => {
   
   const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam);
   const [selectedPriceRange, setSelectedPriceRange] = useState(0);
+  const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
+  const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState(searchParam);
+  const [sortBy, setSortBy] = useState<string>('newest');
 
   useEffect(() => {
     setSelectedCategory(categoryParam);
