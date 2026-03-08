@@ -12,6 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { defaultAISettings, AISettings } from '@/services/aiProvider';
+import { supabase } from '@/integrations/supabase/client';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function AdminSettings() {
   const { 
