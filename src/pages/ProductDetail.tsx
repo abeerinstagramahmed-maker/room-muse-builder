@@ -76,6 +76,11 @@ const ProductDetail = () => {
 
   return (
     <Layout>
+      <SEOHead 
+        title={product.name} 
+        description={product.description || `Shop ${product.name} at Roomly`}
+        type="product"
+      />
       <div className="container py-8">
         {/* Breadcrumb */}
         <Link
