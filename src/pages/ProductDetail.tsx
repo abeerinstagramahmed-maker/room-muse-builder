@@ -270,6 +270,9 @@ const ProductDetail = () => {
             </div>
           </section>
         )}
+
+        {/* Recently Viewed */}
+        <RecentlyViewedSection />
       </div>
     </Layout>
   );
