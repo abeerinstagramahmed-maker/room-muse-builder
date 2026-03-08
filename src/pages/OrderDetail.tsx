@@ -90,19 +90,38 @@ const OrderDetail = () => {
           Back to Account
         </Link>
 
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-2xl font-bold md:text-3xl">
-              Order #{order.id.slice(0, 8).toUpperCase()}
-            </h1>
-            <p className="mt-1 text-muted-foreground">
-              Placed on {format(new Date(order.created_at), 'MMMM d, yyyy')}
-            </p>
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="font-display text-2xl font-bold md:text-3xl">
+                Order #{order.id.slice(0, 8).toUpperCase()}
+              </h1>
+              <p className="mt-1 text-muted-foreground">
+                Placed on {format(new Date(order.created_at), 'MMMM d, yyyy')}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {getStatusIcon(order.status)}
+              <span className="font-medium capitalize">{order.status}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            {getStatusIcon(order.status)}
-            <span className="font-medium capitalize">{order.status}</span>
-          </div>
+
+          {/* Order Progress Tracker */}
+          {order.status !== 'cancelled' && (
+            <div className="mt-6 flex items-center gap-1">
+              {statusSteps.map((step, i) => (
+                <div key={step} className="flex items-center flex-1">
+                  <div className={`flex flex-col items-center flex-1 ${i <= currentStepIndex ? 'text-primary' : 'text-muted-foreground'}`}>
+                    <div className={`h-3 w-3 rounded-full ${i <= currentStepIndex ? 'bg-primary' : 'bg-muted'}`} />
+                    <span className="mt-1 text-xs capitalize hidden sm:block">{step}</span>
+                  </div>
+                  {i < statusSteps.length - 1 && (
+                    <div className={`h-0.5 flex-1 ${i < currentStepIndex ? 'bg-primary' : 'bg-muted'}`} />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">

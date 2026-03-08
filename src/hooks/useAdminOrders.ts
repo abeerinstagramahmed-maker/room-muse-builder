@@ -66,6 +66,38 @@ export function useAdminOrders() {
     }
   }, [toast]);
 
+  const updateOrderFulfillment = useCallback(async (
+    orderId: string,
+    data: { admin_notes?: string; tracking_number?: string; estimated_delivery?: string }
+  ) => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update(data as any)
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      setOrders(prev =>
+        prev.map(order =>
+          order.id === orderId ? { ...order, ...data } : order
+        )
+      );
+
+      toast({
+        title: 'Success',
+        description: 'Fulfillment info saved',
+      });
+    } catch (error: any) {
+      console.error('Error updating fulfillment:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to save fulfillment info',
+        variant: 'destructive',
+      });
+    }
+  }, [toast]);
+
   const getOrderStats = useCallback(() => {
     const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
     const totalOrders = orders.length;
@@ -85,6 +117,7 @@ export function useAdminOrders() {
     loading,
     refetch: fetchAllOrders,
     updateOrderStatus,
+    updateOrderFulfillment,
     getOrderStats,
   };
 }
