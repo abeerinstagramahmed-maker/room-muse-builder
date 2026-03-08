@@ -23,6 +23,7 @@ const Checkout = () => {
   const { items, totalPrice } = useCart();
   const { isProcessing, shipping, tax, orderTotal, processOrder } = useCheckout();
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -34,6 +35,18 @@ const Checkout = () => {
     state: '',
     zip: '',
   });
+
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_type: string; discount_value: number } | null>(null);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+
+  const couponDiscount = appliedCoupon
+    ? appliedCoupon.discount_type === 'percentage'
+      ? totalPrice * (appliedCoupon.discount_value / 100)
+      : appliedCoupon.discount_value
+    : 0;
+
+  const adjustedTotal = orderTotal - couponDiscount;
 
   if (items.length === 0) {
     navigate('/cart');
