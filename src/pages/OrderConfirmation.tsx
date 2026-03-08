@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { useOrders, Order } from '@/hooks/useOrders';
 import { CheckCircle, Package, ArrowRight, ShoppingBag } from 'lucide-react';
@@ -40,6 +41,7 @@ const OrderConfirmation = () => {
 
   return (
     <Layout>
+      <SEOHead title="Order Confirmed" description="Your Roomly order has been placed successfully." />
       <div className="container py-12 md:py-20">
         <div className="mx-auto max-w-2xl text-center">
           {/* Success Icon */}

@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sparkles, Instagram, Twitter, Facebook, Mail } from 'lucide-react';
+import { Sparkles, Instagram, Twitter, Facebook, Mail, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const footerLinks = {
   shop: [
@@ -25,6 +28,37 @@ const footerLinks = {
 };
 
 export const Footer = () => {
+  const [email, setEmail] = useState('');
+  const [subscribing, setSubscribing] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setSubscribing(true);
+
+    try {
+      const { error } = await supabase
+        .from('newsletter_subscribers' as any)
+        .insert({ email: email.trim() } as any);
+
+      if (error) {
+        if (error.code === '23505') {
+          toast({ title: 'Already subscribed!', description: "You're already on our list." });
+        } else {
+          throw error;
+        }
+      } else {
+        toast({ title: 'Subscribed!', description: 'Thanks for joining our newsletter.' });
+      }
+      setEmail('');
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message || 'Please try again.', variant: 'destructive' });
+    } finally {
+      setSubscribing(false);
+    }
+  };
+
   return (
     <footer className="border-t border-border bg-muted/30">
       <div className="container py-16 md:py-20">
@@ -45,19 +79,22 @@ export const Footer = () => {
             </p>
             
             {/* Newsletter */}
-            <div className="mt-6">
+            <form onSubmit={handleSubscribe} className="mt-6">
               <p className="mb-3 text-sm font-medium">Stay inspired</p>
               <div className="flex gap-2">
                 <Input 
                   type="email" 
                   placeholder="Enter your email" 
                   className="max-w-[240px] rounded-xl"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
                 />
-                <Button className="rounded-xl">
-                  <Mail className="h-4 w-4" />
+                <Button type="submit" className="rounded-xl" disabled={subscribing}>
+                  {subscribing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
                 </Button>
               </div>
-            </div>
+            </form>
           </div>
 
           {/* Links */}

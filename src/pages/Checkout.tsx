@@ -7,12 +7,23 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCart } from '@/contexts/CartContext';
 import { useCheckout } from '@/hooks/useCheckout';
-import { ChevronLeft, Lock, CreditCard, Truck } from 'lucide-react';
+import { Lock, CreditCard, Truck, Home, Tag, Loader2, X } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 
 const Checkout = () => {
   const { items, totalPrice } = useCart();
   const { isProcessing, shipping, tax, orderTotal, processOrder } = useCheckout();
   const navigate = useNavigate();
+  const { toast } = useToast();
   
   const [formData, setFormData] = useState({
     email: '',
@@ -24,6 +35,18 @@ const Checkout = () => {
     state: '',
     zip: '',
   });
+
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; discount_type: string; discount_value: number } | null>(null);
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+
+  const couponDiscount = appliedCoupon
+    ? appliedCoupon.discount_type === 'percentage'
+      ? totalPrice * (appliedCoupon.discount_value / 100)
+      : appliedCoupon.discount_value
+    : 0;
+
+  const adjustedTotal = orderTotal - couponDiscount;
 
   if (items.length === 0) {
     navigate('/cart');
@@ -37,6 +60,46 @@ const Checkout = () => {
     }));
   };
 
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setApplyingCoupon(true);
+    try {
+      const { data, error } = await supabase
+        .from('coupons' as any)
+        .select('*')
+        .eq('code', couponCode.trim().toUpperCase())
+        .eq('active', true)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) {
+        toast({ title: 'Invalid coupon', description: 'This coupon code is not valid.', variant: 'destructive' });
+        return;
+      }
+
+      const coupon = data as any;
+      if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
+        toast({ title: 'Coupon expired', description: 'This coupon has expired.', variant: 'destructive' });
+        return;
+      }
+      if (coupon.max_uses && coupon.used_count >= coupon.max_uses) {
+        toast({ title: 'Coupon exhausted', description: 'This coupon has been fully redeemed.', variant: 'destructive' });
+        return;
+      }
+      if (coupon.min_order && totalPrice < coupon.min_order) {
+        toast({ title: 'Minimum not met', description: `Minimum order of $${coupon.min_order} required.`, variant: 'destructive' });
+        return;
+      }
+
+      setAppliedCoupon({ code: coupon.code, discount_type: coupon.discount_type, discount_value: coupon.discount_value });
+      toast({ title: 'Coupon applied!', description: `${coupon.discount_type === 'percentage' ? `${coupon.discount_value}% off` : `$${coupon.discount_value} off`}` });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await processOrder(formData);
@@ -46,13 +109,25 @@ const Checkout = () => {
     <Layout>
       <SEOHead title="Checkout" description="Complete your Roomly furniture order securely." />
       <div className="container py-8 md:py-12">
-        <Link
-          to="/cart"
-          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Back to cart
-        </Link>
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/"><Home className="h-4 w-4" /></Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/cart">Cart</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Checkout</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Checkout Form */}
@@ -150,7 +225,7 @@ const Checkout = () => {
                 disabled={isProcessing}
               >
                 <Lock className="h-4 w-4" />
-                {isProcessing ? 'Processing...' : `Pay $${orderTotal.toFixed(2)}`}
+                {isProcessing ? 'Processing...' : `Pay $${adjustedTotal.toFixed(2)}`}
               </Button>
 
               <p className="text-center text-sm text-muted-foreground">
@@ -195,6 +270,41 @@ const Checkout = () => {
                 ))}
               </div>
 
+              {/* Coupon Code */}
+              <div className="mt-6 border-t border-border pt-4">
+                <p className="mb-2 flex items-center gap-2 text-sm font-medium">
+                  <Tag className="h-4 w-4 text-primary" />
+                  Promo Code
+                </p>
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between rounded-lg bg-primary/5 p-3">
+                    <div>
+                      <span className="font-mono text-sm font-semibold">{appliedCoupon.code}</span>
+                      <span className="ml-2 text-sm text-muted-foreground">
+                        {appliedCoupon.discount_type === 'percentage'
+                          ? `${appliedCoupon.discount_value}% off`
+                          : `$${appliedCoupon.discount_value} off`}
+                      </span>
+                    </div>
+                    <button onClick={() => setAppliedCoupon(null)} className="text-muted-foreground hover:text-foreground">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter code"
+                      value={couponCode}
+                      onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                      className="font-mono uppercase"
+                    />
+                    <Button variant="outline" onClick={applyCoupon} disabled={applyingCoupon}>
+                      {applyingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Apply'}
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               <dl className="mt-6 space-y-3 border-t border-border pt-6 text-sm">
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Subtotal</dt>
@@ -214,10 +324,16 @@ const Checkout = () => {
                   <dt className="text-muted-foreground">Tax</dt>
                   <dd className="font-medium">${tax.toFixed(2)}</dd>
                 </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-primary">
+                    <dt>Discount</dt>
+                    <dd className="font-medium">-${couponDiscount.toFixed(2)}</dd>
+                  </div>
+                )}
                 <div className="border-t border-border pt-3">
                   <div className="flex justify-between text-lg">
                     <dt className="font-semibold">Total</dt>
-                    <dd className="font-bold">${orderTotal.toFixed(2)}</dd>
+                    <dd className="font-bold">${adjustedTotal.toFixed(2)}</dd>
                   </div>
                 </div>
               </dl>

@@ -4,7 +4,7 @@ import { useProducts } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/contexts/CartContext';
-import { ShoppingBag, Star, Truck, RotateCcw, Shield, ChevronLeft } from 'lucide-react';
+import { ShoppingBag, Star, Truck, RotateCcw, Shield, Home } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { RecentlyViewedSection } from '@/components/product/RecentlyViewedSection';
@@ -13,6 +13,14 @@ import { ProductCard } from '@/components/product/ProductCard';
 import { ReviewSection } from '@/components/product/ReviewSection';
 import { SEOHead } from '@/components/SEOHead';
 import { Product } from '@/lib/types';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -87,13 +95,33 @@ const ProductDetail = () => {
       />
       <div className="container py-8">
         {/* Breadcrumb */}
-        <Link
-          to="/catalog"
-          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Back to shop
-        </Link>
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/"><Home className="h-4 w-4" /></Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/catalog">Shop</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to={`/catalog?category=${product.category.toLowerCase().replace(/\s+/g, '-')}`}>
+                  {product.category}
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{product.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-16">
           {/* Images */}
