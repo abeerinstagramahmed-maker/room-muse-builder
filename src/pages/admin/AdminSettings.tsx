@@ -103,6 +103,7 @@ export default function AdminSettings() {
         testMode: stripeTestMode,
         publishableKey,
         secretKey,
+        webhookSigningSecret,
       },
       {
         name: storeName,
