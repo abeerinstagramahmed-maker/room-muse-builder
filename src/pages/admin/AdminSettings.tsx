@@ -59,6 +59,48 @@ export default function AdminSettings() {
   // AI Settings
   const [aiSettings, setAiSettings] = useState<AISettings>(defaultAISettings);
 
+  // Catalog refresh state
+  const [refreshRunning, setRefreshRunning] = useState(false);
+  const [refreshLog, setRefreshLog] = useState<any>(null);
+  const [refreshCategories, setRefreshCategories] = useState<string[]>([]);
+  const [refreshStores, setRefreshStores] = useState<string[]>([]);
+  const [refreshLimit, setRefreshLimit] = useState('5');
+  const [refreshDryRun, setRefreshDryRun] = useState(false);
+
+  const allCategories = ['sofas', 'tables', 'chairs', 'beds', 'storage', 'desks', 'lighting', 'decor'];
+  const allStores = ['Wayfair', 'West Elm', 'IKEA'];
+
+  const loadRefreshLog = async () => {
+    const { data } = await supabase
+      .from('store_settings')
+      .select('value')
+      .eq('key', 'catalog_refresh_log')
+      .maybeSingle();
+    if (data) setRefreshLog(data.value);
+  };
+
+  const runCatalogRefresh = async () => {
+    setRefreshRunning(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('catalog-refresh', {
+        body: {
+          categories: refreshCategories.length ? refreshCategories : undefined,
+          stores: refreshStores.length ? refreshStores : undefined,
+          limit: parseInt(refreshLimit) || 5,
+          dryRun: refreshDryRun,
+        },
+      });
+      if (error) throw error;
+      setRefreshLog(data);
+    } catch (err: any) {
+      console.error('Catalog refresh error:', err);
+    } finally {
+      setRefreshRunning(false);
+    }
+  };
+
+  useEffect(() => { loadRefreshLog(); }, []);
+
   useEffect(() => {
     if (!loading) {
       setStripeEnabled(stripeSettings.enabled);
