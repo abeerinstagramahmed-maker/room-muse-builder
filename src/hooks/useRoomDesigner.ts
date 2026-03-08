@@ -10,6 +10,8 @@ import {
   GeneratedDesign 
 } from '@/services/aiProvider';
 
+export type PipelineStep = 'idle' | 'analyzing' | 'detecting' | 'planning' | 'generating' | 'matching' | 'done';
+
 export interface DesignResult {
   products: Product[];
   aiNote: string;
@@ -25,6 +27,7 @@ export function useRoomDesigner() {
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [selectedBudget, setSelectedBudget] = useState<string | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [pipelineStep, setPipelineStep] = useState<PipelineStep>('idle');
   const [designResult, setDesignResult] = useState<DesignResult | null>(null);
   
   const { products, getProductsByIds } = useProducts();
@@ -40,6 +43,7 @@ export function useRoomDesigner() {
       reader.onload = (event) => {
         setUploadedImage(event.target?.result as string);
         setDesignResult(null);
+        setPipelineStep('idle');
       };
       reader.readAsDataURL(file);
     }
@@ -48,12 +52,14 @@ export function useRoomDesigner() {
   const clearImage = () => {
     setUploadedImage(null);
     setDesignResult(null);
+    setPipelineStep('idle');
   };
 
   const handleGenerate = async () => {
     if (!uploadedImage || !selectedStyle || !selectedBudget) return;
 
     setIsGenerating(true);
+    setPipelineStep('analyzing');
 
     try {
       console.log('[Designer] Running AI design pipeline...');
@@ -62,13 +68,15 @@ export function useRoomDesigner() {
         imageBase64: uploadedImage,
         style: selectedStyle,
         budget: selectedBudget,
+        onStepChange: setPipelineStep,
       });
+
+      setPipelineStep('done');
 
       // Map product recommendations to actual products
       const productIds = aiResult.productRecommendations.map(r => r.productId);
       let recommendedProducts = await getProductsByIds(productIds);
 
-      // Fallback: if no products matched by ID, use cached products
       if (recommendedProducts.length === 0) {
         const cachedProducts = productIds
           .map(id => products.find(p => p.id === id))
@@ -77,7 +85,6 @@ export function useRoomDesigner() {
         if (cachedProducts.length > 0) {
           recommendedProducts = cachedProducts;
         } else {
-          // Last fallback: pick products from catalog matching budget
           recommendedProducts = products.slice(0, 5);
         }
       }
@@ -97,6 +104,7 @@ export function useRoomDesigner() {
     } catch (err) {
       console.error('[Designer] Pipeline error:', err);
       toast.error('Something went wrong. Please try again.');
+      setPipelineStep('idle');
     } finally {
       setIsGenerating(false);
     }
@@ -109,6 +117,7 @@ export function useRoomDesigner() {
     selectedStyle,
     selectedBudget,
     isGenerating,
+    pipelineStep,
     designResult,
     totalPrice,
     setSelectedStyle,

@@ -24,6 +24,7 @@ const Designer = () => {
     selectedStyle,
     selectedBudget,
     isGenerating,
+    pipelineStep,
     designResult,
     totalPrice,
     setSelectedStyle,
@@ -162,6 +163,7 @@ const Designer = () => {
 
           <DesignResults
             isGenerating={isGenerating}
+            pipelineStep={pipelineStep}
             designResult={designResult}
             totalPrice={totalPrice}
             onAddAllToCart={handleAddAllToCart}
