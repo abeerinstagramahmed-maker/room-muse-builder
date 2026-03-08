@@ -1,6 +1,7 @@
 import { DollarSign, Package, ShoppingCart, TrendingUp } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { StatsCard } from '@/components/admin/StatsCard';
+import { AdminCharts } from '@/components/admin/AdminCharts';
 import { useAdminOrders } from '@/hooks/useAdminOrders';
 import { useAdminProducts } from '@/hooks/useAdminProducts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
