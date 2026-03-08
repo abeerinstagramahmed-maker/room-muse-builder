@@ -131,11 +131,22 @@ const Catalog = () => {
   const clearFilters = () => {
     setSelectedCategory(null);
     setSelectedPriceRange(0);
+    setSelectedStyles([]);
+    setSelectedMaterials([]);
     setSearchQuery('');
+    setSortBy('newest');
     setSearchParams({});
   };
 
-  const hasActiveFilters = selectedCategory || selectedPriceRange > 0 || searchQuery.trim();
+  const toggleStyle = (style: string) => {
+    setSelectedStyles(prev => prev.includes(style) ? prev.filter(s => s !== style) : [...prev, style]);
+  };
+
+  const toggleMaterial = (material: string) => {
+    setSelectedMaterials(prev => prev.includes(material) ? prev.filter(m => m !== material) : [...prev, material]);
+  };
+
+  const hasActiveFilters = selectedCategory || selectedPriceRange > 0 || searchQuery.trim() || selectedStyles.length > 0 || selectedMaterials.length > 0;
 
   return (
     <Layout>
