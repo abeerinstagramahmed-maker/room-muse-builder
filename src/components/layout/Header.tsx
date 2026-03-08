@@ -31,6 +31,7 @@ interface HeaderProps {
 export const Header = ({ variant = 'default' }: HeaderProps) => {
   const { totalItems } = useCart();
   const { isAuthenticated, user, signOut } = useAuthContext();
+  const { isAdmin } = useAdminAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
