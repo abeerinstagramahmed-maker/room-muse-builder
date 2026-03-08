@@ -13,6 +13,14 @@ import { cn } from '@/lib/utils';
 import { SEOHead } from '@/components/SEOHead';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 
 const priceRanges = [
   { label: 'All Prices', min: 0, max: Infinity },
