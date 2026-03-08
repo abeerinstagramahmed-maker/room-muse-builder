@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, Menu, X, Sparkles, User, LogOut } from 'lucide-react';
+import { ShoppingBag, Menu, X, Sparkles, User, LogOut, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 import { useCart } from '@/contexts/CartContext';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
