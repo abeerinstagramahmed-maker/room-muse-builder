@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { ShoppingBag, Star, Sparkles, Heart } from 'lucide-react';
+import { ShoppingBag, Star, Sparkles, Heart, ArrowLeftRight } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/hooks/useWishlist';
+import { useCompare } from '@/contexts/CompareContext';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
 
 interface ProductCardProps {
   product: Product;
