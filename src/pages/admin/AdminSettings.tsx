@@ -62,6 +62,7 @@ export default function AdminSettings() {
       setStripeTestMode(stripeSettings.testMode);
       setPublishableKey(stripeSettings.publishableKey);
       setSecretKey(stripeSettings.secretKey || '');
+      setWebhookSigningSecret((stripeSettings as any).webhookSigningSecret || '');
       
       setStoreName(storeSettings.name);
       setSupportEmail(storeSettings.supportEmail);
