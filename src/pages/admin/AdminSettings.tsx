@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CreditCard, Key, Save, ExternalLink, Loader2, Crown, ShoppingCart, Search as SearchIcon, Brain, Bot, Cpu, ToggleLeft } from 'lucide-react';
+import { CreditCard, Key, Save, ExternalLink, Loader2, Crown, ShoppingCart, Search as SearchIcon, Brain, Bot, Cpu, ToggleLeft, Mail, Bell } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
