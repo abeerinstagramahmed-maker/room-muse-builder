@@ -131,7 +131,7 @@ export function useCheckout() {
 
         await supabase
           .from('orders')
-          .update({ status: 'confirmed' })
+          .update({ status: 'confirmed', payment_status: 'paid' } as any)
           .eq('id', order.id);
 
         clearCart();

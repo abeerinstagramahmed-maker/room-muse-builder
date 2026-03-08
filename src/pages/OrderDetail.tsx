@@ -62,16 +62,25 @@ const OrderDetail = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'delivered':
         return <CheckCircle className="h-5 w-5 text-green-600" />;
       case 'pending':
         return <Clock className="h-5 w-5 text-yellow-600" />;
-      case 'failed':
+      case 'confirmed':
+        return <CheckCircle className="h-5 w-5 text-blue-600" />;
+      case 'placed':
+        return <Package className="h-5 w-5 text-indigo-600" />;
+      case 'shipped':
+        return <Package className="h-5 w-5 text-purple-600" />;
+      case 'cancelled':
         return <XCircle className="h-5 w-5 text-red-600" />;
       default:
         return <Package className="h-5 w-5 text-muted-foreground" />;
     }
   };
+
+  const statusSteps = ['pending', 'confirmed', 'placed', 'shipped', 'delivered'];
+  const currentStepIndex = statusSteps.indexOf(order?.status || 'pending');
 
   return (
     <Layout>
@@ -81,19 +90,38 @@ const OrderDetail = () => {
           Back to Account
         </Link>
 
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-2xl font-bold md:text-3xl">
-              Order #{order.id.slice(0, 8).toUpperCase()}
-            </h1>
-            <p className="mt-1 text-muted-foreground">
-              Placed on {format(new Date(order.created_at), 'MMMM d, yyyy')}
-            </p>
+        <div className="mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="font-display text-2xl font-bold md:text-3xl">
+                Order #{order.id.slice(0, 8).toUpperCase()}
+              </h1>
+              <p className="mt-1 text-muted-foreground">
+                Placed on {format(new Date(order.created_at), 'MMMM d, yyyy')}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {getStatusIcon(order.status)}
+              <span className="font-medium capitalize">{order.status}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            {getStatusIcon(order.status)}
-            <span className="font-medium capitalize">{order.status}</span>
-          </div>
+
+          {/* Order Progress Tracker */}
+          {order.status !== 'cancelled' && (
+            <div className="mt-6 flex items-center gap-1">
+              {statusSteps.map((step, i) => (
+                <div key={step} className="flex items-center flex-1">
+                  <div className={`flex flex-col items-center flex-1 ${i <= currentStepIndex ? 'text-primary' : 'text-muted-foreground'}`}>
+                    <div className={`h-3 w-3 rounded-full ${i <= currentStepIndex ? 'bg-primary' : 'bg-muted'}`} />
+                    <span className="mt-1 text-xs capitalize hidden sm:block">{step}</span>
+                  </div>
+                  {i < statusSteps.length - 1 && (
+                    <div className={`h-0.5 flex-1 ${i < currentStepIndex ? 'bg-primary' : 'bg-muted'}`} />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -117,9 +145,7 @@ const OrderDetail = () => {
                     )}
                     <div className="flex-1">
                       <h3 className="font-medium">{item.product_name}</h3>
-                      {item.vendor && (
-                        <p className="text-sm text-muted-foreground">{item.vendor}</p>
-                      )}
+                      {/* Vendor hidden for white-label */}
                       {item.selected_color && (
                         <p className="text-sm text-muted-foreground">Color: {item.selected_color}</p>
                       )}

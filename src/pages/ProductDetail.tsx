@@ -246,10 +246,7 @@ const ProductDetail = () => {
                       <dd>{product.materials.join(', ')}</dd>
                     </div>
                   )}
-                  <div className="flex justify-between">
-                    <dt className="text-muted-foreground">Vendor</dt>
-                    <dd>{product.vendor}</dd>
-                  </div>
+                  {/* Vendor info hidden for white-label experience */}
                 </dl>
               </div>
             )}
