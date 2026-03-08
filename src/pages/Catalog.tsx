@@ -153,18 +153,33 @@ const Catalog = () => {
 
   return (
     <Layout>
+      <SEOHead title="Shop Furniture" description="Browse our curated collection of high-quality furniture. Filter by style, material, price, and more." />
       <div className="container py-8 md:py-12">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold md:text-4xl">
-            {selectedCategory 
-              ? collections.find(c => c.slug === selectedCategory)?.name || 'Shop All'
-              : 'Shop All Furniture'
-            }
-          </h1>
-          <p className="mt-2 text-muted-foreground">
-            {loading ? 'Loading...' : `${filteredProducts.length} products`}
-          </p>
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="font-display text-3xl font-bold md:text-4xl">
+              {selectedCategory 
+                ? collections.find(c => c.slug === selectedCategory)?.name || 'Shop All'
+                : 'Shop All Furniture'
+              }
+            </h1>
+            <p className="mt-2 text-muted-foreground">
+              {loading ? 'Loading...' : `${filteredProducts.length} products`}
+            </p>
+          </div>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest</SelectItem>
+              <SelectItem value="price-asc">Price: Low to High</SelectItem>
+              <SelectItem value="price-desc">Price: High to Low</SelectItem>
+              <SelectItem value="rating">Highest Rated</SelectItem>
+              <SelectItem value="name">Name A-Z</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Search Bar */}

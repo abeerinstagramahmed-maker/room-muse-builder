@@ -105,10 +105,31 @@ export function useOrders() {
     }
   }, []);
 
+  const cancelOrder = useCallback(async (orderId: string): Promise<boolean> => {
+    try {
+      const { error } = await supabase
+        .from('orders')
+        .update({ status: 'cancelled', payment_status: 'refund_pending' })
+        .eq('id', orderId)
+        .eq('user_id', user?.id);
+
+      if (error) throw error;
+
+      toast({ title: 'Order cancelled', description: 'Your order has been cancelled. A refund will be processed.' });
+      await fetchOrders();
+      return true;
+    } catch (err: any) {
+      console.error('Error cancelling order:', err);
+      toast({ title: 'Error', description: 'Failed to cancel order', variant: 'destructive' });
+      return false;
+    }
+  }, [user, toast, fetchOrders]);
+
   return {
     orders,
     loading,
     getOrderById,
+    cancelOrder,
     refetch: fetchOrders,
   };
 }

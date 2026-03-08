@@ -97,6 +97,7 @@ const OrderDetail = () => {
 
   return (
     <Layout>
+      <SEOHead title={`Order #${order.id.slice(0, 8).toUpperCase()}`} description="View your order details and tracking status." />
       <div className="container py-8 md:py-12">
         <Link to="/account" className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" />
