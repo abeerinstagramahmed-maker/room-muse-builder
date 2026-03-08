@@ -80,6 +80,23 @@ export const ProductCard = ({ product, className }: ProductCardProps) => {
           <Heart className={cn("h-5 w-5", isWishlisted(product.id) && "fill-current")} />
         </button>
 
+        {/* Compare button */}
+        <button
+          className={cn(
+            "absolute right-3 top-14 flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-sm transition-all duration-300 group-hover:opacity-100",
+            isComparing(product.id)
+              ? "bg-secondary/10 text-secondary opacity-100"
+              : "bg-background/80 text-muted-foreground opacity-0 hover:bg-background hover:text-secondary"
+          )}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            addToCompare(product);
+          }}
+        >
+          <ArrowLeftRight className="h-4 w-4" />
+        </button>
+
         {/* Quick Add Button */}
         <div className="absolute inset-x-0 bottom-0 translate-y-full bg-gradient-to-t from-background/95 to-background/80 p-4 backdrop-blur-sm transition-transform duration-300 group-hover:translate-y-0">
           <Button
