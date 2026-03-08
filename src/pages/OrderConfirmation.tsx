@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { useOrders, Order } from '@/hooks/useOrders';
 import { CheckCircle, Package, ArrowRight, ShoppingBag } from 'lucide-react';
