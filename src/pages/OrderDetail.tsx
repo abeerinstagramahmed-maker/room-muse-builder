@@ -62,16 +62,25 @@ const OrderDetail = () => {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'completed':
+      case 'delivered':
         return <CheckCircle className="h-5 w-5 text-green-600" />;
       case 'pending':
         return <Clock className="h-5 w-5 text-yellow-600" />;
-      case 'failed':
+      case 'confirmed':
+        return <CheckCircle className="h-5 w-5 text-blue-600" />;
+      case 'placed':
+        return <Package className="h-5 w-5 text-indigo-600" />;
+      case 'shipped':
+        return <Package className="h-5 w-5 text-purple-600" />;
+      case 'cancelled':
         return <XCircle className="h-5 w-5 text-red-600" />;
       default:
         return <Package className="h-5 w-5 text-muted-foreground" />;
     }
   };
+
+  const statusSteps = ['pending', 'confirmed', 'placed', 'shipped', 'delivered'];
+  const currentStepIndex = statusSteps.indexOf(order?.status || 'pending');
 
   return (
     <Layout>
