@@ -7,7 +7,8 @@ import {
   AIDesignResult, 
   RoomAnalysis, 
   FurniturePlan, 
-  GeneratedDesign 
+  GeneratedDesign,
+  ProductRecommendation,
 } from '@/services/aiProvider';
 
 export type PipelineStep = 'idle' | 'analyzing' | 'detecting' | 'planning' | 'generating' | 'matching' | 'done';
@@ -20,6 +21,7 @@ export interface DesignResult {
   roomAnalysis?: RoomAnalysis;
   furniturePlan?: FurniturePlan;
   generatedDesign?: GeneratedDesign;
+  productRecommendations?: ProductRecommendation[];
 }
 
 export function useRoomDesigner() {
@@ -73,7 +75,7 @@ export function useRoomDesigner() {
 
       setPipelineStep('done');
 
-      // Map product recommendations to actual products
+      // Map product recommendations to actual products for cart compatibility
       const productIds = aiResult.productRecommendations.map(r => r.productId);
       let recommendedProducts = await getProductsByIds(productIds);
 
@@ -97,6 +99,7 @@ export function useRoomDesigner() {
         roomAnalysis: aiResult.roomAnalysis,
         furniturePlan: aiResult.furniturePlan,
         generatedDesign: aiResult.generatedDesign,
+        productRecommendations: aiResult.productRecommendations,
       });
 
       toast.success('Design complete! Check out your personalized recommendations.');

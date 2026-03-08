@@ -2,8 +2,7 @@
  * AI Provider Service Layer
  * 
  * Modular abstraction over multiple AI providers (Replicate, OpenAI, Anthropic).
- * Currently returns mock data for development. When API keys are configured
- * via Admin → AI Settings, the system will route to real providers.
+ * Enhanced with multi-factor product scoring, placement data, and room fit analysis.
  */
 
 import { supabase } from '@/integrations/supabase/client';
@@ -28,27 +27,77 @@ export interface RoomAnalysis {
   layoutNotes: string;
 }
 
+export interface FurniturePlanItem {
+  type: string;
+  placement: string;
+  reason: string;
+  priority: 'must-have' | 'nice-to-have';
+}
+
 export interface FurniturePlan {
   roomStyle: string;
   budget: string;
-  recommendedFurniture: {
-    type: string;
-    placement: string;
-    reason: string;
-    priority: 'must-have' | 'nice-to-have';
-  }[];
+  recommendedFurniture: FurniturePlanItem[];
   removalSuggestions: string[];
+}
+
+export interface PlacementPosition {
+  x: number;
+  y: number;
+  scale: number;
+}
+
+export interface PlacementPlanItem {
+  type: string;
+  placement: string;
+  position: PlacementPosition;
+  layer: number;
+  shadow: boolean;
+  perspective: string;
 }
 
 export interface GeneratedDesign {
   imageUrl: string;
   prompt: string;
   controlNetType: 'depth' | 'canny';
+  placementPlan?: PlacementPlanItem[];
+  compositeMethod?: string;
+  metadata?: {
+    roomType: string;
+    detectedItemCount: number;
+    placedItemCount: number;
+    styleApplied: string;
+    budgetTier: string;
+  };
+}
+
+export interface ScoreBreakdown {
+  styleScore: number;
+  budgetScore: number;
+  qualityScore: number;
+  materialScore: number;
+  fitScore: number;
 }
 
 export interface ProductRecommendation {
   productId: string;
+  name: string;
+  price: number;
+  commissionPrice: number;
+  image: string;
+  storeSource: string;
+  purchaseLink: string;
+  category: string;
+  styleTags: string[];
+  rating: number;
+  reviewCount: number;
+  material: string;
+  dimensions?: Record<string, number>;
+  colors: string[];
   matchScore: number;
+  scoreBreakdown?: ScoreBreakdown;
+  furnitureType: string;
+  placement: string;
   reason: string;
 }
 
@@ -132,20 +181,25 @@ export async function runDesignPipeline(params: {
     planOnly: true,
   });
 
-  // Step 4: Generate room image
+  // Step 4: Generate room image with placement data
   step('generating');
   const generatedDesign = await generateRoomDesign({ imageBase64, style, budget, roomAnalysis, furniturePlan });
 
-  // Step 5: Product recommendations
+  // Step 5: Enhanced product recommendations with scoring
   step('matching');
   const productRecommendations = await recommendProducts({ furniturePlan, style, budget });
+
+  const mustHaveCount = furniturePlan.recommendedFurniture.filter(f => f.priority === 'must-have').length;
+  const topMatchScore = productRecommendations.length > 0 
+    ? Math.round(productRecommendations[0].matchScore * 100) 
+    : 0;
 
   return {
     roomAnalysis,
     furniturePlan,
     generatedDesign,
     productRecommendations,
-    aiNote: `We analyzed your ${roomAnalysis.roomType} and created a ${style} design within your ${budget} budget. The AI detected ${detectedFurniture.length} existing furniture items and suggested ${furniturePlan.recommendedFurniture.length} changes.`,
+    aiNote: `We analyzed your ${roomAnalysis.roomType.replace('-', ' ')} and created a ${style} design within your ${budget} budget. Detected ${detectedFurniture.length} existing items, planned ${furniturePlan.recommendedFurniture.length} pieces (${mustHaveCount} essential). Top product match: ${topMatchScore}%.`,
     styleNotes: roomAnalysis.layoutNotes,
   };
 }

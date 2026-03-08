@@ -1,10 +1,11 @@
-import { Sparkles, ShoppingBag, Check, ImageIcon, Eye } from 'lucide-react';
+import { Sparkles, ShoppingBag, Check, ImageIcon, Eye, Star, ExternalLink, Ruler, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Product } from '@/lib/types';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { RoomAnalysis, FurniturePlan, GeneratedDesign } from '@/services/aiProvider';
+import { RoomAnalysis, FurniturePlan, GeneratedDesign, ProductRecommendation } from '@/services/aiProvider';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
 import type { PipelineStep } from '@/hooks/useRoomDesigner';
 
 const PIPELINE_STEPS: { key: PipelineStep; label: string }[] = [
@@ -31,10 +32,27 @@ interface DesignResultsProps {
     roomAnalysis?: RoomAnalysis;
     furniturePlan?: FurniturePlan;
     generatedDesign?: GeneratedDesign;
+    productRecommendations?: ProductRecommendation[];
   } | null;
   totalPrice: number;
   onAddAllToCart: () => void;
   originalImage?: string | null;
+}
+
+function MatchScoreBadge({ score }: { score: number }) {
+  const pct = Math.round(score * 100);
+  const color = pct >= 80 ? 'bg-green-500/10 text-green-700' : pct >= 60 ? 'bg-yellow-500/10 text-yellow-700' : 'bg-muted text-muted-foreground';
+  return <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${color}`}>{pct}% match</span>;
+}
+
+function StarRating({ rating, count }: { rating: number; count: number }) {
+  return (
+    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+      <span>{rating.toFixed(1)}</span>
+      <span>({count})</span>
+    </div>
+  );
 }
 
 export function DesignResults({ 
@@ -90,6 +108,9 @@ export function DesignResults({
   }
 
   if (designResult) {
+    const recs = designResult.productRecommendations || [];
+    const commissionTotal = recs.reduce((sum, r) => sum + (r.commissionPrice || r.price), 0);
+
     return (
       <div className="space-y-6">
         {/* Generated Room Image */}
@@ -116,6 +137,14 @@ export function DesignResults({
               alt={showOriginal ? 'Original room' : 'AI generated room design'}
               className="w-full object-cover"
             />
+            {/* Placement overlay info */}
+            {designResult.generatedDesign?.placementPlan && designResult.generatedDesign.placementPlan.length > 0 && !showOriginal && (
+              <div className="bg-muted/30 px-4 py-2 text-xs text-muted-foreground">
+                <Ruler className="inline h-3 w-3 mr-1" />
+                {designResult.generatedDesign.placementPlan.length} items placed •{' '}
+                {designResult.generatedDesign.compositeMethod === 'mock' ? 'Preview mode' : 'AI composited'}
+              </div>
+            )}
           </div>
         )}
 
@@ -134,6 +163,14 @@ export function DesignResults({
                 <span className="font-medium text-foreground">Detected:</span>{' '}
                 {designResult.roomAnalysis.detectedFurniture.map(f => f.label).join(', ')}
               </div>
+              {designResult.roomAnalysis.colorPalette && (
+                <div className="col-span-2 flex items-center gap-1">
+                  <span className="font-medium text-foreground">Palette:</span>
+                  {designResult.roomAnalysis.colorPalette.map((color, i) => (
+                    <span key={i} className="inline-block h-4 w-4 rounded-full border border-border" style={{ backgroundColor: color }} />
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -169,42 +206,120 @@ export function DesignResults({
                   </div>
                 </div>
               ))}
+              {designResult.furniturePlan.removalSuggestions?.length > 0 && (
+                <div className="mt-3 border-t border-border pt-2">
+                  <p className="text-xs text-muted-foreground italic">
+                    💬 {designResult.furniturePlan.removalSuggestions[0]}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* Recommended Products */}
+        {/* Enhanced Recommended Products */}
         <div>
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-display text-lg font-semibold">Recommended Products</h3>
-            <span className="text-sm text-muted-foreground">{designResult.products.length} items</span>
+            <span className="text-sm text-muted-foreground">
+              {recs.length > 0 ? `${recs.length} items` : `${designResult.products.length} items`}
+            </span>
           </div>
-          <div className="space-y-3">
-            {designResult.products.map((product) => (
-              <Link
-                key={product.id}
-                to={`/product/${product.id}`}
-                className="flex items-center gap-4 rounded-xl bg-card p-3 shadow-sm hover:shadow-md transition-shadow"
-              >
-                <img src={product.images[0]} alt={product.name} className="h-16 w-16 rounded-lg object-cover" />
-                <div className="flex-1">
-                  <h4 className="font-medium">{product.name}</h4>
-                  <p className="text-sm text-muted-foreground">{product.category}</p>
-                </div>
-                <div className="text-right">
-                  <p className="font-semibold">${product.price.toLocaleString()}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
+
+          {recs.length > 0 ? (
+            <div className="space-y-3">
+              {recs.map((rec) => (
+                <Link
+                  key={rec.productId}
+                  to={rec.purchaseLink || `/product/${rec.productId}`}
+                  className="flex items-start gap-4 rounded-xl bg-card p-4 shadow-sm hover:shadow-md transition-shadow border border-border/50"
+                >
+                  <img
+                    src={rec.image || '/placeholder.svg'}
+                    alt={rec.name}
+                    className="h-20 w-20 rounded-lg object-cover flex-shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <h4 className="font-medium text-sm leading-tight">{rec.name}</h4>
+                        <p className="text-xs text-muted-foreground capitalize mt-0.5">
+                          {rec.furnitureType} • {rec.placement}
+                        </p>
+                      </div>
+                      <MatchScoreBadge score={rec.matchScore} />
+                    </div>
+                    
+                    <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+                      <StarRating rating={rec.rating} count={rec.reviewCount} />
+                      {rec.material && rec.material !== 'Not specified' && (
+                        <span className="text-[10px] text-muted-foreground bg-muted rounded px-1.5 py-0.5">
+                          {rec.material}
+                        </span>
+                      )}
+                      {rec.storeSource && (
+                        <span className="text-[10px] text-muted-foreground">
+                          via {rec.storeSource}
+                        </span>
+                      )}
+                    </div>
+
+                    {rec.styleTags && rec.styleTags.length > 0 && (
+                      <div className="mt-1.5 flex gap-1 flex-wrap">
+                        {rec.styleTags.slice(0, 3).map((tag) => (
+                          <Badge key={tag} variant="secondary" className="text-[10px] px-1.5 py-0 h-4">
+                            {tag}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+
+                    <p className="mt-1 text-[11px] text-muted-foreground line-clamp-2">{rec.reason}</p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="font-semibold text-sm">${rec.commissionPrice?.toLocaleString() || rec.price.toLocaleString()}</p>
+                    {rec.commissionPrice && rec.commissionPrice !== rec.price && (
+                      <p className="text-[10px] text-muted-foreground line-through">${rec.price.toLocaleString()}</p>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {designResult.products.map((product) => (
+                <Link
+                  key={product.id}
+                  to={`/product/${product.id}`}
+                  className="flex items-center gap-4 rounded-xl bg-card p-3 shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <img src={product.images[0]} alt={product.name} className="h-16 w-16 rounded-lg object-cover" />
+                  <div className="flex-1">
+                    <h4 className="font-medium">{product.name}</h4>
+                    <p className="text-sm text-muted-foreground">{product.category}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold">${product.price.toLocaleString()}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Total & Add to Cart */}
         <div className="rounded-2xl bg-primary/5 p-6">
           <div className="mb-4 flex items-center justify-between">
             <span className="text-lg font-medium">Room Total</span>
-            <span className="font-display text-2xl font-bold">${totalPrice.toLocaleString()}</span>
+            <span className="font-display text-2xl font-bold">
+              ${(recs.length > 0 ? commissionTotal : totalPrice).toLocaleString()}
+            </span>
           </div>
+          {recs.length > 0 && (
+            <p className="text-xs text-muted-foreground mb-3">
+              Includes 5% service fee • All prices verified at time of recommendation
+            </p>
+          )}
           <Button size="lg" variant="hero" className="w-full gap-2" onClick={onAddAllToCart}>
             <ShoppingBag className="h-5 w-5" />
             Add Entire Room to Cart
