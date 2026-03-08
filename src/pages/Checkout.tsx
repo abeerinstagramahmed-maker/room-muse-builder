@@ -60,6 +60,46 @@ const Checkout = () => {
     }));
   };
 
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) return;
+    setApplyingCoupon(true);
+    try {
+      const { data, error } = await supabase
+        .from('coupons' as any)
+        .select('*')
+        .eq('code', couponCode.trim().toUpperCase())
+        .eq('active', true)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (!data) {
+        toast({ title: 'Invalid coupon', description: 'This coupon code is not valid.', variant: 'destructive' });
+        return;
+      }
+
+      const coupon = data as any;
+      if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
+        toast({ title: 'Coupon expired', description: 'This coupon has expired.', variant: 'destructive' });
+        return;
+      }
+      if (coupon.max_uses && coupon.used_count >= coupon.max_uses) {
+        toast({ title: 'Coupon exhausted', description: 'This coupon has been fully redeemed.', variant: 'destructive' });
+        return;
+      }
+      if (coupon.min_order && totalPrice < coupon.min_order) {
+        toast({ title: 'Minimum not met', description: `Minimum order of $${coupon.min_order} required.`, variant: 'destructive' });
+        return;
+      }
+
+      setAppliedCoupon({ code: coupon.code, discount_type: coupon.discount_type, discount_value: coupon.discount_value });
+      toast({ title: 'Coupon applied!', description: `${coupon.discount_type === 'percentage' ? `${coupon.discount_value}% off` : `$${coupon.discount_value} off`}` });
+    } catch (err: any) {
+      toast({ title: 'Error', description: err.message, variant: 'destructive' });
+    } finally {
+      setApplyingCoupon(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await processOrder(formData);
@@ -69,13 +109,25 @@ const Checkout = () => {
     <Layout>
       <SEOHead title="Checkout" description="Complete your Roomly furniture order securely." />
       <div className="container py-8 md:py-12">
-        <Link
-          to="/cart"
-          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Back to cart
-        </Link>
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/"><Home className="h-4 w-4" /></Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/cart">Cart</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Checkout</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Checkout Form */}
