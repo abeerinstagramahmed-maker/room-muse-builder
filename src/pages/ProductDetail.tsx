@@ -6,6 +6,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/contexts/CartContext';
 import { ShoppingBag, Star, Truck, RotateCcw, Shield, ChevronLeft } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { RecentlyViewedSection } from '@/components/product/RecentlyViewedSection';
 import { cn } from '@/lib/utils';
 import { ProductCard } from '@/components/product/ProductCard';
 import { ReviewSection } from '@/components/product/ReviewSection';
