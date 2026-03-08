@@ -270,6 +270,41 @@ const Checkout = () => {
                 ))}
               </div>
 
+              {/* Coupon Code */}
+              <div className="mt-6 border-t border-border pt-4">
+                <p className="mb-2 flex items-center gap-2 text-sm font-medium">
+                  <Tag className="h-4 w-4 text-primary" />
+                  Promo Code
+                </p>
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between rounded-lg bg-primary/5 p-3">
+                    <div>
+                      <span className="font-mono text-sm font-semibold">{appliedCoupon.code}</span>
+                      <span className="ml-2 text-sm text-muted-foreground">
+                        {appliedCoupon.discount_type === 'percentage'
+                          ? `${appliedCoupon.discount_value}% off`
+                          : `$${appliedCoupon.discount_value} off`}
+                      </span>
+                    </div>
+                    <button onClick={() => setAppliedCoupon(null)} className="text-muted-foreground hover:text-foreground">
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Enter code"
+                      value={couponCode}
+                      onChange={e => setCouponCode(e.target.value.toUpperCase())}
+                      className="font-mono uppercase"
+                    />
+                    <Button variant="outline" onClick={applyCoupon} disabled={applyingCoupon}>
+                      {applyingCoupon ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Apply'}
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               <dl className="mt-6 space-y-3 border-t border-border pt-6 text-sm">
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Subtotal</dt>
@@ -289,10 +324,16 @@ const Checkout = () => {
                   <dt className="text-muted-foreground">Tax</dt>
                   <dd className="font-medium">${tax.toFixed(2)}</dd>
                 </div>
+                {appliedCoupon && (
+                  <div className="flex justify-between text-primary">
+                    <dt>Discount</dt>
+                    <dd className="font-medium">-${couponDiscount.toFixed(2)}</dd>
+                  </div>
+                )}
                 <div className="border-t border-border pt-3">
                   <div className="flex justify-between text-lg">
                     <dt className="font-semibold">Total</dt>
-                    <dd className="font-bold">${orderTotal.toFixed(2)}</dd>
+                    <dd className="font-bold">${adjustedTotal.toFixed(2)}</dd>
                   </div>
                 </div>
               </dl>
