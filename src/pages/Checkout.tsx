@@ -7,7 +7,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useCart } from '@/contexts/CartContext';
 import { useCheckout } from '@/hooks/useCheckout';
-import { ChevronLeft, Lock, CreditCard, Truck } from 'lucide-react';
+import { Lock, CreditCard, Truck, Home, Tag, Loader2, X } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 
 const Checkout = () => {
   const { items, totalPrice } = useCart();
