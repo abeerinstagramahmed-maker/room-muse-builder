@@ -268,6 +268,9 @@ const Catalog = () => {
             )}
           </div>
         </div>
+
+        {/* Recently Viewed */}
+        <RecentlyViewedSection />
       </div>
     </Layout>
   );
