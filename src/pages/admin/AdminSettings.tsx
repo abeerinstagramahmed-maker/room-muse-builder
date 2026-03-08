@@ -81,6 +81,18 @@ export default function AdminSettings() {
       setAmazonAssociateTag((storeSettings as any).amazonAssociateTag || '');
       setFirecrawlApiKey((storeSettings as any).firecrawlApiKey || '');
       setAutoOrderEnabled((storeSettings as any).autoOrderEnabled || false);
+
+      // Load email settings
+      const emailData = (storeSettings as any).emailSettings;
+      if (emailData) {
+        setEmailEnabled(emailData.enabled ?? false);
+        setResendApiKey(emailData.resendApiKey ?? '');
+        setFromEmail(emailData.fromEmail ?? '');
+        setFromName(emailData.fromName ?? '');
+        setEmailOnConfirmation(emailData.emailOnConfirmation ?? true);
+        setEmailOnShipped(emailData.emailOnShipped ?? true);
+        setEmailOnDelivered(emailData.emailOnDelivered ?? true);
+      }
     }
   }, [loading, stripeSettings, storeSettings, subscriptionPricing]);
 
