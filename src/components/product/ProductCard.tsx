@@ -3,6 +3,7 @@ import { Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { ShoppingBag, Star, Sparkles, Heart } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
+import { useWishlist } from '@/hooks/useWishlist';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
 
@@ -13,6 +14,7 @@ interface ProductCardProps {
 
 export const ProductCard = ({ product, className }: ProductCardProps) => {
   const { addItem } = useCart();
+  const { toggleWishlist, isWishlisted } = useWishlist();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
