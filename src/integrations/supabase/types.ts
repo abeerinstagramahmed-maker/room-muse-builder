@@ -72,10 +72,13 @@ export type Database = {
       }
       orders: {
         Row: {
+          admin_notes: string | null
           contact_email: string | null
           contact_phone: string | null
           created_at: string
+          estimated_delivery: string | null
           id: string
+          payment_status: string
           shipping: number
           shipping_address: Json | null
           status: string
@@ -84,14 +87,18 @@ export type Database = {
           subtotal: number
           tax: number
           total: number
+          tracking_number: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
+          admin_notes?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
+          estimated_delivery?: string | null
           id?: string
+          payment_status?: string
           shipping?: number
           shipping_address?: Json | null
           status?: string
@@ -100,14 +107,18 @@ export type Database = {
           subtotal: number
           tax?: number
           total: number
+          tracking_number?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
+          admin_notes?: string | null
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
+          estimated_delivery?: string | null
           id?: string
+          payment_status?: string
           shipping?: number
           shipping_address?: Json | null
           status?: string
@@ -116,6 +127,7 @@ export type Database = {
           subtotal?: number
           tax?: number
           total?: number
+          tracking_number?: string | null
           updated_at?: string
           user_id?: string | null
         }
@@ -136,8 +148,10 @@ export type Database = {
           name: string
           original_price: number | null
           price: number
+          purchase_link: string | null
           rating: number | null
           review_count: number | null
+          store_source: string | null
           subcategory: string | null
           tags: string[] | null
           updated_at: string
@@ -157,8 +171,10 @@ export type Database = {
           name: string
           original_price?: number | null
           price: number
+          purchase_link?: string | null
           rating?: number | null
           review_count?: number | null
+          store_source?: string | null
           subcategory?: string | null
           tags?: string[] | null
           updated_at?: string
@@ -178,8 +194,10 @@ export type Database = {
           name?: string
           original_price?: number | null
           price?: number
+          purchase_link?: string | null
           rating?: number | null
           review_count?: number | null
+          store_source?: string | null
           subcategory?: string | null
           tags?: string[] | null
           updated_at?: string
