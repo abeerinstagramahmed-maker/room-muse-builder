@@ -37,6 +37,16 @@ export function useAdminOrders() {
     fetchAllOrders();
   }, [fetchAllOrders]);
 
+  const sendOrderEmail = useCallback(async (orderId: string, type: string, trackingNumber?: string) => {
+    try {
+      await supabase.functions.invoke('send-order-email', {
+        body: { orderId, type, trackingNumber },
+      });
+    } catch (err) {
+      console.warn('Email notification failed (may not be configured):', err);
+    }
+  }, []);
+
   const updateOrderStatus = useCallback(async (orderId: string, status: string) => {
     try {
       const { error } = await supabase
@@ -52,6 +62,18 @@ export function useAdminOrders() {
         )
       );
 
+      // Trigger email notification based on status change
+      const emailTypeMap: Record<string, string> = {
+        confirmed: 'order_confirmation',
+        shipped: 'order_shipped',
+        delivered: 'order_delivered',
+        cancelled: 'order_cancelled',
+      };
+      if (emailTypeMap[status]) {
+        const order = orders.find(o => o.id === orderId);
+        sendOrderEmail(orderId, emailTypeMap[status], (order as any)?.tracking_number);
+      }
+
       toast({
         title: 'Success',
         description: `Order status updated to ${status}`,
@@ -64,7 +86,7 @@ export function useAdminOrders() {
         variant: 'destructive',
       });
     }
-  }, [toast]);
+  }, [toast, orders, sendOrderEmail]);
 
   const updateOrderFulfillment = useCallback(async (
     orderId: string,
