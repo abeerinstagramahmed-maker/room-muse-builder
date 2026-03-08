@@ -148,8 +148,20 @@ const Catalog = () => {
     setSelectedMaterials([]);
     setSearchQuery('');
     setSortBy('newest');
+    setCurrentPage(1);
     setSearchParams({});
   };
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedCategory, selectedPriceRange, searchQuery, selectedStyles, selectedMaterials, sortBy]);
+
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const paginatedProducts = filteredProducts.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   const toggleStyle = (style: string) => {
     setSelectedStyles(prev => prev.includes(style) ? prev.filter(s => s !== style) : [...prev, style]);
