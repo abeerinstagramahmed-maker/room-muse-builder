@@ -81,6 +81,9 @@ export default function AdminDashboard() {
           )}
         </div>
 
+        {/* Charts */}
+        {!ordersLoading && <AdminCharts orders={orders} />}
+
         {/* Recent Orders */}
         <Card>
           <CardHeader>
