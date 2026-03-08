@@ -254,7 +254,6 @@ const OrderDetail = () => {
             )}
           </div>
         </div>
-      </div>
 
         {/* Cancel Order Dialog */}
         <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
