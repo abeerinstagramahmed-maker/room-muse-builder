@@ -9,7 +9,7 @@ import { ImageUploader } from '@/components/designer/ImageUploader';
 import { StyleSelector } from '@/components/designer/StyleSelector';
 import { BudgetSelector } from '@/components/designer/BudgetSelector';
 import { DesignResults } from '@/components/designer/DesignResults';
-import { Sparkles, RefreshCw, Save, LogIn, Lock, Crown } from 'lucide-react';
+import { Sparkles, RefreshCw, Save, Lock, Crown } from 'lucide-react';
 import { Link, Navigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
@@ -33,7 +33,6 @@ const Designer = () => {
     handleGenerate: originalHandleGenerate,
   } = useRoomDesigner();
 
-  // Redirect to auth if not logged in
   if (!authLoading && !isAuthenticated) {
     return <Navigate to="/auth" replace />;
   }
@@ -61,7 +60,7 @@ const Designer = () => {
     if (!designResult || !selectedStyle || !selectedBudget) return;
     await saveDesign({
       name: `${selectedStyle.charAt(0).toUpperCase() + selectedStyle.slice(1)} Design`,
-      image_url: uploadedImage || undefined,
+      image_url: designResult.generatedImageUrl || uploadedImage || undefined,
       style: selectedStyle,
       budget: selectedBudget,
       product_ids: designResult.products.map(p => p.id),
@@ -74,7 +73,6 @@ const Designer = () => {
   return (
     <Layout>
       <div className="container py-8 md:py-12">
-        {/* Header */}
         <div className="mb-8 text-center">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
             <Sparkles className="h-4 w-4" />
@@ -87,7 +85,6 @@ const Designer = () => {
             Upload a photo of your space, choose your style, and let our AI create a stunning design just for you.
           </p>
 
-          {/* Subscription status badge */}
           {!subLoading && (
             <div className="mt-4">
               {isPro ? (
@@ -104,7 +101,6 @@ const Designer = () => {
           )}
         </div>
 
-        {/* Upgrade banner for free users who've used their design */}
         {!canDesign && !isPro && (
           <div className="mb-8 rounded-2xl border border-primary/20 bg-primary/5 p-6 text-center">
             <Lock className="mx-auto mb-3 h-8 w-8 text-primary" />
@@ -122,7 +118,6 @@ const Designer = () => {
         )}
 
         <div className="grid gap-8 lg:grid-cols-2">
-          {/* Left Column - Input */}
           <div className="space-y-6">
             <ImageUploader
               uploadedImage={uploadedImage}
@@ -165,12 +160,12 @@ const Designer = () => {
             )}
           </div>
 
-          {/* Right Column - Results */}
           <DesignResults
             isGenerating={isGenerating}
             designResult={designResult}
             totalPrice={totalPrice}
             onAddAllToCart={handleAddAllToCart}
+            originalImage={uploadedImage}
           />
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CreditCard, Key, Save, ExternalLink, Loader2, Crown, ShoppingCart, Search as SearchIcon } from 'lucide-react';
+import { CreditCard, Key, Save, ExternalLink, Loader2, Crown, ShoppingCart, Search as SearchIcon, Brain, Bot, Cpu, ToggleLeft } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,8 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { defaultAISettings, AISettings } from '@/services/aiProvider';
 
 export default function AdminSettings() {
   const { 
@@ -41,6 +43,9 @@ export default function AdminSettings() {
   const [firecrawlApiKey, setFirecrawlApiKey] = useState('');
   const [autoOrderEnabled, setAutoOrderEnabled] = useState(false);
 
+  // AI Settings
+  const [aiSettings, setAiSettings] = useState<AISettings>(defaultAISettings);
+
   useEffect(() => {
     if (!loading) {
       setStripeEnabled(stripeSettings.enabled);
@@ -59,7 +64,6 @@ export default function AdminSettings() {
       setYearlyPrice(subscriptionPricing.yearlyPrice.toString());
       setFreeDesigns(subscriptionPricing.freeDesigns.toString());
 
-      // Load product sourcing settings from storeSettings extended fields
       setProductMarkup((storeSettings as any).productMarkup?.toString() || '5');
       setAmazonApiKey((storeSettings as any).amazonApiKey || '');
       setAmazonApiSecret((storeSettings as any).amazonApiSecret || '');
@@ -90,6 +94,7 @@ export default function AdminSettings() {
         amazonAssociateTag,
         firecrawlApiKey,
         autoOrderEnabled,
+        aiSettings,
       } as any,
       {
         monthlyPrice: parseFloat(monthlyPrice) || 9.99,
@@ -114,7 +119,7 @@ export default function AdminSettings() {
       <div className="space-y-6 max-w-3xl">
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">Settings</h1>
-          <p className="text-muted-foreground">Configure your store, payments, and integrations</p>
+          <p className="text-muted-foreground">Configure your store, payments, AI, and integrations</p>
         </div>
 
         <Tabs defaultValue="general">
@@ -122,6 +127,7 @@ export default function AdminSettings() {
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
+            <TabsTrigger value="ai-settings">AI Settings</TabsTrigger>
             <TabsTrigger value="product-sourcing">Product Sourcing</TabsTrigger>
             <TabsTrigger value="fulfillment">Fulfillment</TabsTrigger>
           </TabsList>
@@ -189,7 +195,6 @@ export default function AdminSettings() {
                   </div>
                   <Switch checked={stripeEnabled} onCheckedChange={setStripeEnabled} />
                 </div>
-
                 {stripeEnabled && (
                   <>
                     <Separator />
@@ -200,14 +205,12 @@ export default function AdminSettings() {
                       </div>
                       <Switch checked={stripeTestMode} onCheckedChange={setStripeTestMode} />
                     </div>
-
                     <Alert>
                       <Key className="h-4 w-4" />
                       <AlertDescription>
                         Enter your Stripe {stripeTestMode ? 'test' : 'live'} keys below.
                       </AlertDescription>
                     </Alert>
-
                     <div className="space-y-4 p-4 rounded-lg bg-muted/50">
                       <div className="space-y-3">
                         <div>
@@ -263,6 +266,170 @@ export default function AdminSettings() {
                   <p className="text-xs text-muted-foreground">
                     Number of room designs free users can generate before requiring a subscription
                   </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* AI Settings — NEW */}
+          <TabsContent value="ai-settings" className="space-y-4 mt-4">
+            {/* API Keys */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Key className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="font-display">AI API Keys</CardTitle>
+                    <CardDescription>Configure API keys for AI providers</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3 p-4 rounded-lg bg-muted/50">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Replicate API Key</Label>
+                    <Input
+                      type="password"
+                      value={aiSettings.replicateApiKey}
+                      onChange={(e) => setAiSettings(s => ({ ...s, replicateApiKey: e.target.value }))}
+                      placeholder="r8_..."
+                      className="mt-1 font-mono text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Used for room image generation (SDXL + ControlNet), furniture detection (DINO + SAM), and room analysis (BLIP-2)</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">OpenAI API Key</Label>
+                    <Input
+                      type="password"
+                      value={aiSettings.openaiApiKey}
+                      onChange={(e) => setAiSettings(s => ({ ...s, openaiApiKey: e.target.value }))}
+                      placeholder="sk-..."
+                      className="mt-1 font-mono text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Used for furniture planning and product recommendations (GPT-4o)</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Anthropic API Key</Label>
+                    <Input
+                      type="password"
+                      value={aiSettings.anthropicApiKey}
+                      onChange={(e) => setAiSettings(s => ({ ...s, anthropicApiKey: e.target.value }))}
+                      placeholder="sk-ant-..."
+                      className="mt-1 font-mono text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Alternative provider for furniture planning (Claude Sonnet/Haiku)</p>
+                  </div>
+                </div>
+                <Alert>
+                  <Brain className="h-4 w-4" />
+                  <AlertDescription>
+                    API keys are stored securely. The system currently runs in <strong>development mode</strong> with mock responses until valid API keys are configured.
+                  </AlertDescription>
+                </Alert>
+              </CardContent>
+            </Card>
+
+            {/* Default Models */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-[hsl(var(--ai-coral))]/10 flex items-center justify-center">
+                    <Cpu className="h-5 w-5 text-[hsl(var(--ai-coral))]" />
+                  </div>
+                  <div>
+                    <CardTitle className="font-display">Default Models</CardTitle>
+                    <CardDescription>Select which AI models to use for each pipeline step</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>Room Analysis Model</Label>
+                    <Select value={aiSettings.roomAnalysisModel} onValueChange={(v) => setAiSettings(s => ({ ...s, roomAnalysisModel: v }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="blip2">BLIP-2 (Replicate)</SelectItem>
+                        <SelectItem value="llava">LLaVA (Replicate)</SelectItem>
+                        <SelectItem value="gpt-4o">GPT-4o Vision (OpenAI)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Furniture Detection Model</Label>
+                    <Select value={aiSettings.furnitureDetectionModel} onValueChange={(v) => setAiSettings(s => ({ ...s, furnitureDetectionModel: v }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="grounding-dino-sam">Grounding DINO + SAM (Replicate)</SelectItem>
+                        <SelectItem value="yolo-v8">YOLOv8 (Replicate)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Room Generation Model</Label>
+                    <Select value={aiSettings.roomGenerationModel} onValueChange={(v) => setAiSettings(s => ({ ...s, roomGenerationModel: v }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="sdxl-controlnet">SDXL + ControlNet (Replicate)</SelectItem>
+                        <SelectItem value="sdxl-depth">SDXL + Depth ControlNet (Replicate)</SelectItem>
+                        <SelectItem value="sdxl-canny">SDXL + Canny ControlNet (Replicate)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Product Recommendation Model</Label>
+                    <Select value={aiSettings.productRecommendationModel} onValueChange={(v) => setAiSettings(s => ({ ...s, productRecommendationModel: v }))}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="gpt-4o-mini">GPT-4o mini (OpenAI)</SelectItem>
+                        <SelectItem value="gpt-4o">GPT-4o (OpenAI)</SelectItem>
+                        <SelectItem value="claude-haiku">Claude Haiku (Anthropic)</SelectItem>
+                        <SelectItem value="claude-sonnet">Claude Sonnet (Anthropic)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Feature Toggles */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-[hsl(var(--ai-amber))]/10 flex items-center justify-center">
+                    <ToggleLeft className="h-5 w-5 text-[hsl(var(--ai-amber))]" />
+                  </div>
+                  <div>
+                    <CardTitle className="font-display">Feature Toggles</CardTitle>
+                    <CardDescription>Enable or disable AI pipeline features</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Enable AI Generation</Label>
+                    <p className="text-sm text-muted-foreground">Generate redesigned room images using SDXL + ControlNet</p>
+                  </div>
+                  <Switch checked={aiSettings.enableAIGeneration} onCheckedChange={(v) => setAiSettings(s => ({ ...s, enableAIGeneration: v }))} />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Enable Furniture Detection</Label>
+                    <p className="text-sm text-muted-foreground">Detect existing furniture using Grounding DINO + SAM</p>
+                  </div>
+                  <Switch checked={aiSettings.enableFurnitureDetection} onCheckedChange={(v) => setAiSettings(s => ({ ...s, enableFurnitureDetection: v }))} />
+                </div>
+                <Separator />
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Enable Product Scraping</Label>
+                    <p className="text-sm text-muted-foreground">Scrape products from Amazon, Etsy, IKEA, and other furniture stores</p>
+                  </div>
+                  <Switch checked={aiSettings.enableProductScraping} onCheckedChange={(v) => setAiSettings(s => ({ ...s, enableProductScraping: v }))} />
                 </div>
               </CardContent>
             </Card>
