@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -87,6 +88,7 @@ const Profile = () => {
 
   return (
     <Layout>
+      <SEOHead title="Edit Profile" description="Update your Roomly profile, avatar, and account settings." />
       <div className="container max-w-2xl py-8 md:py-12">
         <h1 className="font-display text-3xl font-bold">Edit Profile</h1>
         <p className="mt-1 text-muted-foreground">Manage your account settings</p>

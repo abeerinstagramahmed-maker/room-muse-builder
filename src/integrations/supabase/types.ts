@@ -151,6 +151,7 @@ export type Database = {
           purchase_link: string | null
           rating: number | null
           review_count: number | null
+          stock_quantity: number
           store_source: string | null
           subcategory: string | null
           tags: string[] | null
@@ -174,6 +175,7 @@ export type Database = {
           purchase_link?: string | null
           rating?: number | null
           review_count?: number | null
+          stock_quantity?: number
           store_source?: string | null
           subcategory?: string | null
           tags?: string[] | null
@@ -197,6 +199,7 @@ export type Database = {
           purchase_link?: string | null
           rating?: number | null
           review_count?: number | null
+          stock_quantity?: number
           store_source?: string | null
           subcategory?: string | null
           tags?: string[] | null

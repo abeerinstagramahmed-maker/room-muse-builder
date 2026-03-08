@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -214,6 +215,7 @@ const Auth = () => {
 
   return (
     <Layout>
+      <SEOHead title="Sign In" description="Sign in or create your Roomly account to access AI room design and personalized furniture recommendations." />
       <div className="container flex min-h-[70vh] items-center justify-center py-12">
         <Card className="w-full max-w-md shadow-card">
           <CardHeader className="text-center">

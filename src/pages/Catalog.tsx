@@ -10,6 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { SlidersHorizontal, X, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SEOHead } from '@/components/SEOHead';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 
 const priceRanges = [
   { label: 'All Prices', min: 0, max: Infinity },
@@ -19,6 +22,9 @@ const priceRanges = [
   { label: '$2,000+', min: 2000, max: Infinity },
 ];
 
+const styleOptions = ['modern', 'scandinavian', 'industrial', 'bohemian', 'traditional', 'coastal'];
+const materialOptions = ['wood', 'metal', 'fabric', 'leather', 'glass', 'marble', 'rattan'];
+
 const Catalog = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const categoryParam = searchParams.get('category');
@@ -27,8 +33,11 @@ const Catalog = () => {
   
   const [selectedCategory, setSelectedCategory] = useState<string | null>(categoryParam);
   const [selectedPriceRange, setSelectedPriceRange] = useState(0);
+  const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
+  const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState(searchParam);
+  const [sortBy, setSortBy] = useState<string>('newest');
 
   useEffect(() => {
     setSelectedCategory(categoryParam);
@@ -65,8 +74,40 @@ const Catalog = () => {
     const priceRange = priceRanges[selectedPriceRange];
     result = result.filter(p => p.price >= priceRange.min && p.price < priceRange.max);
 
+    // Style tag filter
+    if (selectedStyles.length > 0) {
+      result = result.filter(p => 
+        p.tags?.some(tag => selectedStyles.includes(tag.toLowerCase()))
+      );
+    }
+
+    // Material filter
+    if (selectedMaterials.length > 0) {
+      result = result.filter(p => 
+        p.materials?.some(m => selectedMaterials.some(sm => m.toLowerCase().includes(sm)))
+      );
+    }
+
+    // Sort
+    switch (sortBy) {
+      case 'price-asc':
+        result = [...result].sort((a, b) => a.price - b.price);
+        break;
+      case 'price-desc':
+        result = [...result].sort((a, b) => b.price - a.price);
+        break;
+      case 'rating':
+        result = [...result].sort((a, b) => b.rating - a.rating);
+        break;
+      case 'name':
+        result = [...result].sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      default: // newest
+        break;
+    }
+
     return result;
-  }, [products, selectedCategory, selectedPriceRange, searchQuery]);
+  }, [products, selectedCategory, selectedPriceRange, searchQuery, selectedStyles, selectedMaterials, sortBy]);
 
   const handleCategoryChange = (slug: string | null) => {
     setSelectedCategory(slug);
@@ -93,26 +134,52 @@ const Catalog = () => {
   const clearFilters = () => {
     setSelectedCategory(null);
     setSelectedPriceRange(0);
+    setSelectedStyles([]);
+    setSelectedMaterials([]);
     setSearchQuery('');
+    setSortBy('newest');
     setSearchParams({});
   };
 
-  const hasActiveFilters = selectedCategory || selectedPriceRange > 0 || searchQuery.trim();
+  const toggleStyle = (style: string) => {
+    setSelectedStyles(prev => prev.includes(style) ? prev.filter(s => s !== style) : [...prev, style]);
+  };
+
+  const toggleMaterial = (material: string) => {
+    setSelectedMaterials(prev => prev.includes(material) ? prev.filter(m => m !== material) : [...prev, material]);
+  };
+
+  const hasActiveFilters = selectedCategory || selectedPriceRange > 0 || searchQuery.trim() || selectedStyles.length > 0 || selectedMaterials.length > 0;
 
   return (
     <Layout>
+      <SEOHead title="Shop Furniture" description="Browse our curated collection of high-quality furniture. Filter by style, material, price, and more." />
       <div className="container py-8 md:py-12">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="font-display text-3xl font-bold md:text-4xl">
-            {selectedCategory 
-              ? collections.find(c => c.slug === selectedCategory)?.name || 'Shop All'
-              : 'Shop All Furniture'
-            }
-          </h1>
-          <p className="mt-2 text-muted-foreground">
-            {loading ? 'Loading...' : `${filteredProducts.length} products`}
-          </p>
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="font-display text-3xl font-bold md:text-4xl">
+              {selectedCategory 
+                ? collections.find(c => c.slug === selectedCategory)?.name || 'Shop All'
+                : 'Shop All Furniture'
+              }
+            </h1>
+            <p className="mt-2 text-muted-foreground">
+              {loading ? 'Loading...' : `${filteredProducts.length} products`}
+            </p>
+          </div>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Sort by" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest</SelectItem>
+              <SelectItem value="price-asc">Price: Low to High</SelectItem>
+              <SelectItem value="price-desc">Price: High to Low</SelectItem>
+              <SelectItem value="rating">Highest Rated</SelectItem>
+              <SelectItem value="name">Name A-Z</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Search Bar */}
@@ -215,6 +282,44 @@ const Catalog = () => {
                     >
                       {range.label}
                     </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Style Tags */}
+              <div>
+                <h3 className="mb-4 font-display text-sm font-semibold uppercase tracking-wider">
+                  Style
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {styleOptions.map((style) => (
+                    <Badge
+                      key={style}
+                      variant={selectedStyles.includes(style) ? 'default' : 'outline'}
+                      className="cursor-pointer capitalize"
+                      onClick={() => toggleStyle(style)}
+                    >
+                      {style}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Materials */}
+              <div>
+                <h3 className="mb-4 font-display text-sm font-semibold uppercase tracking-wider">
+                  Material
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {materialOptions.map((material) => (
+                    <Badge
+                      key={material}
+                      variant={selectedMaterials.includes(material) ? 'default' : 'outline'}
+                      className="cursor-pointer capitalize"
+                      onClick={() => toggleMaterial(material)}
+                    >
+                      {material}
+                    </Badge>
                   ))}
                 </div>
               </div>

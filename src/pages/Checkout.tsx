@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -43,6 +44,7 @@ const Checkout = () => {
 
   return (
     <Layout>
+      <SEOHead title="Checkout" description="Complete your Roomly furniture order securely." />
       <div className="container py-8 md:py-12">
         <Link
           to="/cart"

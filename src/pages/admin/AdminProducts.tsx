@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, Pencil, Trash2, Search, AlertTriangle } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { ProductFormDialog } from '@/components/admin/ProductFormDialog';
 import { useAdminProducts, ProductFormData } from '@/hooks/useAdminProducts';
@@ -34,6 +34,11 @@ export default function AdminProducts() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+
+  const lowStockProducts = useMemo(() => 
+    products.filter(p => p.inStock && (p as any).stockQuantity !== undefined && (p as any).stockQuantity < 10),
+    [products]
+  );
 
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -85,6 +90,17 @@ export default function AdminProducts() {
             Add Product
           </Button>
         </div>
+
+        {/* Low Stock Alert */}
+        {lowStockProducts.length > 0 && (
+          <div className="flex items-center gap-3 rounded-lg border border-yellow-500/30 bg-yellow-500/10 p-4">
+            <AlertTriangle className="h-5 w-5 text-yellow-600 shrink-0" />
+            <div>
+              <p className="font-medium text-sm">{lowStockProducts.length} product{lowStockProducts.length > 1 ? 's' : ''} low on stock</p>
+              <p className="text-xs text-muted-foreground">{lowStockProducts.map(p => p.name).join(', ')}</p>
+            </div>
+          </div>
+        )}
 
         {/* Search */}
         <div className="relative max-w-sm">

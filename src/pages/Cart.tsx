@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
+import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
@@ -10,6 +11,7 @@ const Cart = () => {
   if (items.length === 0) {
     return (
       <Layout>
+        <SEOHead title="Shopping Cart" description="Review items in your Roomly shopping cart before checkout." />
         <div className="container flex flex-col items-center justify-center py-24">
           <div className="mb-6 rounded-full bg-muted p-6">
             <ShoppingBag className="h-12 w-12 text-muted-foreground" />

@@ -6,16 +6,29 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useOrders, Order } from '@/hooks/useOrders';
-import { Loader2, ArrowLeft, Package, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { Loader2, ArrowLeft, Package, CheckCircle, Clock, XCircle, Ban } from 'lucide-react';
+import { SEOHead } from '@/components/SEOHead';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { format } from 'date-fns';
 
 const OrderDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isAuthenticated, loading: authLoading } = useAuthContext();
-  const { getOrderById } = useOrders();
+  const { getOrderById, cancelOrder } = useOrders();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated && !authLoading) {
@@ -84,6 +97,7 @@ const OrderDetail = () => {
 
   return (
     <Layout>
+      <SEOHead title={`Order #${order.id.slice(0, 8).toUpperCase()}`} description="View your order details and tracking status." />
       <div className="container py-8 md:py-12">
         <Link to="/account" className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="h-4 w-4" />
@@ -100,9 +114,22 @@ const OrderDetail = () => {
                 Placed on {format(new Date(order.created_at), 'MMMM d, yyyy')}
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              {getStatusIcon(order.status)}
-              <span className="font-medium capitalize">{order.status}</span>
+          <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                {getStatusIcon(order.status)}
+                <span className="font-medium capitalize">{order.status}</span>
+              </div>
+              {(order.status === 'pending' || order.status === 'confirmed') && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1 text-destructive hover:text-destructive"
+                  onClick={() => setCancelDialogOpen(true)}
+                >
+                  <Ban className="h-4 w-4" />
+                  Cancel Order
+                </Button>
+              )}
             </div>
           </div>
 
@@ -227,6 +254,38 @@ const OrderDetail = () => {
             )}
           </div>
         </div>
+
+        {/* Cancel Order Dialog */}
+        <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Cancel this order?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will cancel your order and initiate a refund. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Keep Order</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                disabled={cancelling}
+                onClick={async () => {
+                  setCancelling(true);
+                  const success = await cancelOrder(order.id);
+                  setCancelling(false);
+                  if (success) {
+                    const updated = await getOrderById(order.id);
+                    setOrder(updated);
+                  }
+                  setCancelDialogOpen(false);
+                }}
+              >
+                {cancelling ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Cancel Order
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </Layout>
   );
