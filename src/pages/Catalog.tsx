@@ -71,8 +71,40 @@ const Catalog = () => {
     const priceRange = priceRanges[selectedPriceRange];
     result = result.filter(p => p.price >= priceRange.min && p.price < priceRange.max);
 
+    // Style tag filter
+    if (selectedStyles.length > 0) {
+      result = result.filter(p => 
+        p.tags?.some(tag => selectedStyles.includes(tag.toLowerCase()))
+      );
+    }
+
+    // Material filter
+    if (selectedMaterials.length > 0) {
+      result = result.filter(p => 
+        p.materials?.some(m => selectedMaterials.some(sm => m.toLowerCase().includes(sm)))
+      );
+    }
+
+    // Sort
+    switch (sortBy) {
+      case 'price-asc':
+        result = [...result].sort((a, b) => a.price - b.price);
+        break;
+      case 'price-desc':
+        result = [...result].sort((a, b) => b.price - a.price);
+        break;
+      case 'rating':
+        result = [...result].sort((a, b) => b.rating - a.rating);
+        break;
+      case 'name':
+        result = [...result].sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      default: // newest
+        break;
+    }
+
     return result;
-  }, [products, selectedCategory, selectedPriceRange, searchQuery]);
+  }, [products, selectedCategory, selectedPriceRange, searchQuery, selectedStyles, selectedMaterials, sortBy]);
 
   const handleCategoryChange = (slug: string | null) => {
     setSelectedCategory(slug);
