@@ -113,9 +113,22 @@ const OrderDetail = () => {
                 Placed on {format(new Date(order.created_at), 'MMMM d, yyyy')}
               </p>
             </div>
-            <div className="flex items-center gap-2">
-              {getStatusIcon(order.status)}
-              <span className="font-medium capitalize">{order.status}</span>
+          <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                {getStatusIcon(order.status)}
+                <span className="font-medium capitalize">{order.status}</span>
+              </div>
+              {(order.status === 'pending' || order.status === 'confirmed') && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1 text-destructive hover:text-destructive"
+                  onClick={() => setCancelDialogOpen(true)}
+                >
+                  <Ban className="h-4 w-4" />
+                  Cancel Order
+                </Button>
+              )}
             </div>
           </div>
 
