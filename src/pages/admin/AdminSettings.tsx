@@ -163,6 +163,7 @@ export default function AdminSettings() {
             <TabsTrigger value="ai-settings">AI Settings</TabsTrigger>
             <TabsTrigger value="product-sourcing">Product Sourcing</TabsTrigger>
             <TabsTrigger value="fulfillment">Fulfillment</TabsTrigger>
+            <TabsTrigger value="email">Email</TabsTrigger>
           </TabsList>
 
           {/* General */}
