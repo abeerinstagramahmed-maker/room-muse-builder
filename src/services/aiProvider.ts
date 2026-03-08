@@ -8,6 +8,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Product } from '@/lib/types';
+import type { PipelineStep } from '@/hooks/useRoomDesigner';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -101,17 +102,19 @@ export async function recommendProducts(params: {
 }
 
 /**
- * Full AI design pipeline — orchestrates all steps.
- * Upload → Analyze → Detect → Plan → Generate → Recommend
+ * Full AI design pipeline — orchestrates all steps with progress callbacks.
  */
 export async function runDesignPipeline(params: {
   imageBase64: string;
   style: string;
   budget: string;
+  onStepChange?: (step: PipelineStep) => void;
 }): Promise<AIDesignResult> {
-  const { imageBase64, style, budget } = params;
+  const { imageBase64, style, budget, onStepChange } = params;
+  const step = onStepChange || (() => {});
 
   // Step 1 & 2: Analyze room + detect furniture (parallel)
+  step('analyzing');
   const [roomAnalysis, detectedFurniture] = await Promise.all([
     analyzeRoom(imageBase64),
     detectFurniture(imageBase64),
@@ -120,7 +123,8 @@ export async function runDesignPipeline(params: {
   // Merge detected furniture into analysis
   roomAnalysis.detectedFurniture = detectedFurniture;
 
-  // Step 3: Generate furniture plan (uses LLM)
+  // Step 3: Generate furniture plan
+  step('planning');
   const furniturePlan = await callEdgeFunction<FurniturePlan>('recommend-products', {
     roomAnalysis,
     style,
@@ -128,11 +132,13 @@ export async function runDesignPipeline(params: {
     planOnly: true,
   });
 
-  // Step 4 & 5: Generate room image + product recommendations (parallel)
-  const [generatedDesign, productRecommendations] = await Promise.all([
-    generateRoomDesign({ imageBase64, style, budget, roomAnalysis, furniturePlan }),
-    recommendProducts({ furniturePlan, style, budget }),
-  ]);
+  // Step 4: Generate room image
+  step('generating');
+  const generatedDesign = await generateRoomDesign({ imageBase64, style, budget, roomAnalysis, furniturePlan });
+
+  // Step 5: Product recommendations
+  step('matching');
+  const productRecommendations = await recommendProducts({ furniturePlan, style, budget });
 
   return {
     roomAnalysis,

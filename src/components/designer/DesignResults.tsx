@@ -4,9 +4,25 @@ import { Product } from '@/lib/types';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { RoomAnalysis, FurniturePlan, GeneratedDesign } from '@/services/aiProvider';
+import { Progress } from '@/components/ui/progress';
+import type { PipelineStep } from '@/hooks/useRoomDesigner';
+
+const PIPELINE_STEPS: { key: PipelineStep; label: string }[] = [
+  { key: 'analyzing', label: 'Analyzing Room' },
+  { key: 'detecting', label: 'Detecting Furniture' },
+  { key: 'planning', label: 'Planning Layout' },
+  { key: 'generating', label: 'Generating Design' },
+  { key: 'matching', label: 'Matching Products' },
+];
+
+function getStepIndex(step: PipelineStep): number {
+  const idx = PIPELINE_STEPS.findIndex(s => s.key === step);
+  return idx >= 0 ? idx : -1;
+}
 
 interface DesignResultsProps {
   isGenerating: boolean;
+  pipelineStep: PipelineStep;
   designResult: {
     products: Product[];
     aiNote: string;
@@ -23,6 +39,7 @@ interface DesignResultsProps {
 
 export function DesignResults({ 
   isGenerating, 
+  pipelineStep,
   designResult, 
   totalPrice, 
   onAddAllToCart,
@@ -31,23 +48,42 @@ export function DesignResults({
   const [showOriginal, setShowOriginal] = useState(false);
 
   if (isGenerating) {
+    const activeIdx = getStepIndex(pipelineStep);
+    const progress = activeIdx >= 0 ? ((activeIdx + 0.5) / PIPELINE_STEPS.length) * 100 : 5;
+
     return (
-      <div className="flex aspect-square items-center justify-center rounded-2xl bg-muted/30">
-        <div className="text-center">
-          <div className="mb-4 inline-flex animate-pulse rounded-full bg-primary/10 p-6">
-            <Sparkles className="h-12 w-12 text-primary" />
-          </div>
-          <p className="font-display text-xl font-semibold">Creating magic...</p>
-          <p className="mt-1 text-muted-foreground">
-            Analyzing room → Detecting furniture → Generating design → Matching products
-          </p>
-          <div className="mt-4 flex justify-center gap-2">
-            {['Analyze', 'Detect', 'Generate', 'Match'].map((step, i) => (
-              <span key={step} className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary animate-pulse" style={{ animationDelay: `${i * 0.3}s` }}>
-                {step}
+      <div className="flex flex-col items-center justify-center rounded-2xl bg-muted/30 p-8 min-h-[400px]">
+        <div className="mb-6 inline-flex animate-pulse rounded-full bg-primary/10 p-6">
+          <Sparkles className="h-12 w-12 text-primary" />
+        </div>
+        <p className="font-display text-xl font-semibold mb-1">Creating your design…</p>
+        <p className="text-sm text-muted-foreground mb-6">
+          {PIPELINE_STEPS.find(s => s.key === pipelineStep)?.label || 'Starting…'}
+        </p>
+
+        <div className="w-full max-w-xs mb-6">
+          <Progress value={progress} className="h-2" />
+        </div>
+
+        <div className="flex gap-2 flex-wrap justify-center">
+          {PIPELINE_STEPS.map((step, i) => {
+            const isActive = step.key === pipelineStep;
+            const isDone = activeIdx > i;
+            return (
+              <span
+                key={step.key}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                  isActive
+                    ? 'bg-primary text-primary-foreground scale-105 shadow-sm'
+                    : isDone
+                    ? 'bg-primary/20 text-primary'
+                    : 'bg-muted text-muted-foreground'
+                }`}
+              >
+                {isDone ? '✓ ' : ''}{step.label}
               </span>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </div>
     );
@@ -92,7 +128,7 @@ export function DesignResults({
                 <span className="font-medium text-foreground">Type:</span> {designResult.roomAnalysis.roomType.replace('-', ' ')}
               </div>
               <div>
-                <span className="font-medium text-foreground">Lighting:</span> {designResult.roomAnalysis.lighting.slice(0, 40)}...
+                <span className="font-medium text-foreground">Lighting:</span> {designResult.roomAnalysis.lighting.slice(0, 40)}…
               </div>
               <div className="col-span-2">
                 <span className="font-medium text-foreground">Detected:</span>{' '}
@@ -140,14 +176,9 @@ export function DesignResults({
         {/* Recommended Products */}
         <div>
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-display text-lg font-semibold">
-              Recommended Products
-            </h3>
-            <span className="text-sm text-muted-foreground">
-              {designResult.products.length} items
-            </span>
+            <h3 className="font-display text-lg font-semibold">Recommended Products</h3>
+            <span className="text-sm text-muted-foreground">{designResult.products.length} items</span>
           </div>
-
           <div className="space-y-3">
             {designResult.products.map((product) => (
               <Link
@@ -155,11 +186,7 @@ export function DesignResults({
                 to={`/product/${product.id}`}
                 className="flex items-center gap-4 rounded-xl bg-card p-3 shadow-sm hover:shadow-md transition-shadow"
               >
-                <img
-                  src={product.images[0]}
-                  alt={product.name}
-                  className="h-16 w-16 rounded-lg object-cover"
-                />
+                <img src={product.images[0]} alt={product.name} className="h-16 w-16 rounded-lg object-cover" />
                 <div className="flex-1">
                   <h4 className="font-medium">{product.name}</h4>
                   <p className="text-sm text-muted-foreground">{product.category}</p>
@@ -176,16 +203,9 @@ export function DesignResults({
         <div className="rounded-2xl bg-primary/5 p-6">
           <div className="mb-4 flex items-center justify-between">
             <span className="text-lg font-medium">Room Total</span>
-            <span className="font-display text-2xl font-bold">
-              ${totalPrice.toLocaleString()}
-            </span>
+            <span className="font-display text-2xl font-bold">${totalPrice.toLocaleString()}</span>
           </div>
-          <Button
-            size="lg"
-            variant="hero"
-            className="w-full gap-2"
-            onClick={onAddAllToCart}
-          >
+          <Button size="lg" variant="hero" className="w-full gap-2" onClick={onAddAllToCart}>
             <ShoppingBag className="h-5 w-5" />
             Add Entire Room to Cart
           </Button>
