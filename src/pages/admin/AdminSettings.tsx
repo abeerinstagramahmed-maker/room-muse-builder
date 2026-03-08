@@ -589,6 +589,90 @@ export default function AdminSettings() {
               </CardContent>
             </Card>
           </TabsContent>
+
+          {/* Email Notifications */}
+          <TabsContent value="email" className="space-y-4 mt-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Mail className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="font-display">Email Notifications</CardTitle>
+                    <CardDescription>Send order emails via Resend</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Enable Email Notifications</Label>
+                    <p className="text-sm text-muted-foreground">Send order updates to customers via email</p>
+                  </div>
+                  <Switch checked={emailEnabled} onCheckedChange={setEmailEnabled} />
+                </div>
+                {emailEnabled && (
+                  <>
+                    <Separator />
+                    <div className="space-y-4 p-4 rounded-lg bg-muted/50">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Resend API Key</Label>
+                        <Input type="password" value={resendApiKey} onChange={(e) => setResendApiKey(e.target.value)} placeholder="re_..." className="mt-1 font-mono text-sm" />
+                      </div>
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">From Email</Label>
+                          <Input value={fromEmail} onChange={(e) => setFromEmail(e.target.value)} placeholder="orders@yourdomain.com" className="mt-1" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">From Name</Label>
+                          <Input value={fromName} onChange={(e) => setFromName(e.target.value)} placeholder="Roomly" className="mt-1" />
+                        </div>
+                      </div>
+                      <Button variant="outline" size="sm" asChild>
+                        <a href="https://resend.com/api-keys" target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Get Resend API Key
+                        </a>
+                      </Button>
+                    </div>
+                    <Separator />
+                    <div className="space-y-4">
+                      <h4 className="font-display text-sm font-semibold">Notification Triggers</h4>
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label>Order Confirmation</Label>
+                          <p className="text-xs text-muted-foreground">When payment is confirmed</p>
+                        </div>
+                        <Switch checked={emailOnConfirmation} onCheckedChange={setEmailOnConfirmation} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label>Order Shipped</Label>
+                          <p className="text-xs text-muted-foreground">When admin marks as shipped</p>
+                        </div>
+                        <Switch checked={emailOnShipped} onCheckedChange={setEmailOnShipped} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label>Order Delivered</Label>
+                          <p className="text-xs text-muted-foreground">When admin marks as delivered</p>
+                        </div>
+                        <Switch checked={emailOnDelivered} onCheckedChange={setEmailOnDelivered} />
+                      </div>
+                    </div>
+                    <Alert>
+                      <Bell className="h-4 w-4" />
+                      <AlertDescription>
+                        To send emails from your own domain (e.g., orders@yourdomain.com), verify your domain in Resend first. Otherwise, use Resend's default sender.
+                      </AlertDescription>
+                    </Alert>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
 
         <div className="flex justify-end">
