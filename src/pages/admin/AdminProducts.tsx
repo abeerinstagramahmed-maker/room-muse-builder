@@ -35,6 +35,11 @@ export default function AdminProducts() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
 
+  const lowStockProducts = useMemo(() => 
+    products.filter(p => p.inStock && (p as any).stockQuantity !== undefined && (p as any).stockQuantity < 10),
+    [products]
+  );
+
   const filteredProducts = products.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     p.vendor.toLowerCase().includes(search.toLowerCase()) ||
