@@ -18,6 +18,7 @@ const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { products, loading, getProductById } = useProducts();
   const { addItem } = useCart();
+  const { addToRecentlyViewed } = useRecentlyViewed();
   const [product, setProduct] = useState<Product | null>(null);
   const [productLoading, setProductLoading] = useState(true);
   const [selectedColor, setSelectedColor] = useState<string | undefined>();
