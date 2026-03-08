@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/product/ProductCard';
+import { RecentlyViewedSection } from '@/components/product/RecentlyViewedSection';
 import { collections } from '@/lib/data';
 import { useProducts } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
