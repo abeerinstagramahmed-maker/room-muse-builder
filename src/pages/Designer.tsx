@@ -24,6 +24,7 @@ const Designer = () => {
     selectedStyle,
     selectedBudget,
     isGenerating,
+    pipelineStep,
     designResult,
     totalPrice,
     setSelectedStyle,
