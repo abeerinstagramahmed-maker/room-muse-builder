@@ -117,9 +117,7 @@ const OrderDetail = () => {
                     )}
                     <div className="flex-1">
                       <h3 className="font-medium">{item.product_name}</h3>
-                      {item.vendor && (
-                        <p className="text-sm text-muted-foreground">{item.vendor}</p>
-                      )}
+                      {/* Vendor hidden for white-label */}
                       {item.selected_color && (
                         <p className="text-sm text-muted-foreground">Color: {item.selected_color}</p>
                       )}
