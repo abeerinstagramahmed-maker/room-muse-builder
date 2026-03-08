@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Plus, Pencil, Trash2, Search } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Plus, Pencil, Trash2, Search, AlertTriangle } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { ProductFormDialog } from '@/components/admin/ProductFormDialog';
 import { useAdminProducts, ProductFormData } from '@/hooks/useAdminProducts';
