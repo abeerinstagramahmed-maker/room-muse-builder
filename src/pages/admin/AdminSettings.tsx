@@ -119,6 +119,15 @@ export default function AdminSettings() {
         firecrawlApiKey,
         autoOrderEnabled,
         aiSettings,
+        emailSettings: {
+          enabled: emailEnabled,
+          resendApiKey,
+          fromEmail,
+          fromName,
+          emailOnConfirmation,
+          emailOnShipped,
+          emailOnDelivered,
+        },
       } as any,
       {
         monthlyPrice: parseFloat(monthlyPrice) || 9.99,
