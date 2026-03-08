@@ -1,235 +1,125 @@
 
-# Comprehensive Implementation Plan for Roomly
 
-This plan addresses all the remaining features and fixes to make Roomly fully functional:
-- **Header visibility on homepage**
-- **Admin role assignment** 
-- **Stripe payment integration**
-- **Password reset flow**
-- **Order email notifications**
-- **Product search in catalog**
+# Implementation Plan: Remaining Non-AI Improvements
+
+After auditing the codebase, several items from the gap list are **already implemented**: mobile hamburger menu, order cancellation, catalog search/filtering, wishlist-to-cart, admin analytics, inventory tracking, and catalog refresh. Here's what actually remains:
 
 ---
 
-## 1. Fix Header Visibility on Homepage
+## 1. Contact Form — Store Messages in Database
 
-**Issue**: The homepage (`Index.tsx`) doesn't use the `Layout` component, so the header/navigation is missing.
+**New table**: `contact_messages` (name, email, message, read boolean, created_at)
+- RLS: public INSERT (no auth required), admin-only SELECT
+- Update `Contact.tsx` to insert into DB on submit
+- Add a "Messages" section to admin dashboard or content page
 
-**Solution**: Add a floating, transparent header overlay to the AI Canvas that becomes visible when scrolling or on hover.
+## 2. Newsletter Signup — Store Subscribers
 
-**Changes**:
-- Modify `src/pages/Index.tsx` to include a floating header that works with the dark AI Canvas aesthetic
-- Update `src/components/layout/Header.tsx` to accept a `variant` prop for transparent/canvas mode
-- The header will be transparent over the canvas but gain background on scroll
+**New table**: `newsletter_subscribers` (email unique, subscribed_at)
+- RLS: public INSERT, admin-only SELECT/DELETE
+- Wire the Footer newsletter input with a submit handler and toast feedback
+- Deduplicate on email with `ON CONFLICT DO NOTHING`
+
+## 3. React Error Boundary
+
+- Create `src/components/ErrorBoundary.tsx` (class component with `componentDidCatch`)
+- Render a friendly "Something went wrong" UI with a "Reload" button
+- Wrap `<App />` in `main.tsx`
+
+## 4. Catalog Pagination
+
+- Add pagination state to `Catalog.tsx` (page number, 12 items per page)
+- Slice `filteredProducts` by page
+- Render `Pagination` component (already exists in `ui/pagination.tsx`) below the grid
+- Reset to page 1 when filters change
+
+## 5. Breadcrumb Navigation
+
+- Add breadcrumbs to `ProductDetail.tsx` (Home > Shop > Category > Product Name)
+- Add breadcrumbs to `Checkout.tsx` (Home > Cart > Checkout)
+- Use the existing `breadcrumb.tsx` UI component
+
+## 6. Coupon/Discount Code System
+
+**New table**: `coupons` (code unique, discount_type enum, discount_value, min_order, max_uses, used_count, active boolean, expires_at)
+- RLS: public SELECT (to validate codes), admin full CRUD
+- Add promo code input field to Checkout page
+- Validate coupon on apply, show discount in order summary
+- Decrement available uses on order creation
+
+## 7. Dynamic Sitemap Generation
+
+- Create an edge function `generate-sitemap` that queries all products and builds XML
+- Returns proper XML content-type
+- Include static routes (/catalog, /designer, /pricing, /faq, /contact) plus dynamic `/product/:id` routes
+
+## 8. SEO Completions
+
+- Verify and add `SEOHead` to any remaining pages missing it (FAQ, Contact, Shipping, Returns already have it — check Compare, OrderConfirmation, NotFound, OrderDetail)
 
 ---
 
-## 2. Grant Admin Role
+## Database Migrations
 
-**Issue**: Your account (`junaid.ookay@gmail.com`) only has the `user` role.
-
-**Solution**: Insert an admin role entry via database migration.
-
-**Database Change**:
 ```sql
-INSERT INTO public.user_roles (user_id, role)
-VALUES ('85ce6696-bbd4-402c-bded-4b0642c75284', 'admin');
+-- contact_messages table
+CREATE TABLE public.contact_messages (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  email text NOT NULL,
+  message text NOT NULL,
+  is_read boolean NOT NULL DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.contact_messages ENABLE ROW LEVEL SECURITY;
+-- Public can insert, admins can read/update
+CREATE POLICY "Anyone can submit contact" ON public.contact_messages FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admins can view contacts" ON public.contact_messages FOR SELECT USING (has_role(auth.uid(), 'admin'));
+CREATE POLICY "Admins can update contacts" ON public.contact_messages FOR UPDATE USING (has_role(auth.uid(), 'admin'));
+
+-- newsletter_subscribers table
+CREATE TABLE public.newsletter_subscribers (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email text UNIQUE NOT NULL,
+  subscribed_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.newsletter_subscribers ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Anyone can subscribe" ON public.newsletter_subscribers FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admins can view subscribers" ON public.newsletter_subscribers FOR SELECT USING (has_role(auth.uid(), 'admin'));
+
+-- coupons table
+CREATE TABLE public.coupons (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  code text UNIQUE NOT NULL,
+  discount_type text NOT NULL DEFAULT 'percentage',
+  discount_value numeric NOT NULL,
+  min_order numeric DEFAULT 0,
+  max_uses integer DEFAULT NULL,
+  used_count integer NOT NULL DEFAULT 0,
+  active boolean NOT NULL DEFAULT true,
+  expires_at timestamptz DEFAULT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public can read active coupons" ON public.coupons FOR SELECT USING (active = true);
+CREATE POLICY "Admins full access coupons" ON public.coupons FOR ALL USING (has_role(auth.uid(), 'admin'));
 ```
 
-This will grant you access to `/admin` dashboard.
+## Files Modified/Created
 
----
+| File | Action |
+|------|--------|
+| `src/components/ErrorBoundary.tsx` | Create |
+| `src/main.tsx` | Wrap with ErrorBoundary |
+| `src/pages/Contact.tsx` | Insert to contact_messages |
+| `src/components/layout/Footer.tsx` | Wire newsletter form |
+| `src/pages/Catalog.tsx` | Add pagination |
+| `src/pages/ProductDetail.tsx` | Add breadcrumbs |
+| `src/pages/Checkout.tsx` | Add breadcrumbs + coupon field |
+| `src/hooks/useCheckout.ts` | Add coupon validation logic |
+| `supabase/functions/generate-sitemap/index.ts` | Create |
+| `src/pages/Compare.tsx` | Add SEOHead |
+| `src/pages/OrderConfirmation.tsx` | Add SEOHead |
+| `src/pages/NotFound.tsx` | Add SEOHead |
+| `src/pages/OrderDetail.tsx` | Add SEOHead |
 
-## 3. Stripe Payment Integration
-
-**Current State**: The checkout form collects card details but doesn't process real payments. The database already has `stripe_payment_intent_id` column.
-
-**Implementation**:
-
-### Step 1: Request Stripe Secret Key
-- Use the secret management tool to request your Stripe secret key
-- This will be stored securely and only accessible in edge functions
-
-### Step 2: Create `create-checkout-session` Edge Function
-- Creates a Stripe Checkout Session with line items from the cart
-- Returns the session URL for redirect
-- Updates the order with `stripe_checkout_session_id`
-
-### Step 3: Create `stripe-webhook` Edge Function  
-- Handles `checkout.session.completed` event
-- Updates order status to "paid"
-- Stores `stripe_payment_intent_id`
-- Triggers order confirmation email
-
-### Step 4: Update Checkout Flow
-- Replace manual card form with Stripe redirect
-- Add "Pay with Stripe" button that creates session and redirects
-- Handle return from Stripe success URL
-
-**Files to Create/Modify**:
-- `supabase/functions/create-checkout-session/index.ts` (new)
-- `supabase/functions/stripe-webhook/index.ts` (new)
-- `supabase/config.toml` (add new functions)
-- `src/hooks/useCheckout.ts` (update to use Stripe)
-- `src/pages/Checkout.tsx` (replace card form with Stripe button)
-
----
-
-## 4. Password Reset Flow
-
-**Implementation**:
-
-### Step 1: Update Auth Page
-- Add "Forgot Password?" link to sign-in form
-- Create a forgot password form that accepts email
-- Use Supabase's `resetPasswordForEmail` method
-
-### Step 2: Create Reset Password Page
-- New route `/reset-password`
-- Handles the token from email link
-- Allows setting new password with `updateUser`
-
-### Step 3: Create Password Reset Email Edge Function (optional)
-- If custom branding is needed, create a Resend-based email function
-- Otherwise, use Supabase's built-in password reset emails
-
-**Files to Create/Modify**:
-- `src/pages/Auth.tsx` (add forgot password UI)
-- `src/pages/ResetPassword.tsx` (new - handle password reset)
-- `src/App.tsx` (add route)
-- `src/hooks/useAuth.ts` (add reset methods)
-
----
-
-## 5. Order Email Notifications
-
-**Implementation**:
-
-### Step 1: Request Resend API Key
-- Prompt for Resend API key configuration
-- Provide instructions for domain verification
-
-### Step 2: Create `send-order-email` Edge Function
-- Accepts order details
-- Sends branded confirmation email via Resend
-- Includes order summary, shipping info, and product list
-
-### Step 3: Integrate with Checkout/Webhook
-- Call the email function after successful payment
-- Can be triggered from the Stripe webhook
-
-**Files to Create**:
-- `supabase/functions/send-order-email/index.ts`
-- `supabase/functions/send-order-email/_templates/order-confirmation.tsx` (React Email template)
-
----
-
-## 6. Product Search in Catalog
-
-**Implementation**:
-
-### Option A: Client-side Search (Simple)
-- Add search input to catalog header
-- Filter products by name/description in the frontend
-- Good for current product volume
-
-### Option B: Database Search (Scalable)
-- Add full-text search index to products table
-- Create search function in database
-- Query with `to_tsquery`
-
-**Recommended**: Start with client-side search for simplicity.
-
-**Changes**:
-- `src/pages/Catalog.tsx` - Add search input and filter logic
-- Add search icon to header quick actions
-
----
-
-## Implementation Order
-
-For efficiency, I recommend implementing in this order:
-
-1. **Header + Admin Role** (Quick fixes, immediate value)
-2. **Password Reset** (Essential UX)
-3. **Product Search** (Improves usability)
-4. **Stripe Integration** (Requires API key setup)
-5. **Order Emails** (Requires Resend setup)
-
----
-
-## Technical Details
-
-### Edge Function CORS Headers
-All new edge functions will include:
-```javascript
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-}
-```
-
-### Stripe Checkout Flow Diagram
-```text
-User Clicks Pay
-       │
-       ▼
-Frontend calls create-checkout-session
-       │
-       ▼
-Edge function creates Stripe Session
-       │
-       ▼
-User redirected to Stripe Checkout
-       │
-       ▼
-Payment completed → Stripe sends webhook
-       │
-       ▼
-stripe-webhook function:
-  - Updates order status
-  - Triggers confirmation email
-       │
-       ▼
-User redirected to success page
-```
-
-### Password Reset Flow
-```text
-User clicks "Forgot Password"
-       │
-       ▼
-Enters email → Supabase sends reset link
-       │
-       ▼
-User clicks link → Lands on /reset-password
-       │
-       ▼
-Sets new password → Supabase updates
-       │
-       ▼
-User redirected to login
-```
-
----
-
-## What You'll Need to Provide
-
-1. **Stripe Secret Key** - From your Stripe Dashboard → Developers → API Keys
-2. **Resend API Key** (for emails) - From resend.com dashboard
-3. **Verified Domain in Resend** (for production emails)
-
----
-
-## Summary
-
-| Feature | Complexity | External Dependencies |
-|---------|------------|----------------------|
-| Header Fix | Low | None |
-| Admin Role | Low | None |
-| Password Reset | Medium | None (uses Supabase) |
-| Product Search | Medium | None |
-| Stripe Integration | High | Stripe Secret Key |
-| Order Emails | Medium | Resend API Key |
-
-After approval, I'll implement these features in order, starting with the quick wins (header fix + admin role) and then moving to the more complex integrations.
