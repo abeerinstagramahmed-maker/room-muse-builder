@@ -8,9 +8,11 @@ const corsHeaders = {
 /**
  * generate-room-design
  * 
- * Purpose: Generate a redesigned room image preserving room structure.
- * Target Model: Stable Diffusion XL (SDXL) + ControlNet (Depth/Canny) via Replicate
- * Current Mode: MOCK — returns a placeholder generated image URL.
+ * Purpose: Generate a redesigned room image preserving room structure,
+ * with product placement overlay data.
+ * 
+ * Target Model: SDXL + ControlNet (Depth/Canny) via Replicate
+ * Current Mode: MOCK — returns placeholder + placement map.
  */
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -27,12 +29,7 @@ serve(async (req) => {
       );
     }
 
-    // TODO: When Replicate API key is configured, call:
-    // 1. Depth estimation model to get depth map from room image
-    // 2. SDXL + ControlNet (depth) to generate redesigned room
-    // Prompt built from: style + furniturePlan + roomAnalysis
-
-    console.log('[generate-room-design] Running mock generation for style:', style);
+    console.log('[generate-room-design] Generating design for style:', style);
 
     const stylePrompts: Record<string, string> = {
       modern: 'A modern minimalist living room with clean lines, neutral palette, sleek furniture',
@@ -45,10 +42,56 @@ serve(async (req) => {
 
     const prompt = stylePrompts[style] || `A beautifully designed ${style} room`;
 
+    // Build placement map from furniture plan
+    const placementPlan = (furniturePlan?.recommendedFurniture || []).map((item: any, index: number) => {
+      // Mock placement coordinates based on furniture type
+      const placements: Record<string, { x: number; y: number; scale: number }> = {
+        sofa: { x: 0.3, y: 0.6, scale: 0.35 },
+        'coffee table': { x: 0.45, y: 0.7, scale: 0.15 },
+        'floor lamp': { x: 0.1, y: 0.3, scale: 0.12 },
+        'side table': { x: 0.7, y: 0.55, scale: 0.1 },
+        bookshelf: { x: 0.85, y: 0.4, scale: 0.2 },
+        'accent chair': { x: 0.65, y: 0.55, scale: 0.18 },
+        'area rug': { x: 0.4, y: 0.75, scale: 0.4 },
+        'pendant light': { x: 0.45, y: 0.1, scale: 0.12 },
+        'woven pouf': { x: 0.6, y: 0.7, scale: 0.08 },
+        console: { x: 0.5, y: 0.45, scale: 0.2 },
+      };
+
+      const pos = placements[item.type] || { x: 0.5, y: 0.5, scale: 0.15 };
+
+      return {
+        type: item.type,
+        placement: item.placement,
+        position: pos,
+        layer: index,
+        shadow: true,
+        perspective: 'front',
+      };
+    });
+
+    // TODO: When Replicate API key is configured:
+    // 1. Run depth estimation on input image
+    // 2. Build ControlNet conditioning from depth map
+    // 3. Generate with SDXL + ControlNet (depth/canny)
+    // 4. For product placement overlay:
+    //    a. Get product cutout images (transparent PNG)
+    //    b. Scale based on perspective and room geometry
+    //    c. Composite onto generated image with shadows
+
     const mockResult = {
       imageUrl: `https://placehold.co/800x600/F5F0EB/4A4A4A?text=AI+Generated+${encodeURIComponent(style)}+Room`,
       prompt,
       controlNetType: 'depth' as const,
+      placementPlan,
+      compositeMethod: 'mock', // 'controlnet' | 'direct-composite' | 'mock'
+      metadata: {
+        roomType: roomAnalysis?.roomType || 'living-room',
+        detectedItemCount: roomAnalysis?.detectedFurniture?.length || 0,
+        placedItemCount: placementPlan.length,
+        styleApplied: style,
+        budgetTier: budget,
+      },
     };
 
     return new Response(
