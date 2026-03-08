@@ -286,6 +286,44 @@ const Catalog = () => {
                 </div>
               </div>
 
+              {/* Style Tags */}
+              <div>
+                <h3 className="mb-4 font-display text-sm font-semibold uppercase tracking-wider">
+                  Style
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {styleOptions.map((style) => (
+                    <Badge
+                      key={style}
+                      variant={selectedStyles.includes(style) ? 'default' : 'outline'}
+                      className="cursor-pointer capitalize"
+                      onClick={() => toggleStyle(style)}
+                    >
+                      {style}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Materials */}
+              <div>
+                <h3 className="mb-4 font-display text-sm font-semibold uppercase tracking-wider">
+                  Material
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {materialOptions.map((material) => (
+                    <Badge
+                      key={material}
+                      variant={selectedMaterials.includes(material) ? 'default' : 'outline'}
+                      className="cursor-pointer capitalize"
+                      onClick={() => toggleMaterial(material)}
+                    >
+                      {material}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
               {/* Clear Filters */}
               {hasActiveFilters && (
                 <Button
