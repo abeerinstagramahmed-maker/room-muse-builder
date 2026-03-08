@@ -6,6 +6,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/contexts/CartContext';
 import { ShoppingBag, Star, Truck, RotateCcw, Shield, ChevronLeft } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
+import { RecentlyViewedSection } from '@/components/product/RecentlyViewedSection';
 import { cn } from '@/lib/utils';
 import { ProductCard } from '@/components/product/ProductCard';
 import { ReviewSection } from '@/components/product/ReviewSection';
@@ -16,6 +18,7 @@ const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { products, loading, getProductById } = useProducts();
   const { addItem } = useCart();
+  const { addToRecentlyViewed } = useRecentlyViewed();
   const [product, setProduct] = useState<Product | null>(null);
   const [productLoading, setProductLoading] = useState(true);
   const [selectedColor, setSelectedColor] = useState<string | undefined>();
@@ -28,11 +31,12 @@ const ProductDetail = () => {
         const fetchedProduct = await getProductById(id);
         setProduct(fetchedProduct);
         setSelectedColor(fetchedProduct?.colors?.[0]);
+        if (fetchedProduct) addToRecentlyViewed(fetchedProduct.id);
         setProductLoading(false);
       }
     };
     loadProduct();
-  }, [id, getProductById]);
+  }, [id, getProductById, addToRecentlyViewed]);
 
   if (productLoading || loading) {
     return (
@@ -266,6 +270,9 @@ const ProductDetail = () => {
             </div>
           </section>
         )}
+
+        {/* Recently Viewed */}
+        <RecentlyViewedSection />
       </div>
     </Layout>
   );

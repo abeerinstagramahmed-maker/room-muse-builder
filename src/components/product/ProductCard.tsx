@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom';
 import { Product } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { ShoppingBag, Star, Sparkles, Heart } from 'lucide-react';
+import { ShoppingBag, Star, Sparkles, Heart, ArrowLeftRight } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useWishlist } from '@/hooks/useWishlist';
+import { useCompare } from '@/contexts/CompareContext';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
 
 interface ProductCardProps {
   product: Product;
@@ -15,6 +15,7 @@ interface ProductCardProps {
 export const ProductCard = ({ product, className }: ProductCardProps) => {
   const { addItem } = useCart();
   const { toggleWishlist, isWishlisted } = useWishlist();
+  const { addToCompare, isComparing } = useCompare();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -77,6 +78,23 @@ export const ProductCard = ({ product, className }: ProductCardProps) => {
           }}
         >
           <Heart className={cn("h-5 w-5", isWishlisted(product.id) && "fill-current")} />
+        </button>
+
+        {/* Compare button */}
+        <button
+          className={cn(
+            "absolute right-3 top-14 flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-sm transition-all duration-300 group-hover:opacity-100",
+            isComparing(product.id)
+              ? "bg-secondary/10 text-secondary opacity-100"
+              : "bg-background/80 text-muted-foreground opacity-0 hover:bg-background hover:text-secondary"
+          )}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            addToCompare(product);
+          }}
+        >
+          <ArrowLeftRight className="h-4 w-4" />
         </button>
 
         {/* Quick Add Button */}

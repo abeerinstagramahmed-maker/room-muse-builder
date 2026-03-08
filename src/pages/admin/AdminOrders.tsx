@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Search, Eye, ChevronDown } from 'lucide-react';
+import { useState, useCallback } from 'react';
+import { Search, Eye, ChevronDown, Download, FileText } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { useAdminOrders } from '@/hooks/useAdminOrders';
 import { Button } from '@/components/ui/button';
@@ -63,12 +63,65 @@ export default function AdminOrders() {
     await updateOrderStatus(orderId, status);
   };
 
+  const exportCSV = useCallback(() => {
+    const headers = ['Order ID', 'Customer Email', 'Date', 'Items', 'Total', 'Status'];
+    const rows = filteredOrders.map(o => [
+      o.id.slice(0, 8),
+      o.contact_email || 'Guest',
+      new Date(o.created_at).toLocaleDateString(),
+      String(o.items?.length || 0),
+      `$${o.total.toFixed(2)}`,
+      o.status,
+    ]);
+    const csv = [headers, ...rows].map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click(); URL.revokeObjectURL(url);
+  }, [filteredOrders]);
+
+  const exportPDF = useCallback(async () => {
+    const { default: jsPDF } = await import('jspdf');
+    const { default: autoTable } = await import('jspdf-autotable');
+    const doc = new jsPDF();
+    doc.setFontSize(18);
+    doc.text('Orders Report', 14, 22);
+    doc.setFontSize(10);
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 30);
+    autoTable(doc, {
+      startY: 36,
+      head: [['Order ID', 'Email', 'Date', 'Items', 'Total', 'Status']],
+      body: filteredOrders.map(o => [
+        o.id.slice(0, 8),
+        o.contact_email || 'Guest',
+        new Date(o.created_at).toLocaleDateString(),
+        String(o.items?.length || 0),
+        `$${o.total.toFixed(2)}`,
+        o.status,
+      ]),
+    });
+    doc.save(`orders-${new Date().toISOString().slice(0, 10)}.pdf`);
+  }, [filteredOrders]);
+
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Orders</h1>
-          <p className="text-muted-foreground">View and manage customer orders</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-display font-bold text-foreground">Orders</h1>
+            <p className="text-muted-foreground">View and manage customer orders</p>
+          </div>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="gap-2" onClick={exportCSV}>
+              <Download className="h-4 w-4" />
+              CSV
+            </Button>
+            <Button variant="outline" size="sm" className="gap-2" onClick={exportPDF}>
+              <FileText className="h-4 w-4" />
+              PDF
+            </Button>
+          </div>
         </div>
 
         {/* Search */}
