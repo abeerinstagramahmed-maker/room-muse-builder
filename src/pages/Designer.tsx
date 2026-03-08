@@ -162,6 +162,7 @@ const Designer = () => {
 
           <DesignResults
             isGenerating={isGenerating}
+            pipelineStep={pipelineStep}
             designResult={designResult}
             totalPrice={totalPrice}
             onAddAllToCart={handleAddAllToCart}
