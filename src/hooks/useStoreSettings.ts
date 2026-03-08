@@ -106,6 +106,12 @@ export function useStoreSettings() {
     try {
       await upsertSetting('stripe', stripe);
       await upsertSetting('store', store);
+
+      // Also save email settings separately for edge functions
+      if ((store as any).emailSettings) {
+        await upsertSetting('email', (store as any).emailSettings);
+      }
+
       if (pricing) {
         await upsertSetting('subscription_pricing', pricing);
         setSubscriptionPricing(pricing);
