@@ -254,6 +254,39 @@ const OrderDetail = () => {
           </div>
         </div>
       </div>
+
+        {/* Cancel Order Dialog */}
+        <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Cancel this order?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will cancel your order and initiate a refund. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Keep Order</AlertDialogCancel>
+              <AlertDialogAction
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                disabled={cancelling}
+                onClick={async () => {
+                  setCancelling(true);
+                  const success = await cancelOrder(order.id);
+                  setCancelling(false);
+                  if (success) {
+                    const updated = await getOrderById(order.id);
+                    setOrder(updated);
+                  }
+                  setCancelDialogOpen(false);
+                }}
+              >
+                {cancelling ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Cancel Order
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </Layout>
   );
 };
