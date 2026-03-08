@@ -6,6 +6,7 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -111,6 +112,8 @@ export const Header = ({ variant = 'default' }: HeaderProps) => {
 
         {/* Right Section */}
         <div className="flex items-center gap-2">
+          <ThemeToggle />
+
           {/* Auth */}
           {isAuthenticated ? (
             <DropdownMenu>

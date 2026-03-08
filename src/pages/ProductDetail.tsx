@@ -8,6 +8,8 @@ import { ShoppingBag, Star, Truck, RotateCcw, Shield, ChevronLeft } from 'lucide
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { ProductCard } from '@/components/product/ProductCard';
+import { ReviewSection } from '@/components/product/ReviewSection';
+import { SEOHead } from '@/components/SEOHead';
 import { Product } from '@/lib/types';
 
 const ProductDetail = () => {
@@ -74,6 +76,11 @@ const ProductDetail = () => {
 
   return (
     <Layout>
+      <SEOHead 
+        title={product.name} 
+        description={product.description || `Shop ${product.name} at Roomly`}
+        type="product"
+      />
       <div className="container py-8">
         {/* Breadcrumb */}
         <Link
@@ -244,6 +251,9 @@ const ProductDetail = () => {
             )}
           </div>
         </div>
+
+        {/* Reviews */}
+        <ReviewSection productId={product.id} />
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
