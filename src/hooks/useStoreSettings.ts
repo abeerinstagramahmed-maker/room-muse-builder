@@ -7,6 +7,7 @@ interface StripeSettings {
   testMode: boolean;
   publishableKey: string;
   secretKey: string;
+  webhookSigningSecret?: string;
 }
 
 interface StoreSettings {
