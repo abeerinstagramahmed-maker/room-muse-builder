@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CreditCard, Key, Save, ExternalLink, Loader2, Crown, ShoppingCart, Search as SearchIcon, Brain, Bot, Cpu, ToggleLeft } from 'lucide-react';
+import { CreditCard, Key, Save, ExternalLink, Loader2, Crown, ShoppingCart, Search as SearchIcon, Brain, Bot, Cpu, ToggleLeft, Mail, Bell } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,6 +23,16 @@ export default function AdminSettings() {
   const [stripeTestMode, setStripeTestMode] = useState(true);
   const [publishableKey, setPublishableKey] = useState('');
   const [secretKey, setSecretKey] = useState('');
+  const [webhookSigningSecret, setWebhookSigningSecret] = useState('');
+
+  // Email settings
+  const [emailEnabled, setEmailEnabled] = useState(false);
+  const [resendApiKey, setResendApiKey] = useState('');
+  const [fromEmail, setFromEmail] = useState('');
+  const [fromName, setFromName] = useState('');
+  const [emailOnConfirmation, setEmailOnConfirmation] = useState(true);
+  const [emailOnShipped, setEmailOnShipped] = useState(true);
+  const [emailOnDelivered, setEmailOnDelivered] = useState(true);
   
   const [storeName, setStoreName] = useState('');
   const [supportEmail, setSupportEmail] = useState('');
@@ -52,6 +62,7 @@ export default function AdminSettings() {
       setStripeTestMode(stripeSettings.testMode);
       setPublishableKey(stripeSettings.publishableKey);
       setSecretKey(stripeSettings.secretKey || '');
+      setWebhookSigningSecret((stripeSettings as any).webhookSigningSecret || '');
       
       setStoreName(storeSettings.name);
       setSupportEmail(storeSettings.supportEmail);
@@ -70,6 +81,18 @@ export default function AdminSettings() {
       setAmazonAssociateTag((storeSettings as any).amazonAssociateTag || '');
       setFirecrawlApiKey((storeSettings as any).firecrawlApiKey || '');
       setAutoOrderEnabled((storeSettings as any).autoOrderEnabled || false);
+
+      // Load email settings
+      const emailData = (storeSettings as any).emailSettings;
+      if (emailData) {
+        setEmailEnabled(emailData.enabled ?? false);
+        setResendApiKey(emailData.resendApiKey ?? '');
+        setFromEmail(emailData.fromEmail ?? '');
+        setFromName(emailData.fromName ?? '');
+        setEmailOnConfirmation(emailData.emailOnConfirmation ?? true);
+        setEmailOnShipped(emailData.emailOnShipped ?? true);
+        setEmailOnDelivered(emailData.emailOnDelivered ?? true);
+      }
     }
   }, [loading, stripeSettings, storeSettings, subscriptionPricing]);
 
@@ -80,6 +103,7 @@ export default function AdminSettings() {
         testMode: stripeTestMode,
         publishableKey,
         secretKey,
+        webhookSigningSecret,
       },
       {
         name: storeName,
@@ -95,6 +119,15 @@ export default function AdminSettings() {
         firecrawlApiKey,
         autoOrderEnabled,
         aiSettings,
+        emailSettings: {
+          enabled: emailEnabled,
+          resendApiKey,
+          fromEmail,
+          fromName,
+          emailOnConfirmation,
+          emailOnShipped,
+          emailOnDelivered,
+        },
       } as any,
       {
         monthlyPrice: parseFloat(monthlyPrice) || 9.99,
@@ -130,6 +163,7 @@ export default function AdminSettings() {
             <TabsTrigger value="ai-settings">AI Settings</TabsTrigger>
             <TabsTrigger value="product-sourcing">Product Sourcing</TabsTrigger>
             <TabsTrigger value="fulfillment">Fulfillment</TabsTrigger>
+            <TabsTrigger value="email">Email</TabsTrigger>
           </TabsList>
 
           {/* General */}
@@ -220,6 +254,11 @@ export default function AdminSettings() {
                         <div>
                           <Label className="text-xs text-muted-foreground">Secret Key</Label>
                           <Input type="password" value={secretKey} onChange={(e) => setSecretKey(e.target.value)} placeholder={stripeTestMode ? "sk_test_..." : "sk_live_..."} className="mt-1 font-mono text-sm" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Webhook Signing Secret</Label>
+                          <Input type="password" value={webhookSigningSecret} onChange={(e) => setWebhookSigningSecret(e.target.value)} placeholder="whsec_..." className="mt-1 font-mono text-sm" />
+                          <p className="text-xs text-muted-foreground mt-1">Optional — verifies webhook requests from Stripe. Find it in Stripe Dashboard → Webhooks.</p>
                         </div>
                       </div>
                       <Button variant="outline" size="sm" asChild>
@@ -546,6 +585,90 @@ export default function AdminSettings() {
                       ⚠️ Automatic ordering requires vendor API integrations to be configured. This feature is being built — orders will be queued for manual placement until vendor APIs are connected.
                     </AlertDescription>
                   </Alert>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Email Notifications */}
+          <TabsContent value="email" className="space-y-4 mt-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Mail className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="font-display">Email Notifications</CardTitle>
+                    <CardDescription>Send order emails via Resend</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Enable Email Notifications</Label>
+                    <p className="text-sm text-muted-foreground">Send order updates to customers via email</p>
+                  </div>
+                  <Switch checked={emailEnabled} onCheckedChange={setEmailEnabled} />
+                </div>
+                {emailEnabled && (
+                  <>
+                    <Separator />
+                    <div className="space-y-4 p-4 rounded-lg bg-muted/50">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Resend API Key</Label>
+                        <Input type="password" value={resendApiKey} onChange={(e) => setResendApiKey(e.target.value)} placeholder="re_..." className="mt-1 font-mono text-sm" />
+                      </div>
+                      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">From Email</Label>
+                          <Input value={fromEmail} onChange={(e) => setFromEmail(e.target.value)} placeholder="orders@yourdomain.com" className="mt-1" />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">From Name</Label>
+                          <Input value={fromName} onChange={(e) => setFromName(e.target.value)} placeholder="Roomly" className="mt-1" />
+                        </div>
+                      </div>
+                      <Button variant="outline" size="sm" asChild>
+                        <a href="https://resend.com/api-keys" target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Get Resend API Key
+                        </a>
+                      </Button>
+                    </div>
+                    <Separator />
+                    <div className="space-y-4">
+                      <h4 className="font-display text-sm font-semibold">Notification Triggers</h4>
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label>Order Confirmation</Label>
+                          <p className="text-xs text-muted-foreground">When payment is confirmed</p>
+                        </div>
+                        <Switch checked={emailOnConfirmation} onCheckedChange={setEmailOnConfirmation} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label>Order Shipped</Label>
+                          <p className="text-xs text-muted-foreground">When admin marks as shipped</p>
+                        </div>
+                        <Switch checked={emailOnShipped} onCheckedChange={setEmailOnShipped} />
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label>Order Delivered</Label>
+                          <p className="text-xs text-muted-foreground">When admin marks as delivered</p>
+                        </div>
+                        <Switch checked={emailOnDelivered} onCheckedChange={setEmailOnDelivered} />
+                      </div>
+                    </div>
+                    <Alert>
+                      <Bell className="h-4 w-4" />
+                      <AlertDescription>
+                        To send emails from your own domain (e.g., orders@yourdomain.com), verify your domain in Resend first. Otherwise, use Resend's default sender.
+                      </AlertDescription>
+                    </Alert>
+                  </>
                 )}
               </CardContent>
             </Card>

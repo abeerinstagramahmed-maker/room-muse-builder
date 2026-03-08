@@ -34,6 +34,7 @@ Deno.serve(async (req) => {
     const stripeSettings = settingsData.value as {
       enabled: boolean;
       secretKey: string;
+      webhookSigningSecret?: string;
     };
 
     if (!stripeSettings.secretKey) {
@@ -50,15 +51,19 @@ Deno.serve(async (req) => {
     const body = await req.text();
     const signature = req.headers.get("stripe-signature");
 
-    // If webhook signing secret is configured, verify signature
-    // For now, we parse the event directly since the signing secret
-    // can be configured later in admin settings
     let event: Stripe.Event;
 
-    if (signature) {
-      // TODO: Add webhook signing secret to store_settings for production
-      // For now, construct the event from the body
-      event = JSON.parse(body) as Stripe.Event;
+    // Verify webhook signature if signing secret is configured
+    if (signature && stripeSettings.webhookSigningSecret) {
+      try {
+        event = stripe.webhooks.constructEvent(body, signature, stripeSettings.webhookSigningSecret);
+      } catch (err) {
+        console.error("Webhook signature verification failed:", err);
+        return new Response(
+          JSON.stringify({ error: "Webhook signature verification failed" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     } else {
       event = JSON.parse(body) as Stripe.Event;
     }
@@ -69,16 +74,26 @@ Deno.serve(async (req) => {
         const orderId = session.metadata?.order_id;
 
         if (orderId) {
-          // Update order status to paid
+          // Update order status to confirmed + paid
           await supabase
             .from("orders")
             .update({
-              status: "paid",
+              status: "confirmed",
+              payment_status: "paid",
               stripe_payment_intent_id: session.payment_intent as string,
             })
             .eq("id", orderId);
 
-          console.log(`Order ${orderId} marked as paid`);
+          console.log(`Order ${orderId} marked as confirmed/paid`);
+
+          // Trigger order confirmation email
+          try {
+            await supabase.functions.invoke("send-order-email", {
+              body: { orderId, type: "order_confirmation" },
+            });
+          } catch (emailErr) {
+            console.error("Failed to send confirmation email:", emailErr);
+          }
         }
         break;
       }
@@ -90,7 +105,7 @@ Deno.serve(async (req) => {
         if (orderId) {
           await supabase
             .from("orders")
-            .update({ status: "cancelled" })
+            .update({ status: "cancelled", payment_status: "unpaid" })
             .eq("id", orderId);
 
           console.log(`Order ${orderId} cancelled (session expired)`);
