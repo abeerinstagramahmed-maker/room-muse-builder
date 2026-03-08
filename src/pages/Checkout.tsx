@@ -225,7 +225,7 @@ const Checkout = () => {
                 disabled={isProcessing}
               >
                 <Lock className="h-4 w-4" />
-                {isProcessing ? 'Processing...' : `Pay $${orderTotal.toFixed(2)}`}
+                {isProcessing ? 'Processing...' : `Pay $${adjustedTotal.toFixed(2)}`}
               </Button>
 
               <p className="text-center text-sm text-muted-foreground">
