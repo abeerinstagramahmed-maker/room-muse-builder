@@ -75,6 +75,7 @@ export default function Pricing() {
 
   return (
     <Layout>
+      <SEOHead title="Pricing Plans" description="Choose the right Roomly plan for your interior design needs. Free, Pro, and Business options available." />
       <div className="container py-12 md:py-20">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="font-display text-3xl font-bold md:text-5xl">

@@ -44,6 +44,7 @@ const Checkout = () => {
 
   return (
     <Layout>
+      <SEOHead title="Checkout" description="Complete your Roomly furniture order securely." />
       <div className="container py-8 md:py-12">
         <Link
           to="/cart"

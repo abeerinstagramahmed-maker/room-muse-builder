@@ -74,6 +74,7 @@ const Designer = () => {
 
   return (
     <Layout>
+      <SEOHead title="AI Room Designer" description="Upload your room photo and get AI-powered furniture recommendations tailored to your style and budget." />
       <div className="container py-8 md:py-12">
         <div className="mb-8 text-center">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
