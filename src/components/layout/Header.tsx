@@ -112,6 +112,8 @@ export const Header = ({ variant = 'default' }: HeaderProps) => {
 
         {/* Right Section */}
         <div className="flex items-center gap-2">
+          <ThemeToggle />
+
           {/* Auth */}
           {isAuthenticated ? (
             <DropdownMenu>

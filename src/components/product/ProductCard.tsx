@@ -64,14 +64,19 @@ export const ProductCard = ({ product, className }: ProductCardProps) => {
 
         {/* Wishlist button */}
         <button 
-          className="absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full bg-background/80 text-muted-foreground opacity-0 backdrop-blur-sm transition-all duration-300 hover:bg-background hover:text-primary group-hover:opacity-100"
+          className={cn(
+            "absolute right-3 top-3 flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-sm transition-all duration-300 group-hover:opacity-100",
+            isWishlisted(product.id)
+              ? "bg-primary/10 text-primary opacity-100"
+              : "bg-background/80 text-muted-foreground opacity-0 hover:bg-background hover:text-primary"
+          )}
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            // TODO: Add wishlist functionality
+            toggleWishlist(product.id);
           }}
         >
-          <Heart className="h-5 w-5" />
+          <Heart className={cn("h-5 w-5", isWishlisted(product.id) && "fill-current")} />
         </button>
 
         {/* Quick Add Button */}
