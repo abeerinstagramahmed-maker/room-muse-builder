@@ -6,19 +6,35 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Mail, MessageSquare, Clock } from 'lucide-react';
+import { Mail, MessageSquare, Clock, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 const Contact = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({ title: 'Message sent!', description: 'We\'ll get back to you within 24 hours.' });
-    setName(''); setEmail(''); setMessage('');
+    setSubmitting(true);
+
+    try {
+      const { error } = await supabase
+        .from('contact_messages' as any)
+        .insert({ name: name.trim(), email: email.trim(), message: message.trim() } as any);
+
+      if (error) throw error;
+
+      toast({ title: 'Message sent!', description: "We'll get back to you within 24 hours." });
+      setName(''); setEmail(''); setMessage('');
+    } catch (err: any) {
+      toast({ title: 'Failed to send', description: err.message || 'Please try again.', variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -67,17 +83,20 @@ const Contact = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name</Label>
-                  <Input id="name" value={name} onChange={e => setName(e.target.value)} required />
+                  <Input id="name" value={name} onChange={e => setName(e.target.value)} required maxLength={100} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
+                  <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required maxLength={255} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="message">Message</Label>
-                  <Textarea id="message" rows={5} value={message} onChange={e => setMessage(e.target.value)} required />
+                  <Textarea id="message" rows={5} value={message} onChange={e => setMessage(e.target.value)} required maxLength={2000} />
                 </div>
-                <Button type="submit" className="w-full">Send Message</Button>
+                <Button type="submit" className="w-full" disabled={submitting}>
+                  {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Send Message
+                </Button>
               </form>
             </CardContent>
           </Card>

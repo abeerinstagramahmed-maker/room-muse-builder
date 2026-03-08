@@ -40,6 +40,7 @@ const OrderConfirmation = () => {
 
   return (
     <Layout>
+      <SEOHead title="Order Confirmed" description="Your Roomly order has been placed successfully." />
       <div className="container py-12 md:py-20">
         <div className="mx-auto max-w-2xl text-center">
           {/* Success Icon */}
