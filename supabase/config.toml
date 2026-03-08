@@ -32,3 +32,6 @@ verify_jwt = false
 
 [functions.fetch-amazon-products]
 verify_jwt = false
+
+[functions.catalog-refresh]
+verify_jwt = false

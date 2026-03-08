@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { CreditCard, Key, Save, ExternalLink, Loader2, Crown, ShoppingCart, Search as SearchIcon, Brain, Bot, Cpu, ToggleLeft, Mail, Bell } from 'lucide-react';
+import { CreditCard, Key, Save, ExternalLink, Loader2, Crown, ShoppingCart, Search as SearchIcon, Brain, Bot, Cpu, ToggleLeft, Mail, Bell, RefreshCw, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,6 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { defaultAISettings, AISettings } from '@/services/aiProvider';
+import { supabase } from '@/integrations/supabase/client';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function AdminSettings() {
   const { 
@@ -55,6 +58,48 @@ export default function AdminSettings() {
 
   // AI Settings
   const [aiSettings, setAiSettings] = useState<AISettings>(defaultAISettings);
+
+  // Catalog refresh state
+  const [refreshRunning, setRefreshRunning] = useState(false);
+  const [refreshLog, setRefreshLog] = useState<any>(null);
+  const [refreshCategories, setRefreshCategories] = useState<string[]>([]);
+  const [refreshStores, setRefreshStores] = useState<string[]>([]);
+  const [refreshLimit, setRefreshLimit] = useState('5');
+  const [refreshDryRun, setRefreshDryRun] = useState(false);
+
+  const allCategories = ['sofas', 'tables', 'chairs', 'beds', 'storage', 'desks', 'lighting', 'decor'];
+  const allStores = ['Wayfair', 'West Elm', 'IKEA'];
+
+  const loadRefreshLog = async () => {
+    const { data } = await supabase
+      .from('store_settings')
+      .select('value')
+      .eq('key', 'catalog_refresh_log')
+      .maybeSingle();
+    if (data) setRefreshLog(data.value);
+  };
+
+  const runCatalogRefresh = async () => {
+    setRefreshRunning(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('catalog-refresh', {
+        body: {
+          categories: refreshCategories.length ? refreshCategories : undefined,
+          stores: refreshStores.length ? refreshStores : undefined,
+          limit: parseInt(refreshLimit) || 5,
+          dryRun: refreshDryRun,
+        },
+      });
+      if (error) throw error;
+      setRefreshLog(data);
+    } catch (err: any) {
+      console.error('Catalog refresh error:', err);
+    } finally {
+      setRefreshRunning(false);
+    }
+  };
+
+  useEffect(() => { loadRefreshLog(); }, []);
 
   useEffect(() => {
     if (!loading) {
@@ -163,7 +208,7 @@ export default function AdminSettings() {
             <TabsTrigger value="ai-settings">AI Settings</TabsTrigger>
             <TabsTrigger value="product-sourcing">Product Sourcing</TabsTrigger>
             <TabsTrigger value="fulfillment">Fulfillment</TabsTrigger>
-            <TabsTrigger value="email">Email</TabsTrigger>
+            <TabsTrigger value="catalog-refresh">Catalog Refresh</TabsTrigger>
           </TabsList>
 
           {/* General */}
@@ -670,6 +715,143 @@ export default function AdminSettings() {
                     </Alert>
                   </>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Catalog Refresh */}
+          <TabsContent value="catalog-refresh" className="space-y-4 mt-4">
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <RefreshCw className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <CardTitle className="font-display">Catalog Refresh</CardTitle>
+                    <CardDescription>Automatically scrape and import products from furniture stores</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Last run status */}
+                {refreshLog && (
+                  <div className="p-4 rounded-lg bg-muted/50 space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      {refreshLog.errors > 0 ? (
+                        <AlertCircle className="h-4 w-4 text-destructive" />
+                      ) : (
+                        <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      )}
+                      Last Run
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+                      <div>
+                        <span className="text-muted-foreground">Time</span>
+                        <p className="font-mono text-xs">{refreshLog.lastRun ? new Date(refreshLog.lastRun).toLocaleString() : 'Never'}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Found</span>
+                        <p><Badge variant="secondary">{refreshLog.productsFound ?? 0}</Badge></p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Inserted</span>
+                        <p><Badge variant="secondary">{refreshLog.inserted ?? 0}</Badge></p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Mode</span>
+                        <p><Badge variant={refreshLog.mode === 'live' ? 'default' : 'outline'}>{refreshLog.mode ?? 'unknown'}</Badge></p>
+                      </div>
+                    </div>
+                    {refreshLog.errors > 0 && (
+                      <p className="text-xs text-destructive">{refreshLog.errors} error(s) during last run</p>
+                    )}
+                  </div>
+                )}
+
+                <Separator />
+
+                {/* Store selection */}
+                <div className="space-y-3">
+                  <Label>Stores to scrape</Label>
+                  <div className="flex flex-wrap gap-3">
+                    {allStores.map(store => (
+                      <label key={store} className="flex items-center gap-2 text-sm">
+                        <Checkbox
+                          checked={refreshStores.includes(store)}
+                          onCheckedChange={(checked) => {
+                            setRefreshStores(prev =>
+                              checked ? [...prev, store] : prev.filter(s => s !== store)
+                            );
+                          }}
+                        />
+                        {store}
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Leave unchecked to scrape all stores</p>
+                </div>
+
+                {/* Category selection */}
+                <div className="space-y-3">
+                  <Label>Categories to refresh</Label>
+                  <div className="flex flex-wrap gap-3">
+                    {allCategories.map(cat => (
+                      <label key={cat} className="flex items-center gap-2 text-sm capitalize">
+                        <Checkbox
+                          checked={refreshCategories.includes(cat)}
+                          onCheckedChange={(checked) => {
+                            setRefreshCategories(prev =>
+                              checked ? [...prev, cat] : prev.filter(c => c !== cat)
+                            );
+                          }}
+                        />
+                        {cat}
+                      </label>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Leave unchecked to refresh all categories</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Products per category/store</Label>
+                    <Input
+                      type="number"
+                      value={refreshLimit}
+                      onChange={(e) => setRefreshLimit(e.target.value)}
+                      min="1"
+                      max="20"
+                    />
+                  </div>
+                  <div className="flex items-end">
+                    <label className="flex items-center gap-2 text-sm pb-2">
+                      <Checkbox
+                        checked={refreshDryRun}
+                        onCheckedChange={(c) => setRefreshDryRun(!!c)}
+                      />
+                      Dry run (preview only, don't insert)
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <Button onClick={runCatalogRefresh} disabled={refreshRunning}>
+                    {refreshRunning ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : (
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                    )}
+                    {refreshRunning ? 'Refreshing...' : 'Run Catalog Refresh'}
+                  </Button>
+                </div>
+
+                <Alert>
+                  <Clock className="h-4 w-4" />
+                  <AlertDescription>
+                    <strong>Scheduling:</strong> To run this automatically (e.g., daily), configure a Firecrawl API key in the Product Sourcing tab. The refresh uses Firecrawl for real scraping; without it, mock products are generated. You can trigger a manual refresh anytime from this panel.
+                  </AlertDescription>
+                </Alert>
               </CardContent>
             </Card>
           </TabsContent>
