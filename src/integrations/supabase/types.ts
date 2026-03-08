@@ -14,6 +14,90 @@ export type Database = {
   }
   public: {
     Tables: {
+      contact_messages: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          is_read: boolean
+          message: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          is_read?: boolean
+          message: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      coupons: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          min_order: number | null
+          used_count: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          discount_type?: string
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          min_order?: number | null
+          used_count?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          min_order?: number | null
+          used_count?: number
+        }
+        Relationships: []
+      }
+      newsletter_subscribers: {
+        Row: {
+          email: string
+          id: string
+          subscribed_at: string
+        }
+        Insert: {
+          email: string
+          id?: string
+          subscribed_at?: string
+        }
+        Update: {
+          email?: string
+          id?: string
+          subscribed_at?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           commission_amount: number | null
