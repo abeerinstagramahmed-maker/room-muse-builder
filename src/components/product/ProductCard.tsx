@@ -15,6 +15,7 @@ interface ProductCardProps {
 export const ProductCard = ({ product, className }: ProductCardProps) => {
   const { addItem } = useCart();
   const { toggleWishlist, isWishlisted } = useWishlist();
+  const { addToCompare, isComparing } = useCompare();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
