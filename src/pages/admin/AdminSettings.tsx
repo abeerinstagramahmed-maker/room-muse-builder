@@ -255,6 +255,11 @@ export default function AdminSettings() {
                           <Label className="text-xs text-muted-foreground">Secret Key</Label>
                           <Input type="password" value={secretKey} onChange={(e) => setSecretKey(e.target.value)} placeholder={stripeTestMode ? "sk_test_..." : "sk_live_..."} className="mt-1 font-mono text-sm" />
                         </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Webhook Signing Secret</Label>
+                          <Input type="password" value={webhookSigningSecret} onChange={(e) => setWebhookSigningSecret(e.target.value)} placeholder="whsec_..." className="mt-1 font-mono text-sm" />
+                          <p className="text-xs text-muted-foreground mt-1">Optional — verifies webhook requests from Stripe. Find it in Stripe Dashboard → Webhooks.</p>
+                        </div>
                       </div>
                       <Button variant="outline" size="sm" asChild>
                         <a href="https://dashboard.stripe.com/apikeys" target="_blank" rel="noopener noreferrer">
