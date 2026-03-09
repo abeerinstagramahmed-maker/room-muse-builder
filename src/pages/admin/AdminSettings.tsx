@@ -204,6 +204,7 @@ export default function AdminSettings() {
           <TabsList className="flex-wrap">
             <TabsTrigger value="general">General</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="email">Email</TabsTrigger>
             <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
             <TabsTrigger value="ai-settings">AI Settings</TabsTrigger>
             <TabsTrigger value="product-sourcing">Product Sourcing</TabsTrigger>
