@@ -152,12 +152,18 @@ const ProductDetail = () => {
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-16">
           {/* Images */}
           <div className="space-y-4">
-            <div className="aspect-square overflow-hidden rounded-2xl bg-muted">
+            <div
+              className="group relative aspect-square cursor-zoom-in overflow-hidden rounded-2xl bg-muted"
+              onClick={() => setLightboxOpen(true)}
+            >
               <img
                 src={product.images[selectedImage]}
                 alt={product.name}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all group-hover:bg-black/10 group-hover:opacity-100">
+                <ZoomIn className="h-8 w-8 text-white drop-shadow-lg" />
+              </div>
             </div>
             
             {product.images.length > 1 && (
