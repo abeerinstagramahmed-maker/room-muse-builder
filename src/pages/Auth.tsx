@@ -411,6 +411,7 @@ const Auth = () => {
                         onChange={(e) => setSignUpPassword(e.target.value)}
                       />
                     </div>
+                    <PasswordStrengthIndicator password={signUpPassword} />
                     {signUpErrors.password && (
                       <p className="text-sm text-destructive">{signUpErrors.password}</p>
                     )}
