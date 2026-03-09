@@ -109,6 +109,15 @@ const OrderDetail = () => {
                 {getStatusIcon(order.status)}
                 <span className="font-medium capitalize">{order.status}</span>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={() => generateInvoice(order)}
+              >
+                <FileDown className="h-4 w-4" />
+                Invoice
+              </Button>
               {(order.status === 'pending' || order.status === 'confirmed') && (
                 <Button
                   variant="outline"
