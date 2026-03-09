@@ -48,6 +48,7 @@ function mapDatabaseProductToProduct(dbProduct: DatabaseProduct): Product {
     dimensions: parseDimensions(dbProduct.dimensions),
     materials: dbProduct.materials || undefined,
     inStock: dbProduct.in_stock,
+    stockQuantity: dbProduct.stock_quantity,
     rating: dbProduct.rating || 0,
     reviewCount: dbProduct.review_count || 0,
     vendor: dbProduct.vendor,
