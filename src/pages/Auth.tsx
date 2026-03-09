@@ -159,6 +159,23 @@ const Auth = () => {
                 <p>⏱️ The link expires in 24 hours.</p>
               </div>
               <Button
+                variant="default"
+                className="w-full gap-2"
+                disabled={isSubmitting}
+                onClick={async () => {
+                  setIsSubmitting(true);
+                  await signUp(verificationEmail, signUpPassword, signUpName || undefined);
+                  setIsSubmitting(false);
+                  toast({
+                    title: 'Email resent',
+                    description: 'Check your inbox for a new verification link.',
+                  });
+                }}
+              >
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                Resend Verification Email
+              </Button>
+              <Button
                 variant="outline"
                 className="w-full gap-2"
                 onClick={() => {

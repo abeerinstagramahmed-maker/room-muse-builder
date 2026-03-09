@@ -119,6 +119,7 @@ const ResetPassword = () => {
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
+                <PasswordStrengthIndicator password={password} />
                 {errors.password && (
                   <p className="text-sm text-destructive">{errors.password}</p>
                 )}
