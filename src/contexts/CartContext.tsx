@@ -30,6 +30,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [items, setItems] = useState<CartItem[]>(loadCartFromStorage);
   const { toast } = useToast();
 
+  // Persist cart to localStorage on every change
+  useEffect(() => {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+  }, [items]);
+
   const addItem = useCallback((product: Product, quantity = 1, selectedColor?: string) => {
     setItems(prev => {
       const existingIndex = prev.findIndex(item => 

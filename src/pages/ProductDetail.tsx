@@ -313,6 +313,15 @@ const ProductDetail = () => {
           </div>
         </div>
 
+        {/* Lightbox */}
+        <ProductImageLightbox
+          images={product.images}
+          productName={product.name}
+          initialIndex={selectedImage}
+          open={lightboxOpen}
+          onOpenChange={setLightboxOpen}
+        />
+
         {/* Reviews */}
         <ReviewSection productId={product.id} />
 
