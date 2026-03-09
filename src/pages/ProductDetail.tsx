@@ -95,6 +95,30 @@ const ProductDetail = () => {
         description={product.description || `Shop ${product.name} at Roomly`}
         type="product"
       />
+      {/* JSON-LD Structured Data */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: product.name,
+        description: product.description,
+        image: product.images,
+        sku: product.id,
+        brand: { "@type": "Brand", name: "Roomly" },
+        offers: {
+          "@type": "Offer",
+          price: product.price,
+          priceCurrency: "USD",
+          availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+          url: window.location.href,
+        },
+        ...(product.rating ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: product.rating,
+            reviewCount: product.reviewCount || 0,
+          }
+        } : {}),
+      }) }} />
       <div className="container py-8">
         {/* Breadcrumb */}
         <Breadcrumb className="mb-6">
