@@ -32,6 +32,12 @@ import Contact from "./pages/Contact";
 import Shipping from "./pages/Shipping";
 import Returns from "./pages/Returns";
 import Compare from "./pages/Compare";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Cookies from "./pages/Cookies";
+import About from "./pages/About";
+import AdminCoupons from "./pages/admin/AdminCoupons";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
