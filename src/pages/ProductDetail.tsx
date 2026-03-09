@@ -4,8 +4,9 @@ import { useProducts } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCart } from '@/contexts/CartContext';
-import { ShoppingBag, Star, Truck, RotateCcw, Shield, Home } from 'lucide-react';
+import { ShoppingBag, Star, Truck, RotateCcw, Shield, Home, ZoomIn } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { ProductImageLightbox } from '@/components/product/ProductImageLightbox';
 import { useRecentlyViewed } from '@/hooks/useRecentlyViewed';
 import { RecentlyViewedSection } from '@/components/product/RecentlyViewedSection';
 import { cn } from '@/lib/utils';
@@ -31,6 +32,7 @@ const ProductDetail = () => {
   const [productLoading, setProductLoading] = useState(true);
   const [selectedColor, setSelectedColor] = useState<string | undefined>();
   const [selectedImage, setSelectedImage] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -93,6 +95,30 @@ const ProductDetail = () => {
         description={product.description || `Shop ${product.name} at Roomly`}
         type="product"
       />
+      {/* JSON-LD Structured Data */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "Product",
+        name: product.name,
+        description: product.description,
+        image: product.images,
+        sku: product.id,
+        brand: { "@type": "Brand", name: "Roomly" },
+        offers: {
+          "@type": "Offer",
+          price: product.price,
+          priceCurrency: "USD",
+          availability: product.inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+          url: window.location.href,
+        },
+        ...(product.rating ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: product.rating,
+            reviewCount: product.reviewCount || 0,
+          }
+        } : {}),
+      }) }} />
       <div className="container py-8">
         {/* Breadcrumb */}
         <Breadcrumb className="mb-6">
@@ -126,12 +152,18 @@ const ProductDetail = () => {
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-16">
           {/* Images */}
           <div className="space-y-4">
-            <div className="aspect-square overflow-hidden rounded-2xl bg-muted">
+            <div
+              className="group relative aspect-square cursor-zoom-in overflow-hidden rounded-2xl bg-muted"
+              onClick={() => setLightboxOpen(true)}
+            >
               <img
                 src={product.images[selectedImage]}
                 alt={product.name}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all group-hover:bg-black/10 group-hover:opacity-100">
+                <ZoomIn className="h-8 w-8 text-white drop-shadow-lg" />
+              </div>
             </div>
             
             {product.images.length > 1 && (
@@ -280,6 +312,15 @@ const ProductDetail = () => {
             )}
           </div>
         </div>
+
+        {/* Lightbox */}
+        <ProductImageLightbox
+          images={product.images}
+          productName={product.name}
+          initialIndex={selectedImage}
+          open={lightboxOpen}
+          onOpenChange={setLightboxOpen}
+        />
 
         {/* Reviews */}
         <ReviewSection productId={product.id} />
