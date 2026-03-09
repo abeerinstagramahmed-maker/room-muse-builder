@@ -11,6 +11,7 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { Loader2, Mail, Lock, User, ArrowLeft, CheckCircle } from 'lucide-react';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { z } from 'zod';
+import { useToast } from '@/hooks/use-toast';
 import { lovable } from '@/integrations/lovable/index';
 import { Separator } from '@/components/ui/separator';
 
