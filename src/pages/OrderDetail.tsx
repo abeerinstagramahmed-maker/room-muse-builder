@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { useOrders, Order } from '@/hooks/useOrders';
-import { Loader2, ArrowLeft, Package, CheckCircle, Clock, XCircle, Ban } from 'lucide-react';
+import { Loader2, ArrowLeft, Package, CheckCircle, Clock, XCircle, Ban, FileDown } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import { generateInvoice } from '@/lib/generateInvoice';
 import {
   AlertDialog,
   AlertDialogAction,
