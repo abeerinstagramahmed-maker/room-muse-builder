@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Search, Eye, ChevronDown, Download, FileText, ExternalLink, Package, Truck, CheckCircle, Clock, MessageSquare, Copy } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { useAdminOrders } from '@/hooks/useAdminOrders';
 import { Button } from '@/components/ui/button';
