@@ -16,6 +16,7 @@ interface DatabaseProduct {
   dimensions: Json | null;
   materials: string[] | null;
   in_stock: boolean;
+  stock_quantity: number;
   rating: number | null;
   review_count: number | null;
   vendor: string;
