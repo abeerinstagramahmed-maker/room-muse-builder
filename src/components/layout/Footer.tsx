@@ -14,10 +14,10 @@ const footerLinks = {
     { label: 'Dining', href: '/catalog?category=dining' },
   ],
   company: [
-    { label: 'About Us', href: '#' },
-    { label: 'Careers', href: '#' },
-    { label: 'Press', href: '#' },
-    { label: 'Blog', href: '#' },
+    { label: 'About Us', href: '/about' },
+    { label: 'Privacy Policy', href: '/privacy' },
+    { label: 'Terms of Service', href: '/terms' },
+    { label: 'Cookie Policy', href: '/cookies' },
   ],
   support: [
     { label: 'Contact', href: '/contact' },
@@ -168,9 +168,9 @@ export const Footer = () => {
 
           {/* Legal */}
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <Link to="#" className="hover:text-foreground">Privacy</Link>
-            <Link to="#" className="hover:text-foreground">Terms</Link>
-            <Link to="#" className="hover:text-foreground">Cookies</Link>
+            <Link to="/privacy" className="hover:text-foreground">Privacy</Link>
+            <Link to="/terms" className="hover:text-foreground">Terms</Link>
+            <Link to="/cookies" className="hover:text-foreground">Cookies</Link>
           </div>
         </div>
       </div>

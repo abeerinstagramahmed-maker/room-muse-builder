@@ -32,6 +32,12 @@ import Contact from "./pages/Contact";
 import Shipping from "./pages/Shipping";
 import Returns from "./pages/Returns";
 import Compare from "./pages/Compare";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Cookies from "./pages/Cookies";
+import About from "./pages/About";
+import AdminCoupons from "./pages/admin/AdminCoupons";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const queryClient = new QueryClient();
 
@@ -54,8 +60,7 @@ const App = () => (
                 <Route path="/order-confirmation" element={<OrderConfirmation />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/account" element={<Account />} />
-                <Route path="/profile" element={<Profile />} />
+                {/* account/profile routes moved below with ProtectedRoute */}
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/order/:id" element={<OrderDetail />} />
                 <Route path="/faq" element={<FAQ />} />
@@ -63,12 +68,19 @@ const App = () => (
                 <Route path="/shipping" element={<Shipping />} />
                 <Route path="/returns" element={<Returns />} />
                 <Route path="/compare" element={<Compare />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/cookies" element={<Cookies />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 {/* Admin Routes */}
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="/admin/products" element={<AdminProducts />} />
                 <Route path="/admin/orders" element={<AdminOrders />} />
                 <Route path="/admin/users" element={<AdminUsers />} />
                 <Route path="/admin/content" element={<AdminContent />} />
+                <Route path="/admin/coupons" element={<AdminCoupons />} />
                 <Route path="/admin/settings" element={<AdminSettings />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>

@@ -15,6 +15,7 @@ export interface Product {
   };
   materials?: string[];
   inStock: boolean;
+  stockQuantity?: number;
   rating: number;
   reviewCount: number;
   vendor: string;
