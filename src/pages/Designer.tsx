@@ -2,7 +2,7 @@ import { Layout } from '@/components/layout/Layout';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
-import { useAuthContext } from '@/contexts/AuthContext';
+
 import { useRoomDesigner } from '@/hooks/useRoomDesigner';
 import { useSavedDesigns } from '@/hooks/useSavedDesigns';
 import { useSubscription } from '@/hooks/useSubscription';
@@ -11,12 +11,11 @@ import { StyleSelector } from '@/components/designer/StyleSelector';
 import { BudgetSelector } from '@/components/designer/BudgetSelector';
 import { DesignResults } from '@/components/designer/DesignResults';
 import { Sparkles, RefreshCw, Save, Lock, Crown } from 'lucide-react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 const Designer = () => {
   const { addMultipleItems } = useCart();
-  const { isAuthenticated, loading: authLoading } = useAuthContext();
   const { saveDesign } = useSavedDesigns();
   const { canDesign, isPro, remainingFreeDesigns, incrementDesignCount, loading: subLoading } = useSubscription();
   const { toast } = useToast();
@@ -34,10 +33,6 @@ const Designer = () => {
     clearImage,
     handleGenerate: originalHandleGenerate,
   } = useRoomDesigner();
-
-  if (!authLoading && !isAuthenticated) {
-    return <Navigate to="/auth" replace />;
-  }
 
   const handleGenerate = async () => {
     if (!canDesign) {

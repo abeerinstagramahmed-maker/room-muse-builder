@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { useAuthContext } from '@/contexts/AuthContext';
+
 import { useOrders, Order } from '@/hooks/useOrders';
-import { Loader2, ArrowLeft, Package, CheckCircle, Clock, XCircle, Ban } from 'lucide-react';
+import { Loader2, ArrowLeft, Package, CheckCircle, Clock, XCircle, Ban, FileDown } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
+import { generateInvoice } from '@/lib/generateInvoice';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,19 +23,11 @@ import { format } from 'date-fns';
 
 const OrderDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { isAuthenticated, loading: authLoading } = useAuthContext();
   const { getOrderById, cancelOrder } = useOrders();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
-
-  useEffect(() => {
-    if (!isAuthenticated && !authLoading) {
-      navigate('/auth');
-    }
-  }, [isAuthenticated, authLoading, navigate]);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -43,13 +36,10 @@ const OrderDetail = () => {
       setOrder(orderData);
       setLoading(false);
     };
-    
-    if (isAuthenticated) {
-      fetchOrder();
-    }
-  }, [id, isAuthenticated, getOrderById]);
+    fetchOrder();
+  }, [id, getOrderById]);
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <Layout>
         <div className="flex min-h-[60vh] items-center justify-center">
@@ -119,6 +109,15 @@ const OrderDetail = () => {
                 {getStatusIcon(order.status)}
                 <span className="font-medium capitalize">{order.status}</span>
               </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1"
+                onClick={() => generateInvoice(order)}
+              >
+                <FileDown className="h-4 w-4" />
+                Invoice
+              </Button>
               {(order.status === 'pending' || order.status === 'confirmed') && (
                 <Button
                   variant="outline"
