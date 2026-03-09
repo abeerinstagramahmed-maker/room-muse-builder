@@ -11,6 +11,7 @@ import { useAuthContext } from '@/contexts/AuthContext';
 import { Loader2, Mail, Lock, User, ArrowLeft, CheckCircle } from 'lucide-react';
 import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { z } from 'zod';
+import { useToast } from '@/hooks/use-toast';
 import { lovable } from '@/integrations/lovable/index';
 import { Separator } from '@/components/ui/separator';
 
@@ -21,6 +22,7 @@ const nameSchema = z.string().min(2, 'Name must be at least 2 characters').optio
 const Auth = () => {
   const navigate = useNavigate();
   const { isAuthenticated, signIn, signUp, resetPassword, loading } = useAuthContext();
+  const { toast } = useToast();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
@@ -158,6 +160,23 @@ const Auth = () => {
                 <p>💡 Don't see it? Check your <strong>spam or promotions</strong> folder.</p>
                 <p>⏱️ The link expires in 24 hours.</p>
               </div>
+              <Button
+                variant="default"
+                className="w-full gap-2"
+                disabled={isSubmitting}
+                onClick={async () => {
+                  setIsSubmitting(true);
+                  await signUp(verificationEmail, signUpPassword, signUpName || undefined);
+                  setIsSubmitting(false);
+                  toast({
+                    title: 'Email resent',
+                    description: 'Check your inbox for a new verification link.',
+                  });
+                }}
+              >
+                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Mail className="h-4 w-4" />}
+                Resend Verification Email
+              </Button>
               <Button
                 variant="outline"
                 className="w-full gap-2"

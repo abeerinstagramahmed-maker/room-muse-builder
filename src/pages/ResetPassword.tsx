@@ -8,8 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuthContext } from '@/contexts/AuthContext';
 import { Loader2, Lock, CheckCircle } from 'lucide-react';
 import { z } from 'zod';
+import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 
-const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
+const passwordSchema = z.string().min(8, 'Password must be at least 8 characters');
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -118,6 +119,7 @@ const ResetPassword = () => {
                     onChange={(e) => setPassword(e.target.value)}
                   />
                 </div>
+                <PasswordStrengthIndicator password={password} />
                 {errors.password && (
                   <p className="text-sm text-destructive">{errors.password}</p>
                 )}
