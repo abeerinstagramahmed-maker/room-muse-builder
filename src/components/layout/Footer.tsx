@@ -14,10 +14,10 @@ const footerLinks = {
     { label: 'Dining', href: '/catalog?category=dining' },
   ],
   company: [
-    { label: 'About Us', href: '#' },
-    { label: 'Careers', href: '#' },
-    { label: 'Press', href: '#' },
-    { label: 'Blog', href: '#' },
+    { label: 'About Us', href: '/about' },
+    { label: 'Privacy Policy', href: '/privacy' },
+    { label: 'Terms of Service', href: '/terms' },
+    { label: 'Cookie Policy', href: '/cookies' },
   ],
   support: [
     { label: 'Contact', href: '/contact' },
