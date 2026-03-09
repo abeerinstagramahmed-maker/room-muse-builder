@@ -60,8 +60,7 @@ const App = () => (
                 <Route path="/order-confirmation" element={<OrderConfirmation />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/account" element={<Account />} />
-                <Route path="/profile" element={<Profile />} />
+                {/* account/profile routes moved below with ProtectedRoute */}
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/order/:id" element={<OrderDetail />} />
                 <Route path="/faq" element={<FAQ />} />

@@ -14,6 +14,7 @@ const menuItems = [
   { title: 'Orders', url: '/admin/orders', icon: ShoppingCart },
   { title: 'Users', url: '/admin/users', icon: Users },
   { title: 'Content', url: '/admin/content', icon: FileText },
+  { title: 'Coupons', url: '/admin/coupons', icon: Tag },
   { title: 'Settings', url: '/admin/settings', icon: Settings },
 ];
 
