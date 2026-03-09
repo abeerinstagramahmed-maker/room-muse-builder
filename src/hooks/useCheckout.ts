@@ -134,6 +134,15 @@ export function useCheckout() {
           .update({ status: 'confirmed', payment_status: 'paid' } as any)
           .eq('id', order.id);
 
+        // Trigger confirmation email (best-effort)
+        try {
+          await supabase.functions.invoke('send-order-email', {
+            body: { orderId: order.id, type: 'order_confirmation' },
+          });
+        } catch (emailErr) {
+          console.warn('Email not sent:', emailErr);
+        }
+
         clearCart();
         toast({
           title: 'Order placed successfully! 🎉',
