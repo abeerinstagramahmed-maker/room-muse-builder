@@ -21,6 +21,7 @@ const nameSchema = z.string().min(2, 'Name must be at least 2 characters').optio
 const Auth = () => {
   const navigate = useNavigate();
   const { isAuthenticated, signIn, signUp, resetPassword, loading } = useAuthContext();
+  const { toast } = useToast();
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
