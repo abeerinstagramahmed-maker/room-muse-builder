@@ -92,11 +92,18 @@ const Auth = () => {
     }
 
     setIsSubmitting(true);
-    const { error } = await signUp(signUpEmail, signUpPassword, signUpName || undefined);
+    const { error, data } = await signUp(signUpEmail, signUpPassword, signUpName || undefined);
     setIsSubmitting(false);
     
     if (!error) {
-      navigate('/');
+      // Check if email confirmation is required (user not immediately confirmed)
+      const emailConfirmed = data?.user?.confirmed_at || data?.user?.email_confirmed_at;
+      if (!emailConfirmed) {
+        setVerificationEmail(signUpEmail);
+        setVerificationSent(true);
+      } else {
+        navigate('/');
+      }
     }
   };
 
