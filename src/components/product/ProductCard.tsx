@@ -45,6 +45,16 @@ export const ProductCard = ({ product, className }: ProductCardProps) => {
         
         {/* Badges */}
         <div className="absolute left-3 top-3 flex flex-col gap-2">
+          {!product.inStock && (
+            <span className="rounded-full bg-destructive px-3 py-1 text-xs font-semibold text-destructive-foreground shadow-sm">
+              Out of Stock
+            </span>
+          )}
+          {product.inStock && product.stockQuantity !== undefined && product.stockQuantity <= 5 && product.stockQuantity > 0 && (
+            <span className="rounded-full bg-ai-amber/90 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+              Only {product.stockQuantity} left
+            </span>
+          )}
           {discount && (
             <span className="rounded-full bg-gradient-to-r from-primary to-ai-coral px-3 py-1 text-xs font-semibold text-white shadow-sm">
               -{discount}%

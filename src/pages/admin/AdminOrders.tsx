@@ -66,6 +66,24 @@ export default function AdminOrders() {
 
   const handleStatusChange = async (orderId: string, status: string) => {
     await updateOrderStatus(orderId, status);
+    
+    // Trigger email notification for shipped/delivered/cancelled
+    if (['shipped', 'delivered', 'cancelled'].includes(status)) {
+      const order = orders.find(o => o.id === orderId);
+      const emailType = status === 'shipped' ? 'order_shipped' : status === 'delivered' ? 'order_delivered' : 'order_cancelled';
+      try {
+        await supabase.functions.invoke('send-order-email', {
+          body: {
+            orderId,
+            type: emailType,
+            trackingNumber: (order as any)?.tracking_number || undefined,
+          },
+        });
+        toast({ title: 'Email sent', description: `${status} notification email sent to customer.` });
+      } catch (err) {
+        console.warn('Email send failed:', err);
+      }
+    }
   };
 
   const handleSaveFulfillment = async () => {
