@@ -4,7 +4,7 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { useAuthContext } from '@/contexts/AuthContext';
+
 import { useOrders, Order } from '@/hooks/useOrders';
 import { Loader2, ArrowLeft, Package, CheckCircle, Clock, XCircle, Ban, FileDown } from 'lucide-react';
 import { SEOHead } from '@/components/SEOHead';
