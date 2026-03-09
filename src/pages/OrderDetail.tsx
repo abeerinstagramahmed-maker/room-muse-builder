@@ -23,19 +23,11 @@ import { format } from 'date-fns';
 
 const OrderDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { isAuthenticated, loading: authLoading } = useAuthContext();
   const { getOrderById, cancelOrder } = useOrders();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
-
-  useEffect(() => {
-    if (!isAuthenticated && !authLoading) {
-      navigate('/auth');
-    }
-  }, [isAuthenticated, authLoading, navigate]);
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -44,13 +36,10 @@ const OrderDetail = () => {
       setOrder(orderData);
       setLoading(false);
     };
-    
-    if (isAuthenticated) {
-      fetchOrder();
-    }
-  }, [id, isAuthenticated, getOrderById]);
+    fetchOrder();
+  }, [id, getOrderById]);
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <Layout>
         <div className="flex min-h-[60vh] items-center justify-center">
