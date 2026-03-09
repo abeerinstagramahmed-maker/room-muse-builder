@@ -86,6 +86,40 @@ export function useOrders() {
     fetchOrders();
   }, [fetchOrders]);
 
+  // Real-time order status updates
+  useEffect(() => {
+    if (!isAuthenticated || !user) return;
+
+    const channel = supabase
+      .channel('user-orders')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'orders',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          setOrders(prev => prev.map(order =>
+            order.id === payload.new.id ? { ...order, ...payload.new } : order
+          ));
+          const newStatus = (payload.new as any).status;
+          if (newStatus === 'shipped' || newStatus === 'delivered') {
+            toast({
+              title: `Order ${newStatus}!`,
+              description: `Your order has been ${newStatus}.`,
+            });
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isAuthenticated, user, toast]);
+
   const getOrderById = useCallback(async (orderId: string): Promise<Order | null> => {
     try {
       const { data, error } = await supabase
