@@ -136,6 +136,47 @@ const Auth = () => {
     );
   }
 
+  // Email Verification Reminder View
+  if (verificationSent) {
+    return (
+      <Layout>
+        <SEOHead title="Verify Your Email" description="Check your inbox to verify your email address." />
+        <div className="container flex min-h-[70vh] items-center justify-center py-12">
+          <Card className="w-full max-w-md shadow-card">
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                <CheckCircle className="h-8 w-8 text-primary" />
+              </div>
+              <CardTitle className="font-display text-2xl">Check Your Email</CardTitle>
+              <CardDescription>
+                We sent a verification link to <strong>{verificationEmail}</strong>
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-xl bg-muted/50 p-4 text-sm text-muted-foreground space-y-2">
+                <p>📬 Click the link in the email to activate your account.</p>
+                <p>💡 Don't see it? Check your <strong>spam or promotions</strong> folder.</p>
+                <p>⏱️ The link expires in 24 hours.</p>
+              </div>
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => {
+                  setVerificationSent(false);
+                  setVerificationEmail('');
+                  setActiveTab('signin');
+                }}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Sign In
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </Layout>
+    );
+  }
+
   // Forgot Password View
   if (showForgotPassword) {
     return (
