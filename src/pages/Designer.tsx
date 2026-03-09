@@ -16,7 +16,6 @@ import { useToast } from '@/hooks/use-toast';
 
 const Designer = () => {
   const { addMultipleItems } = useCart();
-  const { isAuthenticated, loading: authLoading } = useAuthContext();
   const { saveDesign } = useSavedDesigns();
   const { canDesign, isPro, remainingFreeDesigns, incrementDesignCount, loading: subLoading } = useSubscription();
   const { toast } = useToast();
@@ -34,10 +33,6 @@ const Designer = () => {
     clearImage,
     handleGenerate: originalHandleGenerate,
   } = useRoomDesigner();
-
-  if (!authLoading && !isAuthenticated) {
-    return <Navigate to="/auth" replace />;
-  }
 
   const handleGenerate = async () => {
     if (!canDesign) {
