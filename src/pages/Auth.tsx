@@ -8,13 +8,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuthContext } from '@/contexts/AuthContext';
-import { Loader2, Mail, Lock, User, ArrowLeft } from 'lucide-react';
+import { Loader2, Mail, Lock, User, ArrowLeft, CheckCircle } from 'lucide-react';
+import { PasswordStrengthIndicator } from '@/components/auth/PasswordStrengthIndicator';
 import { z } from 'zod';
 import { lovable } from '@/integrations/lovable/index';
 import { Separator } from '@/components/ui/separator';
 
 const emailSchema = z.string().email('Please enter a valid email address');
-const passwordSchema = z.string().min(6, 'Password must be at least 6 characters');
+const passwordSchema = z.string().min(8, 'Password must be at least 8 characters');
 const nameSchema = z.string().min(2, 'Name must be at least 2 characters').optional();
 
 const Auth = () => {
@@ -25,6 +26,8 @@ const Auth = () => {
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
   
   // Form states
   const [signInEmail, setSignInEmail] = useState('');
@@ -89,11 +92,18 @@ const Auth = () => {
     }
 
     setIsSubmitting(true);
-    const { error } = await signUp(signUpEmail, signUpPassword, signUpName || undefined);
+    const { error, data } = await signUp(signUpEmail, signUpPassword, signUpName || undefined);
     setIsSubmitting(false);
     
     if (!error) {
-      navigate('/');
+      // Check if email confirmation is required (user not immediately confirmed)
+      const emailConfirmed = data?.user?.confirmed_at || data?.user?.email_confirmed_at;
+      if (!emailConfirmed) {
+        setVerificationEmail(signUpEmail);
+        setVerificationSent(true);
+      } else {
+        navigate('/');
+      }
     }
   };
 
@@ -121,6 +131,47 @@ const Auth = () => {
       <Layout>
         <div className="flex min-h-[60vh] items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </Layout>
+    );
+  }
+
+  // Email Verification Reminder View
+  if (verificationSent) {
+    return (
+      <Layout>
+        <SEOHead title="Verify Your Email" description="Check your inbox to verify your email address." />
+        <div className="container flex min-h-[70vh] items-center justify-center py-12">
+          <Card className="w-full max-w-md shadow-card">
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-2 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+                <CheckCircle className="h-8 w-8 text-primary" />
+              </div>
+              <CardTitle className="font-display text-2xl">Check Your Email</CardTitle>
+              <CardDescription>
+                We sent a verification link to <strong>{verificationEmail}</strong>
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="rounded-xl bg-muted/50 p-4 text-sm text-muted-foreground space-y-2">
+                <p>📬 Click the link in the email to activate your account.</p>
+                <p>💡 Don't see it? Check your <strong>spam or promotions</strong> folder.</p>
+                <p>⏱️ The link expires in 24 hours.</p>
+              </div>
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => {
+                  setVerificationSent(false);
+                  setVerificationEmail('');
+                  setActiveTab('signin');
+                }}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to Sign In
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </Layout>
     );
@@ -360,6 +411,7 @@ const Auth = () => {
                         onChange={(e) => setSignUpPassword(e.target.value)}
                       />
                     </div>
+                    <PasswordStrengthIndicator password={signUpPassword} />
                     {signUpErrors.password && (
                       <p className="text-sm text-destructive">{signUpErrors.password}</p>
                     )}
