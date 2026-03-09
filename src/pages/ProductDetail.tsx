@@ -32,6 +32,7 @@ const ProductDetail = () => {
   const [productLoading, setProductLoading] = useState(true);
   const [selectedColor, setSelectedColor] = useState<string | undefined>();
   const [selectedImage, setSelectedImage] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   useEffect(() => {
     const loadProduct = async () => {
