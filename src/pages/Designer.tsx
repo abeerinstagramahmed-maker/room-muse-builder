@@ -11,7 +11,7 @@ import { StyleSelector } from '@/components/designer/StyleSelector';
 import { BudgetSelector } from '@/components/designer/BudgetSelector';
 import { DesignResults } from '@/components/designer/DesignResults';
 import { Sparkles, RefreshCw, Save, Lock, Crown } from 'lucide-react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 
 const Designer = () => {
