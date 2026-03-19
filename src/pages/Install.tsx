@@ -27,12 +27,12 @@ const desktopSteps = [
 ];
 
 const faqItems = [
-  { q: 'Is Roomly free to install?', a: 'Yes! Installing Roomly as a web app is completely free. There's no app store, no download fees, and no subscriptions required to install.' },
-  { q: 'Does it work offline?', a: 'Yes. Once installed, Roomly caches key pages and assets so you can browse products and your saved designs even without internet. Some features like AI design generation require an internet connection.' },
-  { q: 'How is this different from a regular app?', a: 'Roomly is a Progressive Web App (PWA) — it uses modern web technology to deliver an app-like experience without the overhead of app stores. It installs instantly, updates automatically, and takes up much less storage than traditional apps.' },
-  { q: 'Will I get updates automatically?', a: 'Yes! Unlike app store apps, PWAs update silently in the background. Every time you open Roomly, you'll always have the latest version.' },
-  { q: 'Can I uninstall it?', a: 'Absolutely. On iOS, long-press the icon and tap "Delete Bookmark." On Android, long-press and tap "Uninstall." On desktop, right-click the icon or go to browser settings.' },
-  { q: 'Why does iOS use Safari?', a: 'Apple requires PWAs on iOS to be installed through Safari. Other browsers like Chrome on iOS don't support the "Add to Home Screen" feature with full PWA capabilities.' },
+  { q: "Is Roomly free to install?", a: "Yes! Installing Roomly as a web app is completely free. There is no app store, no download fees, and no subscriptions required to install." },
+  { q: "Does it work offline?", a: "Yes. Once installed, Roomly caches key pages and assets so you can browse products and your saved designs even without internet. Some features like AI design generation require an internet connection." },
+  { q: "How is this different from a regular app?", a: "Roomly is a Progressive Web App (PWA). It uses modern web technology to deliver an app-like experience without the overhead of app stores. It installs instantly, updates automatically, and takes up much less storage than traditional apps." },
+  { q: "Will I get updates automatically?", a: "Yes! Unlike app store apps, PWAs update silently in the background. Every time you open Roomly, you will always have the latest version." },
+  { q: "Can I uninstall it?", a: "Absolutely. On iOS, long-press the icon and tap Delete Bookmark. On Android, long-press and tap Uninstall. On desktop, right-click the icon or go to browser settings." },
+  { q: "Why does iOS use Safari?", a: "Apple requires PWAs on iOS to be installed through Safari. Other browsers like Chrome on iOS do not support the Add to Home Screen feature with full PWA capabilities." },
 ];
 
 const StepCard = ({ step, index }: { step: typeof iosSteps[0]; index: number }) => (
