@@ -138,17 +138,40 @@ export const Header = ({ variant = 'default' }: HeaderProps) => {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link to="/profile" className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
                     Edit Profile
                   </Link>
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link to="/account?tab=designs" className="cursor-pointer">
+                    <Sparkles className="mr-2 h-4 w-4" />
                     My Designs
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
+                  <Link to="/account?tab=favorites" className="cursor-pointer">
+                    <Heart className="mr-2 h-4 w-4" />
+                    My Favorites
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
                   <Link to="/account?tab=orders" className="cursor-pointer">
+                    <ShoppingBag className="mr-2 h-4 w-4" />
                     My Orders
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/install" className="cursor-pointer">
+                    <Download className="mr-2 h-4 w-4" />
+                    Install App
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/faq" className="cursor-pointer">
+                    <HelpCircle className="mr-2 h-4 w-4" />
+                    Help & FAQ
                   </Link>
                 </DropdownMenuItem>
                 {isAdmin && (
