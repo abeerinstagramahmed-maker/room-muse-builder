@@ -36,6 +36,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Cookies from "./pages/Cookies";
 import About from "./pages/About";
+import Install from "./pages/Install";
 import AdminCoupons from "./pages/admin/AdminCoupons";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminProtectedRoute } from "@/components/AdminProtectedRoute";
