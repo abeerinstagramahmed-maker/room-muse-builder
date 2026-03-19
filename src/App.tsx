@@ -36,6 +36,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Cookies from "./pages/Cookies";
 import About from "./pages/About";
+import Install from "./pages/Install";
 import AdminCoupons from "./pages/admin/AdminCoupons";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminProtectedRoute } from "@/components/AdminProtectedRoute";
@@ -72,6 +73,7 @@ const App = () => (
                 <Route path="/terms" element={<Terms />} />
                 <Route path="/cookies" element={<Cookies />} />
                 <Route path="/about" element={<About />} />
+                <Route path="/install" element={<Install />} />
                 <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                 {/* Admin Routes */}
