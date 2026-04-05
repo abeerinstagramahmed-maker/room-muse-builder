@@ -18,7 +18,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 
 export default function AdminSettings() {
   const { 
-    loading, saving, stripeSettings, storeSettings, subscriptionPricing, saveSettings 
+    loading, saving, stripeSettings, storeSettings, subscriptionPricing, aiSettings: loadedAiSettings, saveSettings 
   } = useStoreSettings();
 
   // Local form state
