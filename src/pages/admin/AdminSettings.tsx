@@ -447,25 +447,18 @@ export default function AdminSettings() {
                     <Select value={aiSettings.roomGenerationModel} onValueChange={(v) => setAiSettings(s => ({ ...s, roomGenerationModel: v }))}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="sdxl-controlnet">SDXL + ControlNet (Replicate)</SelectItem>
-                        <SelectItem value="sdxl-depth">SDXL + Depth ControlNet (Replicate)</SelectItem>
-                        <SelectItem value="sdxl-canny">SDXL + Canny ControlNet (Replicate)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Product Recommendation Model</Label>
-                    <Select value={aiSettings.productRecommendationModel} onValueChange={(v) => setAiSettings(s => ({ ...s, productRecommendationModel: v }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="gpt-4o-mini">GPT-4o mini (OpenAI)</SelectItem>
-                        <SelectItem value="gpt-4o">GPT-4o (OpenAI)</SelectItem>
-                        <SelectItem value="claude-haiku">Claude Haiku (Anthropic)</SelectItem>
-                        <SelectItem value="claude-sonnet">Claude Sonnet (Anthropic)</SelectItem>
+                        <SelectItem value="sdxl-controlnet-depth">SDXL + ControlNet Depth (Replicate)</SelectItem>
+                        <SelectItem value="sdxl-controlnet-canny">SDXL + ControlNet Canny (Replicate)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
+                <Alert>
+                  <Bot className="h-4 w-4" />
+                  <AlertDescription>
+                    Product recommendations use a <strong>deterministic scoring algorithm</strong> (style match, budget fit, quality, material, room fit) — no AI API calls needed. This keeps costs low.
+                  </AlertDescription>
+                </Alert>
               </CardContent>
             </Card>
 
