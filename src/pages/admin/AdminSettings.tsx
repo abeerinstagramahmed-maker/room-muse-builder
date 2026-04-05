@@ -168,7 +168,6 @@ export default function AdminSettings() {
         amazonAssociateTag,
         firecrawlApiKey,
         autoOrderEnabled,
-        aiSettings,
         emailSettings: {
           enabled: emailEnabled,
           resendApiKey,
@@ -183,7 +182,8 @@ export default function AdminSettings() {
         monthlyPrice: parseFloat(monthlyPrice) || 9.99,
         yearlyPrice: parseFloat(yearlyPrice) || 99,
         freeDesigns: parseInt(freeDesigns) || 1,
-      }
+      },
+      aiSettings,
     );
   };
 
