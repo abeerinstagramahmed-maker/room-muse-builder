@@ -1,18 +1,60 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+async function getReplicateKey(): Promise<string | null> {
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+  );
+  const { data } = await supabase
+    .from('store_settings')
+    .select('value')
+    .eq('key', 'ai_settings')
+    .maybeSingle();
+  return (data?.value as any)?.replicateApiKey || null;
+}
+
+async function runReplicate(apiKey: string, model: string, input: Record<string, unknown>): Promise<any> {
+  const res = await fetch('https://api.replicate.com/v1/predictions', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ version: model, input }),
+  });
+  if (!res.ok) throw new Error(`Replicate API error: ${res.status} ${await res.text()}`);
+  let prediction = await res.json();
+
+  const deadline = Date.now() + 180_000; // 3 min for image gen
+  while (prediction.status !== 'succeeded' && prediction.status !== 'failed' && prediction.status !== 'canceled') {
+    if (Date.now() > deadline) throw new Error('Replicate prediction timed out');
+    await new Promise(r => setTimeout(r, 2000));
+    const poll = await fetch(prediction.urls.get, {
+      headers: { 'Authorization': `Bearer ${apiKey}` },
+    });
+    prediction = await poll.json();
+  }
+  if (prediction.status === 'failed') throw new Error(prediction.error || 'Prediction failed');
+  return prediction.output;
+}
+
+const stylePrompts: Record<string, string> = {
+  modern: 'A modern minimalist interior with clean lines, neutral palette, sleek low-profile furniture, concrete and glass accents, architectural lighting',
+  scandinavian: 'A Scandinavian hygge interior with light oak furniture, white walls, cozy wool textiles, warm ambient lighting, plants and natural materials',
+  industrial: 'An industrial loft interior with exposed brick walls, metal pipe shelving, raw wood tables, Edison bulb lighting, weathered leather seating',
+  bohemian: 'A bohemian eclectic interior with layered colorful textiles, rattan and wicker furniture, macrame wall hangings, warm earthy tones, plants everywhere',
+  traditional: 'A traditional elegant interior with classic carved wood furniture, rich velvet upholstery, ornate mirror, warm ambient chandelier lighting',
+  coastal: 'A coastal beach-inspired interior with white and blue palette, rattan furniture, natural linen textiles, driftwood accents, light airy curtains',
+};
+
 /**
  * generate-room-design
- * 
- * Purpose: Generate a redesigned room image preserving room structure,
- * with product placement overlay data.
- * 
- * Target Model: SDXL + ControlNet (Depth/Canny) via Replicate
- * Current Mode: MOCK — returns placeholder + placement map.
+ *
+ * Real mode: MiDaS depth estimation → SDXL + ControlNet (Depth) for structure-preserving redesign
+ * Mock mode: returns placeholder image when no API key is set
  */
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -21,7 +63,6 @@ serve(async (req) => {
 
   try {
     const { imageBase64, style, budget, roomAnalysis, furniturePlan } = await req.json();
-
     if (!imageBase64 || !style) {
       return new Response(
         JSON.stringify({ error: 'imageBase64 and style are required' }),
@@ -29,62 +70,67 @@ serve(async (req) => {
       );
     }
 
-    console.log('[generate-room-design] Generating design for style:', style);
+    const apiKey = await getReplicateKey();
+    const prompt = stylePrompts[style] || `A beautifully designed ${style} interior`;
 
-    const stylePrompts: Record<string, string> = {
-      modern: 'A modern minimalist living room with clean lines, neutral palette, sleek furniture',
-      scandinavian: 'A Scandinavian hygge room with light woods, cozy textiles, warm lighting',
-      industrial: 'An industrial loft space with exposed brick, metal accents, raw materials',
-      bohemian: 'A bohemian eclectic room with layered textiles, warm colors, global patterns',
-      traditional: 'A traditional elegant room with classic furniture, rich fabrics, timeless details',
-      coastal: 'A coastal-inspired room with light colors, natural textures, ocean palette',
-    };
+    // Build placement plan from furniture plan
+    const placementPlan = buildPlacementPlan(furniturePlan);
 
-    const prompt = stylePrompts[style] || `A beautifully designed ${style} room`;
+    if (!apiKey) {
+      console.log('[generate-room-design] No Replicate key — returning mock design');
+      return new Response(JSON.stringify({
+        imageUrl: `https://placehold.co/800x600/F5F0EB/4A4A4A?text=AI+Generated+${encodeURIComponent(style)}+Room`,
+        prompt,
+        controlNetType: 'depth',
+        placementPlan,
+        compositeMethod: 'mock',
+        metadata: {
+          roomType: roomAnalysis?.roomType || 'living-room',
+          detectedItemCount: roomAnalysis?.detectedFurniture?.length || 0,
+          placedItemCount: placementPlan.length,
+          styleApplied: style,
+          budgetTier: budget,
+        },
+      }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
 
-    // Build placement map from furniture plan
-    const placementPlan = (furniturePlan?.recommendedFurniture || []).map((item: any, index: number) => {
-      // Mock placement coordinates based on furniture type
-      const placements: Record<string, { x: number; y: number; scale: number }> = {
-        sofa: { x: 0.3, y: 0.6, scale: 0.35 },
-        'coffee table': { x: 0.45, y: 0.7, scale: 0.15 },
-        'floor lamp': { x: 0.1, y: 0.3, scale: 0.12 },
-        'side table': { x: 0.7, y: 0.55, scale: 0.1 },
-        bookshelf: { x: 0.85, y: 0.4, scale: 0.2 },
-        'accent chair': { x: 0.65, y: 0.55, scale: 0.18 },
-        'area rug': { x: 0.4, y: 0.75, scale: 0.4 },
-        'pendant light': { x: 0.45, y: 0.1, scale: 0.12 },
-        'woven pouf': { x: 0.6, y: 0.7, scale: 0.08 },
-        console: { x: 0.5, y: 0.45, scale: 0.2 },
-      };
+    console.log('[generate-room-design] Running MiDaS + SDXL ControlNet via Replicate for style:', style);
 
-      const pos = placements[item.type] || { x: 0.5, y: 0.5, scale: 0.15 };
+    const imageUri = `data:image/jpeg;base64,${imageBase64}`;
 
-      return {
-        type: item.type,
-        placement: item.placement,
-        position: pos,
-        layer: index,
-        shadow: true,
-        perspective: 'front',
-      };
-    });
+    // Step 1: MiDaS depth estimation
+    console.log('[generate-room-design] Step 1: MiDaS depth estimation');
+    const depthOutput = await runReplicate(
+      apiKey,
+      '3bd03ef8e70e777243b5e91f839eda29624aab8df78da20e03e8e21f43eedc31', // cjwbw/midas
+      { image: imageUri, model_type: 'DPT_Large' },
+    );
+    const depthMapUrl = typeof depthOutput === 'string' ? depthOutput : depthOutput?.[0] || depthOutput;
 
-    // TODO: When Replicate API key is configured:
-    // 1. Run depth estimation on input image
-    // 2. Build ControlNet conditioning from depth map
-    // 3. Generate with SDXL + ControlNet (depth/canny)
-    // 4. For product placement overlay:
-    //    a. Get product cutout images (transparent PNG)
-    //    b. Scale based on perspective and room geometry
-    //    c. Composite onto generated image with shadows
+    // Step 2: SDXL + ControlNet Depth
+    console.log('[generate-room-design] Step 2: SDXL + ControlNet Depth generation');
+    const sdxlOutput = await runReplicate(
+      apiKey,
+      '252e2da55b75b756c37c3eb37ffd2cbf15e54c96d14cb5ced56dbc65e6c3a28d', // jagilley/controlnet-depth-sdxl
+      {
+        image: depthMapUrl,
+        prompt: `${prompt}, professional interior photography, 8k, high quality, photorealistic, well-lit`,
+        negative_prompt: 'low quality, blurry, distorted, watermark, text, ugly, deformed, cartoon, anime, painting',
+        num_inference_steps: 30,
+        guidance_scale: 7.5,
+        controlnet_conditioning_scale: 0.7,
+        seed: Math.floor(Math.random() * 1000000),
+      },
+    );
 
-    const mockResult = {
-      imageUrl: `https://placehold.co/800x600/F5F0EB/4A4A4A?text=AI+Generated+${encodeURIComponent(style)}+Room`,
+    const generatedUrl = Array.isArray(sdxlOutput) ? sdxlOutput[0] : sdxlOutput;
+
+    return new Response(JSON.stringify({
+      imageUrl: generatedUrl,
       prompt,
-      controlNetType: 'depth' as const,
+      controlNetType: 'depth',
       placementPlan,
-      compositeMethod: 'mock', // 'controlnet' | 'direct-composite' | 'mock'
+      compositeMethod: 'controlnet-depth',
       metadata: {
         roomType: roomAnalysis?.roomType || 'living-room',
         detectedItemCount: roomAnalysis?.detectedFurniture?.length || 0,
@@ -92,12 +138,7 @@ serve(async (req) => {
         styleApplied: style,
         budgetTier: budget,
       },
-    };
-
-    return new Response(
-      JSON.stringify(mockResult),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
 
   } catch (error) {
     console.error('[generate-room-design] Error:', error);
@@ -107,3 +148,30 @@ serve(async (req) => {
     );
   }
 });
+
+function buildPlacementPlan(furniturePlan: any) {
+  const placements: Record<string, { x: number; y: number; scale: number }> = {
+    sofa: { x: 0.3, y: 0.6, scale: 0.35 },
+    'coffee table': { x: 0.45, y: 0.7, scale: 0.15 },
+    'floor lamp': { x: 0.1, y: 0.3, scale: 0.12 },
+    'side table': { x: 0.7, y: 0.55, scale: 0.1 },
+    bookshelf: { x: 0.85, y: 0.4, scale: 0.2 },
+    'accent chair': { x: 0.65, y: 0.55, scale: 0.18 },
+    'area rug': { x: 0.4, y: 0.75, scale: 0.4 },
+    'pendant light': { x: 0.45, y: 0.1, scale: 0.12 },
+    'woven pouf': { x: 0.6, y: 0.7, scale: 0.08 },
+    console: { x: 0.5, y: 0.45, scale: 0.2 },
+  };
+
+  return (furniturePlan?.recommendedFurniture || []).map((item: any, index: number) => {
+    const pos = placements[item.type] || { x: 0.5, y: 0.5, scale: 0.15 };
+    return {
+      type: item.type,
+      placement: item.placement,
+      position: pos,
+      layer: index,
+      shadow: true,
+      perspective: 'front',
+    };
+  });
+}
