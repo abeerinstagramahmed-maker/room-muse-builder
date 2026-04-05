@@ -389,18 +389,17 @@ export default function AdminSettings() {
                     />
                     <p className="text-xs text-muted-foreground mt-1">Used for room image generation (SDXL + ControlNet), furniture detection (DINO + SAM), and room analysis (BLIP-2)</p>
                   </div>
-                </div>
-                <Button variant="outline" size="sm" asChild>
-                  <a href="https://replicate.com/account/api-tokens" target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Get Replicate API Key
-                  </a>
-                </Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="https://replicate.com/account/api-tokens" target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Get Replicate API Key
+                    </a>
+                  </Button>
                 </div>
                 <Alert>
                   <Brain className="h-4 w-4" />
                   <AlertDescription>
-                    API keys are stored securely. The system currently runs in <strong>development mode</strong> with mock responses until valid API keys are configured.
+                    Your Replicate API key is stored securely in the database. The system runs in <strong>mock mode</strong> until a valid key is saved. All AI calls (BLIP-2, LLaVA, DINO, SAM, SDXL) go through Replicate.
                   </AlertDescription>
                 </Alert>
               </CardContent>
