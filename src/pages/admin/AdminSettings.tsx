@@ -11,14 +11,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { defaultAISettings, AISettings } from '@/services/aiProvider';
+import { defaultAISettings, type AISettings } from '@/services/aiProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 
 export default function AdminSettings() {
   const { 
-    loading, saving, stripeSettings, storeSettings, subscriptionPricing, saveSettings 
+    loading, saving, stripeSettings, storeSettings, subscriptionPricing, aiSettings: loadedAiSettings, saveSettings 
   } = useStoreSettings();
 
   // Local form state
@@ -56,8 +56,13 @@ export default function AdminSettings() {
   const [firecrawlApiKey, setFirecrawlApiKey] = useState('');
   const [autoOrderEnabled, setAutoOrderEnabled] = useState(false);
 
-  // AI Settings
   const [aiSettings, setAiSettings] = useState<AISettings>(defaultAISettings);
+
+  useEffect(() => {
+    if (!loading && loadedAiSettings) {
+      setAiSettings(loadedAiSettings);
+    }
+  }, [loading, loadedAiSettings]);
 
   // Catalog refresh state
   const [refreshRunning, setRefreshRunning] = useState(false);
@@ -163,7 +168,6 @@ export default function AdminSettings() {
         amazonAssociateTag,
         firecrawlApiKey,
         autoOrderEnabled,
-        aiSettings,
         emailSettings: {
           enabled: emailEnabled,
           resendApiKey,
@@ -178,7 +182,8 @@ export default function AdminSettings() {
         monthlyPrice: parseFloat(monthlyPrice) || 9.99,
         yearlyPrice: parseFloat(yearlyPrice) || 99,
         freeDesigns: parseInt(freeDesigns) || 1,
-      }
+      },
+      aiSettings,
     );
   };
 
@@ -384,33 +389,17 @@ export default function AdminSettings() {
                     />
                     <p className="text-xs text-muted-foreground mt-1">Used for room image generation (SDXL + ControlNet), furniture detection (DINO + SAM), and room analysis (BLIP-2)</p>
                   </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">OpenAI API Key</Label>
-                    <Input
-                      type="password"
-                      value={aiSettings.openaiApiKey}
-                      onChange={(e) => setAiSettings(s => ({ ...s, openaiApiKey: e.target.value }))}
-                      placeholder="sk-..."
-                      className="mt-1 font-mono text-sm"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">Used for furniture planning and product recommendations (GPT-4o)</p>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Anthropic API Key</Label>
-                    <Input
-                      type="password"
-                      value={aiSettings.anthropicApiKey}
-                      onChange={(e) => setAiSettings(s => ({ ...s, anthropicApiKey: e.target.value }))}
-                      placeholder="sk-ant-..."
-                      className="mt-1 font-mono text-sm"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">Alternative provider for furniture planning (Claude Sonnet/Haiku)</p>
-                  </div>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="https://replicate.com/account/api-tokens" target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Get Replicate API Key
+                    </a>
+                  </Button>
                 </div>
                 <Alert>
                   <Brain className="h-4 w-4" />
                   <AlertDescription>
-                    API keys are stored securely. The system currently runs in <strong>development mode</strong> with mock responses until valid API keys are configured.
+                    Your Replicate API key is stored securely in the database. The system runs in <strong>mock mode</strong> until a valid key is saved. All AI calls (BLIP-2, LLaVA, DINO, SAM, SDXL) go through Replicate.
                   </AlertDescription>
                 </Alert>
               </CardContent>
@@ -436,9 +425,8 @@ export default function AdminSettings() {
                     <Select value={aiSettings.roomAnalysisModel} onValueChange={(v) => setAiSettings(s => ({ ...s, roomAnalysisModel: v }))}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="blip2">BLIP-2 (Replicate)</SelectItem>
-                        <SelectItem value="llava">LLaVA (Replicate)</SelectItem>
-                        <SelectItem value="gpt-4o">GPT-4o Vision (OpenAI)</SelectItem>
+                        <SelectItem value="blip2-llava">BLIP-2 + LLaVA 1.6 (Replicate)</SelectItem>
+                        <SelectItem value="llava-only">LLaVA 1.6 only (Replicate)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -457,25 +445,18 @@ export default function AdminSettings() {
                     <Select value={aiSettings.roomGenerationModel} onValueChange={(v) => setAiSettings(s => ({ ...s, roomGenerationModel: v }))}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="sdxl-controlnet">SDXL + ControlNet (Replicate)</SelectItem>
-                        <SelectItem value="sdxl-depth">SDXL + Depth ControlNet (Replicate)</SelectItem>
-                        <SelectItem value="sdxl-canny">SDXL + Canny ControlNet (Replicate)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Product Recommendation Model</Label>
-                    <Select value={aiSettings.productRecommendationModel} onValueChange={(v) => setAiSettings(s => ({ ...s, productRecommendationModel: v }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="gpt-4o-mini">GPT-4o mini (OpenAI)</SelectItem>
-                        <SelectItem value="gpt-4o">GPT-4o (OpenAI)</SelectItem>
-                        <SelectItem value="claude-haiku">Claude Haiku (Anthropic)</SelectItem>
-                        <SelectItem value="claude-sonnet">Claude Sonnet (Anthropic)</SelectItem>
+                        <SelectItem value="sdxl-controlnet-depth">SDXL + ControlNet Depth (Replicate)</SelectItem>
+                        <SelectItem value="sdxl-controlnet-canny">SDXL + ControlNet Canny (Replicate)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                 </div>
+                <Alert>
+                  <Bot className="h-4 w-4" />
+                  <AlertDescription>
+                    Product recommendations use a <strong>deterministic scoring algorithm</strong> (style match, budget fit, quality, material, room fit) — no AI API calls needed. This keeps costs low.
+                  </AlertDescription>
+                </Alert>
               </CardContent>
             </Card>
 
