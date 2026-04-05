@@ -389,28 +389,13 @@ export default function AdminSettings() {
                     />
                     <p className="text-xs text-muted-foreground mt-1">Used for room image generation (SDXL + ControlNet), furniture detection (DINO + SAM), and room analysis (BLIP-2)</p>
                   </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">OpenAI API Key</Label>
-                    <Input
-                      type="password"
-                      value={aiSettings.openaiApiKey}
-                      onChange={(e) => setAiSettings(s => ({ ...s, openaiApiKey: e.target.value }))}
-                      placeholder="sk-..."
-                      className="mt-1 font-mono text-sm"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">Used for furniture planning and product recommendations (GPT-4o)</p>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Anthropic API Key</Label>
-                    <Input
-                      type="password"
-                      value={aiSettings.anthropicApiKey}
-                      onChange={(e) => setAiSettings(s => ({ ...s, anthropicApiKey: e.target.value }))}
-                      placeholder="sk-ant-..."
-                      className="mt-1 font-mono text-sm"
-                    />
-                    <p className="text-xs text-muted-foreground mt-1">Alternative provider for furniture planning (Claude Sonnet/Haiku)</p>
-                  </div>
+                </div>
+                <Button variant="outline" size="sm" asChild>
+                  <a href="https://replicate.com/account/api-tokens" target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Get Replicate API Key
+                  </a>
+                </Button>
                 </div>
                 <Alert>
                   <Brain className="h-4 w-4" />
