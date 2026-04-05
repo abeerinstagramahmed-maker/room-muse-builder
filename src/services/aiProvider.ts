@@ -1,8 +1,8 @@
 /**
  * AI Provider Service Layer
  * 
- * Modular abstraction over multiple AI providers (Replicate, OpenAI, Anthropic).
- * Enhanced with multi-factor product scoring, placement data, and room fit analysis.
+ * Replicate-only pipeline: BLIP-2 + LLaVA, Grounding DINO + SAM,
+ * SDXL + ControlNet (Depth via MiDaS). Product matching is DB-driven (no AI).
  */
 
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +16,7 @@ export interface DetectedFurniture {
   confidence: number;
   boundingBox: { x: number; y: number; width: number; height: number };
   category: string;
+  mask?: string; // SAM segmentation mask URL (if requested)
 }
 
 export interface RoomAnalysis {
@@ -110,8 +111,6 @@ export interface AIDesignResult {
   styleNotes: string;
 }
 
-export type AIProvider = 'replicate' | 'openai' | 'anthropic';
-
 // ─── Edge Function Callers ───────────────────────────────────────────
 
 async function callEdgeFunction<T>(name: string, body: Record<string, unknown>): Promise<T> {
@@ -172,7 +171,7 @@ export async function runDesignPipeline(params: {
   // Merge detected furniture into analysis
   roomAnalysis.detectedFurniture = detectedFurniture;
 
-  // Step 3: Generate furniture plan
+  // Step 3: Generate furniture plan (deterministic, DB-driven)
   step('planning');
   const furniturePlan = await callEdgeFunction<FurniturePlan>('recommend-products', {
     roomAnalysis,
@@ -185,7 +184,7 @@ export async function runDesignPipeline(params: {
   step('generating');
   const generatedDesign = await generateRoomDesign({ imageBase64, style, budget, roomAnalysis, furniturePlan });
 
-  // Step 5: Enhanced product recommendations with scoring
+  // Step 5: Enhanced product recommendations with scoring (DB-driven)
   step('matching');
   const productRecommendations = await recommendProducts({ furniturePlan, style, budget });
 
@@ -204,16 +203,13 @@ export async function runDesignPipeline(params: {
   };
 }
 
-// ─── AI Settings helpers ─────────────────────────────────────────────
+// ─── AI Settings ─────────────────────────────────────────────────────
 
 export interface AISettings {
   replicateApiKey: string;
-  openaiApiKey: string;
-  anthropicApiKey: string;
   roomAnalysisModel: string;
   furnitureDetectionModel: string;
   roomGenerationModel: string;
-  productRecommendationModel: string;
   enableAIGeneration: boolean;
   enableFurnitureDetection: boolean;
   enableProductScraping: boolean;
@@ -221,12 +217,9 @@ export interface AISettings {
 
 export const defaultAISettings: AISettings = {
   replicateApiKey: '',
-  openaiApiKey: '',
-  anthropicApiKey: '',
-  roomAnalysisModel: 'blip2',
+  roomAnalysisModel: 'blip2-llava',
   furnitureDetectionModel: 'grounding-dino-sam',
-  roomGenerationModel: 'sdxl-controlnet',
-  productRecommendationModel: 'gpt-4o-mini',
+  roomGenerationModel: 'sdxl-controlnet-depth',
   enableAIGeneration: true,
   enableFurnitureDetection: true,
   enableProductScraping: true,

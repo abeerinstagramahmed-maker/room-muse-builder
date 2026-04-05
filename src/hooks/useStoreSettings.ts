@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { AISettings, defaultAISettings } from '@/services/aiProvider';
 
 interface StripeSettings {
   enabled: boolean;
@@ -54,6 +55,7 @@ export function useStoreSettings() {
   const [stripeSettings, setStripeSettings] = useState<StripeSettings>(defaultStripeSettings);
   const [storeSettings, setStoreSettings] = useState<StoreSettings>(defaultStoreSettings);
   const [subscriptionPricing, setSubscriptionPricing] = useState<SubscriptionPricing>(defaultSubscriptionPricing);
+  const [aiSettings, setAiSettings] = useState<AISettings>(defaultAISettings);
 
   useEffect(() => {
     fetchSettings();
@@ -74,6 +76,8 @@ export function useStoreSettings() {
           setStoreSettings(setting.value as unknown as StoreSettings);
         } else if (setting.key === 'subscription_pricing') {
           setSubscriptionPricing(setting.value as unknown as SubscriptionPricing);
+        } else if (setting.key === 'ai_settings') {
+          setAiSettings({ ...defaultAISettings, ...(setting.value as unknown as AISettings) });
         }
       });
     } catch (error: any) {
@@ -84,7 +88,6 @@ export function useStoreSettings() {
   };
 
   const upsertSetting = async (key: string, value: any) => {
-    // Try update first, then insert if no rows affected
     const { data, error: updateError } = await supabase
       .from('store_settings')
       .update({ value: JSON.parse(JSON.stringify(value)) })
@@ -101,13 +104,17 @@ export function useStoreSettings() {
     }
   };
 
-  const saveSettings = async (stripe: StripeSettings, store: StoreSettings, pricing?: SubscriptionPricing) => {
+  const saveSettings = async (
+    stripe: StripeSettings,
+    store: StoreSettings,
+    pricing?: SubscriptionPricing,
+    ai?: AISettings,
+  ) => {
     setSaving(true);
     try {
       await upsertSetting('stripe', stripe);
       await upsertSetting('store', store);
 
-      // Also save email settings separately for edge functions
       if ((store as any).emailSettings) {
         await upsertSetting('email', (store as any).emailSettings);
       }
@@ -115,6 +122,11 @@ export function useStoreSettings() {
       if (pricing) {
         await upsertSetting('subscription_pricing', pricing);
         setSubscriptionPricing(pricing);
+      }
+
+      if (ai) {
+        await upsertSetting('ai_settings', ai);
+        setAiSettings(ai);
       }
 
       setStripeSettings(stripe);
@@ -145,8 +157,10 @@ export function useStoreSettings() {
     stripeSettings,
     storeSettings,
     subscriptionPricing,
+    aiSettings,
     setStripeSettings,
     setStoreSettings,
+    setAiSettings,
     saveSettings,
     refetch: fetchSettings,
   };
