@@ -425,9 +425,8 @@ export default function AdminSettings() {
                     <Select value={aiSettings.roomAnalysisModel} onValueChange={(v) => setAiSettings(s => ({ ...s, roomAnalysisModel: v }))}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="blip2">BLIP-2 (Replicate)</SelectItem>
-                        <SelectItem value="llava">LLaVA (Replicate)</SelectItem>
-                        <SelectItem value="gpt-4o">GPT-4o Vision (OpenAI)</SelectItem>
+                        <SelectItem value="blip2-llava">BLIP-2 + LLaVA 1.6 (Replicate)</SelectItem>
+                        <SelectItem value="llava-only">LLaVA 1.6 only (Replicate)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
