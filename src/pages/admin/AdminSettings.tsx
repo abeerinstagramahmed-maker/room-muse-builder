@@ -56,8 +56,13 @@ export default function AdminSettings() {
   const [firecrawlApiKey, setFirecrawlApiKey] = useState('');
   const [autoOrderEnabled, setAutoOrderEnabled] = useState(false);
 
-  // AI Settings
   const [aiSettings, setAiSettings] = useState<AISettings>(defaultAISettings);
+
+  useEffect(() => {
+    if (!loading && loadedAiSettings) {
+      setAiSettings(loadedAiSettings);
+    }
+  }, [loading, loadedAiSettings]);
 
   // Catalog refresh state
   const [refreshRunning, setRefreshRunning] = useState(false);
