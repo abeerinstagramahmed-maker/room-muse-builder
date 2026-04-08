@@ -111,7 +111,13 @@ export interface AIDesignResult {
   styleNotes: string;
 }
 
-// ─── Edge Function Callers ───────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────
+
+/** Strip data URL prefix to get raw base64 */
+function stripDataUrl(dataUrl: string): string {
+  const match = dataUrl.match(/^data:[^;]+;base64,(.+)$/);
+  return match ? match[1] : dataUrl;
+}
 
 async function callEdgeFunction<T>(name: string, body: Record<string, unknown>): Promise<T> {
   const { data, error } = await supabase.functions.invoke<T>(name, { body });
@@ -122,11 +128,11 @@ async function callEdgeFunction<T>(name: string, body: Record<string, unknown>):
 // ─── Public API ──────────────────────────────────────────────────────
 
 export async function analyzeRoom(imageBase64: string): Promise<RoomAnalysis> {
-  return callEdgeFunction<RoomAnalysis>('analyze-room-image', { imageBase64 });
+  return callEdgeFunction<RoomAnalysis>('analyze-room-image', { imageBase64: stripDataUrl(imageBase64) });
 }
 
 export async function detectFurniture(imageBase64: string): Promise<DetectedFurniture[]> {
-  const result = await callEdgeFunction<{ objects: DetectedFurniture[] }>('detect-furniture', { imageBase64 });
+  const result = await callEdgeFunction<{ objects: DetectedFurniture[] }>('detect-furniture', { imageBase64: stripDataUrl(imageBase64) });
   return result.objects;
 }
 
@@ -137,7 +143,7 @@ export async function generateRoomDesign(params: {
   roomAnalysis: RoomAnalysis;
   furniturePlan: FurniturePlan;
 }): Promise<GeneratedDesign> {
-  return callEdgeFunction<GeneratedDesign>('generate-room-design', params);
+  return callEdgeFunction<GeneratedDesign>('generate-room-design', { ...params, imageBase64: stripDataUrl(params.imageBase64) });
 }
 
 export async function recommendProducts(params: {
