@@ -88,17 +88,16 @@ serve(async (req) => {
     try {
       const dinoOutput = await runReplicate(
         apiKey,
-        'b26e3944e5710f39bea1bdd0cd23a2b4d54c5a45c83d1a85f907d09ba1fe3f37',
+        'efd10a8ddc57ea28773327e881ce95e20cc1d734c589f7dd01d2036921ed78aa', // adirik/grounding-dino
         {
           image: imageUri,
-          prompt: 'sofa . chair . table . lamp . shelf . bed . desk . rug . cabinet . bookshelf . dresser . mirror . ottoman . stool',
+          query: 'sofa . chair . table . lamp . shelf . bed . desk . rug . cabinet . bookshelf . dresser . mirror . ottoman . stool',
           box_threshold: 0.3,
           text_threshold: 0.25,
         },
       );
 
-      const labels: string[] = dinoOutput?.labels || [];
-      const boxes: number[][] = dinoOutput?.boxes || [];
+      const detections: any[] = dinoOutput?.detections || [];
 
       const categoryMap: Record<string, string> = {
         sofa: 'seating', chair: 'seating', ottoman: 'seating', stool: 'seating',
@@ -109,17 +108,17 @@ serve(async (req) => {
         rug: 'decor', mirror: 'decor',
       };
 
-      objects = labels.map((label: string, i: number) => {
-        const box = boxes[i] || [0, 0, 100, 100];
-        const cleanLabel = label.replace(/\s*\([\d.]+\)\s*$/, '').trim().toLowerCase();
+      objects = detections.map((det: any) => {
+        const cleanLabel = (det.label || '').replace(/\s*\([\d.]+\)\s*$/, '').trim().toLowerCase();
+        const bbox = det.bbox || [0, 0, 100, 100];
         return {
           label: cleanLabel,
-          confidence: parseFloat(label.match(/\(([\d.]+)\)/)?.[1] || '0.8'),
+          confidence: det.confidence || parseFloat((det.label || '').match(/\(([\d.]+)\)/)?.[1] || '0.8'),
           boundingBox: {
-            x: Math.round(box[0]),
-            y: Math.round(box[1]),
-            width: Math.round(box[2] - box[0]),
-            height: Math.round(box[3] - box[1]),
+            x: Math.round(bbox[0]),
+            y: Math.round(bbox[1]),
+            width: Math.round(bbox[2] - bbox[0]),
+            height: Math.round(bbox[3] - bbox[1]),
           },
           category: categoryMap[cleanLabel] || 'furniture',
         };
