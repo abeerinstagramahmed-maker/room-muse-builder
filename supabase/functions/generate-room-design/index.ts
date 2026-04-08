@@ -99,7 +99,7 @@ serve(async (req) => {
       console.log('[generate-room-design] Step 1: MiDaS depth estimation');
       const depthOutput = await runReplicate(
         apiKey,
-        '3bd03ef8e70e777243b5e91f839eda29624aab8df78da20e03e8e21f43eedc31',
+        'a6ba5798f04f80d3b314de0f0a62277f21ab3503c60c84d4817de83c5edfdae0', // cjwbw/midas
         { image: imageUri, model_type: 'DPT_Large' },
       );
       const depthMapUrl = typeof depthOutput === 'string' ? depthOutput : depthOutput?.[0] || depthOutput;
@@ -108,14 +108,12 @@ serve(async (req) => {
       console.log('[generate-room-design] Step 2: SDXL + ControlNet Depth generation');
       const sdxlOutput = await runReplicate(
         apiKey,
-        '252e2da55b75b756c37c3eb37ffd2cbf15e54c96d14cb5ced56dbc65e6c3a28d',
+        '465fb41789dc2203a9d7158be11d1d2570606a039c65e0e236fd329b5eecb10c', // lucataco/sdxl-controlnet-depth
         {
           image: depthMapUrl,
           prompt: `${prompt}, professional interior photography, 8k, high quality, photorealistic, well-lit`,
-          negative_prompt: 'low quality, blurry, distorted, watermark, text, ugly, deformed, cartoon, anime, painting',
           num_inference_steps: 30,
-          guidance_scale: 7.5,
-          controlnet_conditioning_scale: 0.7,
+          condition_scale: 0.7,
           seed: Math.floor(Math.random() * 1000000),
         },
       );
