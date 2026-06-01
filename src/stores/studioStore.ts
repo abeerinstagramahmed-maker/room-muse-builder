@@ -27,6 +27,7 @@ interface StudioState {
   gridVisible: boolean;
   furniture: PlacedFurniture[];
   selectedId: string | null;
+  selectedWall: WallId | null;
   transformMode: TransformMode;
   /** Increment to request a camera reset from the editor. */
   cameraResetToken: number;
@@ -44,6 +45,7 @@ interface StudioState {
   duplicateFurniture: (instanceId: string) => void;
   deleteFurniture: (instanceId: string) => void;
   select: (instanceId: string | null) => void;
+  selectWall: (wall: WallId | null) => void;
 
   requestCameraReset: () => void;
   registerCapture: (fn: (() => void) | null) => void;
@@ -60,6 +62,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   gridVisible: true,
   furniture: [],
   selectedId: null,
+  selectedWall: null,
   transformMode: 'translate',
   cameraResetToken: 0,
   captureScreenshot: null,
@@ -113,7 +116,8 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       selectedId: s.selectedId === instanceId ? null : s.selectedId,
     })),
 
-  select: (selectedId) => set({ selectedId }),
+  select: (selectedId) => set({ selectedId, selectedWall: null }),
+  selectWall: (selectedWall) => set({ selectedWall, selectedId: null }),
 
   requestCameraReset: () =>
     set((s) => ({ cameraResetToken: s.cameraResetToken + 1 })),
