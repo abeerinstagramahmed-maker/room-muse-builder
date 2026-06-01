@@ -10,7 +10,7 @@ import { CompareBar } from "@/components/product/CompareBar";
 import Index from "./pages/Index";
 import Catalog from "./pages/Catalog";
 import ProductDetail from "./pages/ProductDetail";
-import Designer from "./pages/Designer";
+import Studio from "./pages/Studio";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
@@ -56,7 +56,8 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/catalog" element={<Catalog />} />
                 <Route path="/product/:id" element={<ProductDetail />} />
-                <Route path="/designer" element={<ProtectedRoute><Designer /></ProtectedRoute>} />
+                <Route path="/designer" element={<ProtectedRoute><Studio /></ProtectedRoute>} />
+                <Route path="/studio" element={<ProtectedRoute><Studio /></ProtectedRoute>} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                 <Route path="/order-confirmation" element={<OrderConfirmation />} />

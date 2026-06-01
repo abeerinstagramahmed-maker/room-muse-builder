@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useStoreSettings } from '@/hooks/useStoreSettings';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { defaultAISettings, type AISettings } from '@/services/aiProvider';
+import { defaultAISettings, type AISettings } from '@/services/ai/types';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -361,9 +361,8 @@ export default function AdminSettings() {
             </Card>
           </TabsContent>
 
-          {/* AI Settings — NEW */}
+          {/* AI Settings — provider-agnostic, stored but disabled in MVP */}
           <TabsContent value="ai-settings" className="space-y-4 mt-4">
-            {/* API Keys */}
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-3">
@@ -371,135 +370,82 @@ export default function AdminSettings() {
                     <Key className="h-5 w-5 text-primary" />
                   </div>
                   <div>
-                    <CardTitle className="font-display">AI API Keys</CardTitle>
-                    <CardDescription>Configure API keys for AI providers</CardDescription>
+                    <CardTitle className="font-display">AI Provider Credentials</CardTitle>
+                    <CardDescription>Stored securely for future AI features — not used in this MVP</CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
+                <Alert>
+                  <Brain className="h-4 w-4" />
+                  <AlertDescription>
+                    AI features are <strong>disabled</strong> in this release. These settings are
+                    saved for the upcoming provider-agnostic AI layer (layout generation, depth
+                    estimation, room reconstruction, etc.). No AI requests run today.
+                  </AlertDescription>
+                </Alert>
+
+                <div className="space-y-2">
+                  <Label>Active Provider</Label>
+                  <Select
+                    value={aiSettings.activeProvider}
+                    onValueChange={(v) => setAiSettings((s) => ({ ...s, activeProvider: v as AISettings['activeProvider'] }))}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="replicate">Replicate (primary)</SelectItem>
+                      <SelectItem value="openai">OpenAI</SelectItem>
+                      <SelectItem value="anthropic">Anthropic</SelectItem>
+                      <SelectItem value="custom">Custom Endpoint</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="space-y-3 p-4 rounded-lg bg-muted/50">
                   <div>
                     <Label className="text-xs text-muted-foreground">Replicate API Key</Label>
                     <Input
                       type="password"
-                      value={aiSettings.replicateApiKey}
-                      onChange={(e) => setAiSettings(s => ({ ...s, replicateApiKey: e.target.value }))}
+                      value={aiSettings.providers.replicate.apiKey ?? ''}
+                      onChange={(e) => setAiSettings((s) => ({ ...s, providers: { ...s.providers, replicate: { ...s.providers.replicate, apiKey: e.target.value } } }))}
                       placeholder="r8_..."
                       className="mt-1 font-mono text-sm"
                     />
-                    <p className="text-xs text-muted-foreground mt-1">Used for room image generation (SDXL + ControlNet), furniture detection (DINO + SAM), and room analysis (BLIP-2)</p>
-                  </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <a href="https://replicate.com/account/api-tokens" target="_blank" rel="noopener noreferrer">
-                      <ExternalLink className="h-4 w-4 mr-2" />
-                      Get Replicate API Key
-                    </a>
-                  </Button>
-                </div>
-                <Alert>
-                  <Brain className="h-4 w-4" />
-                  <AlertDescription>
-                    Your Replicate API key is stored securely in the database. The system runs in <strong>mock mode</strong> until a valid key is saved. All AI calls (BLIP-2, LLaVA, DINO, SAM, SDXL) go through Replicate.
-                  </AlertDescription>
-                </Alert>
-              </CardContent>
-            </Card>
-
-            {/* Default Models */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-[hsl(var(--ai-coral))]/10 flex items-center justify-center">
-                    <Cpu className="h-5 w-5 text-[hsl(var(--ai-coral))]" />
                   </div>
                   <div>
-                    <CardTitle className="font-display">Default Models</CardTitle>
-                    <CardDescription>Select which AI models to use for each pipeline step</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>Room Analysis Model</Label>
-                    <Select value={aiSettings.roomAnalysisModel} onValueChange={(v) => setAiSettings(s => ({ ...s, roomAnalysisModel: v }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="blip2-llava">BLIP-2 + LLaVA 1.6 (Replicate)</SelectItem>
-                        <SelectItem value="llava-only">LLaVA 1.6 only (Replicate)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Furniture Detection Model</Label>
-                    <Select value={aiSettings.furnitureDetectionModel} onValueChange={(v) => setAiSettings(s => ({ ...s, furnitureDetectionModel: v }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="grounding-dino-sam">Grounding DINO + SAM (Replicate)</SelectItem>
-                        <SelectItem value="yolo-v8">YOLOv8 (Replicate)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Room Generation Model</Label>
-                    <Select value={aiSettings.roomGenerationModel} onValueChange={(v) => setAiSettings(s => ({ ...s, roomGenerationModel: v }))}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="sdxl-controlnet-depth">SDXL + ControlNet Depth (Replicate)</SelectItem>
-                        <SelectItem value="sdxl-controlnet-canny">SDXL + ControlNet Canny (Replicate)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <Alert>
-                  <Bot className="h-4 w-4" />
-                  <AlertDescription>
-                    Product recommendations use a <strong>deterministic scoring algorithm</strong> (style match, budget fit, quality, material, room fit) — no AI API calls needed. This keeps costs low.
-                  </AlertDescription>
-                </Alert>
-              </CardContent>
-            </Card>
-
-            {/* Feature Toggles */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-[hsl(var(--ai-amber))]/10 flex items-center justify-center">
-                    <ToggleLeft className="h-5 w-5 text-[hsl(var(--ai-amber))]" />
+                    <Label className="text-xs text-muted-foreground">OpenAI API Key</Label>
+                    <Input
+                      type="password"
+                      value={aiSettings.providers.openai.apiKey ?? ''}
+                      onChange={(e) => setAiSettings((s) => ({ ...s, providers: { ...s.providers, openai: { ...s.providers.openai, apiKey: e.target.value } } }))}
+                      placeholder="sk-..."
+                      className="mt-1 font-mono text-sm"
+                    />
                   </div>
                   <div>
-                    <CardTitle className="font-display">Feature Toggles</CardTitle>
-                    <CardDescription>Enable or disable AI pipeline features</CardDescription>
+                    <Label className="text-xs text-muted-foreground">Anthropic API Key</Label>
+                    <Input
+                      type="password"
+                      value={aiSettings.providers.anthropic.apiKey ?? ''}
+                      onChange={(e) => setAiSettings((s) => ({ ...s, providers: { ...s.providers, anthropic: { ...s.providers.anthropic, apiKey: e.target.value } } }))}
+                      placeholder="sk-ant-..."
+                      className="mt-1 font-mono text-sm"
+                    />
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Enable AI Generation</Label>
-                    <p className="text-sm text-muted-foreground">Generate redesigned room images using SDXL + ControlNet</p>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Custom Endpoint URL</Label>
+                    <Input
+                      value={aiSettings.providers.custom.endpointUrl ?? ''}
+                      onChange={(e) => setAiSettings((s) => ({ ...s, providers: { ...s.providers, custom: { ...s.providers.custom, endpointUrl: e.target.value } } }))}
+                      placeholder="https://your-self-hosted-endpoint.example.com"
+                      className="mt-1 font-mono text-sm"
+                    />
                   </div>
-                  <Switch checked={aiSettings.enableAIGeneration} onCheckedChange={(v) => setAiSettings(s => ({ ...s, enableAIGeneration: v }))} />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Enable Furniture Detection</Label>
-                    <p className="text-sm text-muted-foreground">Detect existing furniture using Grounding DINO + SAM</p>
-                  </div>
-                  <Switch checked={aiSettings.enableFurnitureDetection} onCheckedChange={(v) => setAiSettings(s => ({ ...s, enableFurnitureDetection: v }))} />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Enable Product Scraping</Label>
-                    <p className="text-sm text-muted-foreground">Scrape products from Amazon, Etsy, IKEA, and other furniture stores</p>
-                  </div>
-                  <Switch checked={aiSettings.enableProductScraping} onCheckedChange={(v) => setAiSettings(s => ({ ...s, enableProductScraping: v }))} />
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
+
 
           {/* Product Sourcing */}
           <TabsContent value="product-sourcing" className="space-y-4 mt-4">
