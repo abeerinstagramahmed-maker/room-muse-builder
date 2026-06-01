@@ -223,12 +223,15 @@ export type Database = {
           colors: string[] | null
           commission_percent: number
           created_at: string
+          depth: number | null
           description: string | null
           dimensions: Json | null
+          height: number | null
           id: string
           images: string[]
           in_stock: boolean
           materials: string[] | null
+          model_url: string | null
           name: string
           original_price: number | null
           price: number
@@ -239,20 +242,25 @@ export type Database = {
           store_source: string | null
           subcategory: string | null
           tags: string[] | null
+          thumbnail_url: string | null
           updated_at: string
           vendor: string
+          width: number | null
         }
         Insert: {
           category: string
           colors?: string[] | null
           commission_percent?: number
           created_at?: string
+          depth?: number | null
           description?: string | null
           dimensions?: Json | null
+          height?: number | null
           id?: string
           images?: string[]
           in_stock?: boolean
           materials?: string[] | null
+          model_url?: string | null
           name: string
           original_price?: number | null
           price: number
@@ -263,20 +271,25 @@ export type Database = {
           store_source?: string | null
           subcategory?: string | null
           tags?: string[] | null
+          thumbnail_url?: string | null
           updated_at?: string
           vendor: string
+          width?: number | null
         }
         Update: {
           category?: string
           colors?: string[] | null
           commission_percent?: number
           created_at?: string
+          depth?: number | null
           description?: string | null
           dimensions?: Json | null
+          height?: number | null
           id?: string
           images?: string[]
           in_stock?: boolean
           materials?: string[] | null
+          model_url?: string | null
           name?: string
           original_price?: number | null
           price?: number
@@ -287,8 +300,10 @@ export type Database = {
           store_source?: string | null
           subcategory?: string | null
           tags?: string[] | null
+          thumbnail_url?: string | null
           updated_at?: string
           vendor?: string
+          width?: number | null
         }
         Relationships: []
       }
@@ -406,6 +421,33 @@ export type Database = {
           style?: string | null
           style_notes?: string | null
           total_price?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      saved_scenes: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          scene_data: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name?: string
+          scene_data?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          scene_data?: Json
           updated_at?: string
           user_id?: string
         }
