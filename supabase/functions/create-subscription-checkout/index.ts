@@ -131,12 +131,12 @@ Deno.serve(async (req) => {
       },
     });
 
-    // Upsert subscription record
+    // Upsert subscription record (awaiting payment confirmation via webhook)
     await supabaseAdmin.from("subscriptions").upsert(
       {
         user_id: user.id,
         stripe_customer_id: customerId,
-        plan: "free",
+        plan: "pro",
         status: "pending",
         billing_period: billingPeriod,
       },

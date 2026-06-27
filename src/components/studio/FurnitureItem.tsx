@@ -91,7 +91,7 @@ export function FurnitureItem({ item }: Props) {
     return (
       <TransformControls
         mode={transformMode}
-        showY={transformMode === 'rotate' ? true : false}
+        showY={false}
         showX={transformMode === 'translate'}
         showZ={transformMode === 'translate'}
         translationSnap={transformMode === 'translate' ? 0.25 : undefined}

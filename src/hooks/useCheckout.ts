@@ -16,6 +16,11 @@ interface CheckoutFormData {
   zip: string;
 }
 
+interface CouponInfo {
+  couponCode?: string;
+  couponDiscount?: number;
+}
+
 export function useCheckout() {
   const [isProcessing, setIsProcessing] = useState(false);
   const { items, totalPrice, clearCart } = useCart();
@@ -27,7 +32,12 @@ export function useCheckout() {
   const tax = totalPrice * 0.08;
   const orderTotal = totalPrice + shipping + tax;
 
-  const processOrder = async (formData: CheckoutFormData) => {
+  const processOrder = async (formData: CheckoutFormData, coupon?: CouponInfo) => {
+    const couponDiscount = Math.min(coupon?.couponDiscount ?? 0, totalPrice);
+    const couponCode = coupon?.couponCode;
+    // Discount applies to product subtotal only; tax/shipping stay full.
+    const adjustedTotal = Math.max(0, totalPrice - couponDiscount) + shipping + tax;
+
     if (items.length === 0) {
       toast({
         title: 'Cart is empty',
@@ -40,6 +50,9 @@ export function useCheckout() {
     setIsProcessing(true);
 
     try {
+      // Ratio used to spread the discount proportionally across products.
+      const discountRatio = totalPrice > 0 ? Math.max(0, totalPrice - couponDiscount) / totalPrice : 1;
+
       // Create the order with pending status
       const { data: order, error: orderError } = await supabase
         .from('orders')
@@ -49,7 +62,9 @@ export function useCheckout() {
           subtotal: totalPrice,
           shipping,
           tax,
-          total: orderTotal,
+          total: adjustedTotal,
+          discount_code: couponCode || null,
+          discount_amount: couponDiscount || 0,
           contact_email: formData.email,
           contact_phone: formData.phone,
           shipping_address: {
@@ -60,13 +75,13 @@ export function useCheckout() {
             state: formData.state,
             zip: formData.zip,
           },
-        })
+        } as any)
         .select()
         .single();
 
       if (orderError) throw orderError;
 
-      // Create order items
+      // Create order items (discount applied proportionally)
       const orderItems = items.map((item) => ({
         order_id: order.id,
         product_id: item.product.id,
@@ -75,7 +90,7 @@ export function useCheckout() {
         vendor: item.product.vendor,
         quantity: item.quantity,
         unit_price: item.product.price,
-        total_price: item.product.price * item.quantity,
+        total_price: Math.round(item.product.price * item.quantity * discountRatio * 100) / 100,
         selected_color: item.selectedColor || null,
       }));
 
@@ -85,10 +100,10 @@ export function useCheckout() {
 
       if (itemsError) throw itemsError;
 
-      // Try Stripe checkout
+      // Try Stripe checkout — apply discount proportionally to product line prices
       const stripeItems = items.map((item) => ({
         name: item.product.name,
-        price: item.product.price,
+        price: Math.round(item.product.price * discountRatio * 100) / 100,
         quantity: item.quantity,
         image: item.product.images[0] || undefined,
       }));
@@ -110,6 +125,7 @@ export function useCheckout() {
         quantity: 1,
         image: undefined,
       });
+
 
       const origin = window.location.origin;
       const { data: sessionData, error: sessionError } = await supabase.functions.invoke(
