@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Layout } from '@/components/layout/Layout';
 import { SEOHead } from '@/components/SEOHead';
@@ -46,10 +46,16 @@ const Checkout = () => {
       : appliedCoupon.discount_value
     : 0;
 
-  const adjustedTotal = orderTotal - couponDiscount;
+  // Discount applies to product subtotal only, not tax/shipping.
+  const adjustedTotal = Math.max(0, totalPrice - couponDiscount) + shipping + tax;
+
+  useEffect(() => {
+    if (items.length === 0) {
+      navigate('/cart');
+    }
+  }, [items.length, navigate]);
 
   if (items.length === 0) {
-    navigate('/cart');
     return null;
   }
 
@@ -102,7 +108,10 @@ const Checkout = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await processOrder(formData);
+    await processOrder(formData, {
+      couponCode: appliedCoupon?.code,
+      couponDiscount,
+    });
   };
 
   return (
