@@ -21,7 +21,7 @@ import {
 
 const Checkout = () => {
   const { items, totalPrice } = useCart();
-  const { isProcessing, shipping, tax, orderTotal, processOrder } = useCheckout();
+  const { isProcessing, shipping, tax, processOrder } = useCheckout();
   const navigate = useNavigate();
   const { toast } = useToast();
   
