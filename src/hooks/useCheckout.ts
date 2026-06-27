@@ -16,6 +16,11 @@ interface CheckoutFormData {
   zip: string;
 }
 
+interface CouponInfo {
+  couponCode?: string;
+  couponDiscount?: number;
+}
+
 export function useCheckout() {
   const [isProcessing, setIsProcessing] = useState(false);
   const { items, totalPrice, clearCart } = useCart();
@@ -27,7 +32,12 @@ export function useCheckout() {
   const tax = totalPrice * 0.08;
   const orderTotal = totalPrice + shipping + tax;
 
-  const processOrder = async (formData: CheckoutFormData) => {
+  const processOrder = async (formData: CheckoutFormData, coupon?: CouponInfo) => {
+    const couponDiscount = Math.min(coupon?.couponDiscount ?? 0, totalPrice);
+    const couponCode = coupon?.couponCode;
+    // Discount applies to product subtotal only; tax/shipping stay full.
+    const adjustedTotal = Math.max(0, totalPrice - couponDiscount) + shipping + tax;
+
     if (items.length === 0) {
       toast({
         title: 'Cart is empty',
