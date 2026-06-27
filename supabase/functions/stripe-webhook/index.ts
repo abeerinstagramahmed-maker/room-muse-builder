@@ -113,8 +113,79 @@ Deno.serve(async (req) => {
         break;
       }
 
+      case "customer.subscription.created":
+      case "customer.subscription.updated": {
+        const sub = event.data.object as Stripe.Subscription;
+        const userId = sub.metadata?.user_id;
+        const periodEnd = sub.current_period_end
+          ? new Date(sub.current_period_end * 1000).toISOString()
+          : null;
+        // active/trialing => pro active; past_due => past_due; otherwise reflect status.
+        const isActive = sub.status === "active" || sub.status === "trialing";
+        const update = {
+          plan: isActive ? "pro" : sub.status === "past_due" ? "pro" : "free",
+          status: sub.status === "past_due" ? "past_due" : isActive ? "active" : sub.status,
+          current_period_end: periodEnd,
+          stripe_subscription_id: sub.id,
+        };
+        if (userId) {
+          await supabase.from("subscriptions").update(update).eq("user_id", userId);
+        } else {
+          await supabase
+            .from("subscriptions")
+            .update(update)
+            .eq("stripe_customer_id", sub.customer as string);
+        }
+        console.log(`Subscription ${sub.id} ${event.type} -> ${update.status}`);
+        break;
+      }
+
+      case "customer.subscription.deleted": {
+        const sub = event.data.object as Stripe.Subscription;
+        const userId = sub.metadata?.user_id;
+        const update = { plan: "free", status: "cancelled" };
+        if (userId) {
+          await supabase.from("subscriptions").update(update).eq("user_id", userId);
+        } else {
+          await supabase
+            .from("subscriptions")
+            .update(update)
+            .eq("stripe_customer_id", sub.customer as string);
+        }
+        console.log(`Subscription ${sub.id} cancelled`);
+        break;
+      }
+
+      case "invoice.paid": {
+        const invoice = event.data.object as Stripe.Invoice;
+        const periodEnd = invoice.lines?.data?.[0]?.period?.end
+          ? new Date(invoice.lines.data[0].period.end * 1000).toISOString()
+          : null;
+        await supabase
+          .from("subscriptions")
+          .update({
+            plan: "pro",
+            status: "active",
+            ...(periodEnd ? { current_period_end: periodEnd } : {}),
+          })
+          .eq("stripe_customer_id", invoice.customer as string);
+        console.log(`Invoice paid for customer ${invoice.customer}`);
+        break;
+      }
+
+      case "invoice.payment_failed": {
+        const invoice = event.data.object as Stripe.Invoice;
+        await supabase
+          .from("subscriptions")
+          .update({ status: "past_due" })
+          .eq("stripe_customer_id", invoice.customer as string);
+        console.log(`Invoice payment failed for customer ${invoice.customer}`);
+        break;
+      }
+
       default:
         console.log(`Unhandled event type: ${event.type}`);
+
     }
 
     return new Response(JSON.stringify({ received: true }), {
