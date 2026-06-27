@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { useStoreSettings } from '@/hooks/useStoreSettings';
 
 interface Subscription {
   id: string;
