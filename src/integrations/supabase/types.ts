@@ -160,6 +160,8 @@ export type Database = {
           contact_email: string | null
           contact_phone: string | null
           created_at: string
+          discount_amount: number
+          discount_code: string | null
           estimated_delivery: string | null
           id: string
           payment_status: string
@@ -180,6 +182,8 @@ export type Database = {
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
+          discount_amount?: number
+          discount_code?: string | null
           estimated_delivery?: string | null
           id?: string
           payment_status?: string
@@ -200,6 +204,8 @@ export type Database = {
           contact_email?: string | null
           contact_phone?: string | null
           created_at?: string
+          discount_amount?: number
+          discount_code?: string | null
           estimated_delivery?: string | null
           id?: string
           payment_status?: string
