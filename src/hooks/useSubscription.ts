@@ -13,6 +13,7 @@ interface Subscription {
 
 export function useSubscription() {
   const { user, isAuthenticated } = useAuthContext();
+  const { subscriptionPricing } = useStoreSettings();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [designCount, setDesignCount] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -52,9 +53,10 @@ export function useSubscription() {
     }
   };
 
+  const freeDesigns = subscriptionPricing?.freeDesigns ?? 1;
   const isPro = subscription?.plan === 'pro' && subscription?.status === 'active';
-  const canDesign = isPro || designCount < 1;
-  const remainingFreeDesigns = Math.max(0, 1 - designCount);
+  const canDesign = isPro || designCount < freeDesigns;
+  const remainingFreeDesigns = Math.max(0, freeDesigns - designCount);
 
   const incrementDesignCount = async () => {
     if (!user) return;
