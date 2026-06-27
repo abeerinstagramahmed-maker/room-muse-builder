@@ -257,7 +257,7 @@ const Account = () => {
                             </div>
                             <div className="flex items-center gap-3">
                               <span className={`rounded-full px-3 py-1 text-xs font-medium ${
-                                order.status === 'completed' ? 'bg-primary/10 text-primary'
+                                order.status === 'delivered' ? 'bg-primary/10 text-primary'
                                   : order.status === 'pending' ? 'bg-accent text-accent-foreground'
                                   : 'bg-muted text-muted-foreground'
                               }`}>

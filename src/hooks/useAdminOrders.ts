@@ -56,10 +56,15 @@ export function useAdminOrders() {
 
       if (error) throw error;
 
-      setOrders(prev => 
-        prev.map(order => 
-          order.id === orderId ? { ...order, status } : order
-        )
+      let trackingNumber: string | undefined;
+      setOrders(prev =>
+        prev.map(order => {
+          if (order.id === orderId) {
+            trackingNumber = (order as any)?.tracking_number;
+            return { ...order, status };
+          }
+          return order;
+        })
       );
 
       // Trigger email notification based on status change
@@ -70,8 +75,7 @@ export function useAdminOrders() {
         cancelled: 'order_cancelled',
       };
       if (emailTypeMap[status]) {
-        const order = orders.find(o => o.id === orderId);
-        sendOrderEmail(orderId, emailTypeMap[status], (order as any)?.tracking_number);
+        sendOrderEmail(orderId, emailTypeMap[status], trackingNumber);
       }
 
       toast({
@@ -86,7 +90,7 @@ export function useAdminOrders() {
         variant: 'destructive',
       });
     }
-  }, [toast, orders, sendOrderEmail]);
+  }, [toast, sendOrderEmail]);
 
   const updateOrderFulfillment = useCallback(async (
     orderId: string,
