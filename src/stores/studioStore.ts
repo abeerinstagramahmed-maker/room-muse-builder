@@ -29,6 +29,8 @@ interface StudioState {
   selectedId: string | null;
   selectedWall: WallId | null;
   transformMode: TransformMode;
+  /** Optional photo (e.g. AI-cleaned room) shown as scene backdrop. */
+  backgroundImageUrl: string | null;
   /** Increment to request a camera reset from the editor. */
   cameraResetToken: number;
   /** Resolver supplied by the canvas for screenshot capture. */
@@ -39,6 +41,7 @@ interface StudioState {
   setFlooring: (id: string) => void;
   toggleGrid: () => void;
   setTransformMode: (mode: TransformMode) => void;
+  setBackgroundImage: (url: string | null) => void;
 
   addFurniture: (item: Omit<PlacedFurniture, 'instanceId'>) => void;
   updateFurniture: (instanceId: string, patch: Partial<PlacedFurniture>) => void;
@@ -52,6 +55,12 @@ interface StudioState {
 
   newRoom: () => void;
   loadScene: (data: SceneData) => void;
+  applyRoomAnalysis: (input: {
+    room?: Partial<RoomDimensions>;
+    wallColor?: string;
+    backgroundImageUrl?: string | null;
+    furniture?: Omit<PlacedFurniture, 'instanceId'>[];
+  }) => void;
   serialize: () => SceneData;
 }
 
@@ -64,6 +73,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   selectedId: null,
   selectedWall: null,
   transformMode: 'translate',
+  backgroundImageUrl: null,
   cameraResetToken: 0,
   captureScreenshot: null,
 
@@ -73,6 +83,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   setFlooring: (id) => set({ flooringId: id }),
   toggleGrid: () => set((s) => ({ gridVisible: !s.gridVisible })),
   setTransformMode: (transformMode) => set({ transformMode }),
+  setBackgroundImage: (backgroundImageUrl) => set({ backgroundImageUrl }),
 
   addFurniture: (item) => {
     const instanceId = newInstanceId();
@@ -130,7 +141,29 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       flooringId: DEFAULT_FLOORING_ID,
       furniture: [],
       selectedId: null,
+      backgroundImageUrl: null,
     }),
+
+  applyRoomAnalysis: ({ room, wallColor, backgroundImageUrl, furniture }) =>
+    set((s) => ({
+      room: { ...s.room, ...(room ?? {}) },
+      wallColors: wallColor
+        ? {
+            north: wallColor,
+            south: wallColor,
+            east: wallColor,
+            west: wallColor,
+          }
+        : s.wallColors,
+      backgroundImageUrl:
+        backgroundImageUrl !== undefined ? backgroundImageUrl : s.backgroundImageUrl,
+      furniture: (furniture ?? []).map((f) => ({
+        ...f,
+        instanceId: newInstanceId(),
+      })),
+      selectedId: null,
+    })),
+
 
   loadScene: (data) =>
     set({

@@ -11,6 +11,10 @@ import Index from "./pages/Index";
 import Catalog from "./pages/Catalog";
 import ProductDetail from "./pages/ProductDetail";
 import Studio from "./pages/Studio";
+import DesignMyRoom from "./pages/DesignMyRoom";
+import Showrooms from "./pages/Showrooms";
+import Gallery from "./pages/Gallery";
+import SharedDesign from "./pages/SharedDesign";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import OrderConfirmation from "./pages/OrderConfirmation";
@@ -58,6 +62,10 @@ const App = () => (
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/designer" element={<ProtectedRoute><Studio /></ProtectedRoute>} />
                 <Route path="/studio" element={<ProtectedRoute><Studio /></ProtectedRoute>} />
+                <Route path="/design-my-room" element={<DesignMyRoom />} />
+                <Route path="/showrooms" element={<Showrooms />} />
+                <Route path="/gallery" element={<Gallery />} />
+                <Route path="/shared/:token" element={<SharedDesign />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                 <Route path="/order-confirmation" element={<OrderConfirmation />} />

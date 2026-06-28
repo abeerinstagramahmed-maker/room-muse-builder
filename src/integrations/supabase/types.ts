@@ -80,6 +80,35 @@ export type Database = {
         }
         Relationships: []
       }
+      design_likes: {
+        Row: {
+          created_at: string
+          design_id: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          design_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          design_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "design_likes_design_id_fkey"
+            columns: ["design_id"]
+            isOneToOne: false
+            referencedRelation: "shared_designs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       newsletter_subscribers: {
         Row: {
           email: string
@@ -387,6 +416,54 @@ export type Database = {
           },
         ]
       }
+      room_analyses: {
+        Row: {
+          created_at: string
+          detected_furniture: Json
+          estimated_depth: number | null
+          estimated_height: number | null
+          estimated_width: number | null
+          floor_type: string | null
+          id: string
+          image_url: string
+          lighting_conditions: string | null
+          room_type: string | null
+          style_suggestions: Json
+          user_id: string | null
+          wall_color: string | null
+        }
+        Insert: {
+          created_at?: string
+          detected_furniture?: Json
+          estimated_depth?: number | null
+          estimated_height?: number | null
+          estimated_width?: number | null
+          floor_type?: string | null
+          id?: string
+          image_url: string
+          lighting_conditions?: string | null
+          room_type?: string | null
+          style_suggestions?: Json
+          user_id?: string | null
+          wall_color?: string | null
+        }
+        Update: {
+          created_at?: string
+          detected_furniture?: Json
+          estimated_depth?: number | null
+          estimated_height?: number | null
+          estimated_width?: number | null
+          floor_type?: string | null
+          id?: string
+          image_url?: string
+          lighting_conditions?: string | null
+          room_type?: string | null
+          style_suggestions?: Json
+          user_id?: string | null
+          wall_color?: string | null
+        }
+        Relationships: []
+      }
       saved_designs: {
         Row: {
           ai_note: string | null
@@ -456,6 +533,81 @@ export type Database = {
           scene_data?: Json
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      shared_designs: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean
+          remix_count: number
+          room_type: string | null
+          scene_data: Json
+          share_token: string
+          title: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          remix_count?: number
+          room_type?: string | null
+          scene_data: Json
+          share_token: string
+          title?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          remix_count?: number
+          room_type?: string | null
+          scene_data?: Json
+          share_token?: string
+          title?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      showrooms: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_featured: boolean
+          name: string
+          room_type: string
+          scene_data: Json
+          sort_order: number
+          thumbnail_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_featured?: boolean
+          name: string
+          room_type: string
+          scene_data: Json
+          sort_order?: number
+          thumbnail_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_featured?: boolean
+          name?: string
+          room_type?: string
+          scene_data?: Json
+          sort_order?: number
+          thumbnail_url?: string | null
         }
         Relationships: []
       }
@@ -588,6 +740,10 @@ export type Database = {
         Returns: boolean
       }
       increment_design_count: { Args: { p_user_id: string }; Returns: number }
+      increment_remix_count: {
+        Args: { p_design_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"

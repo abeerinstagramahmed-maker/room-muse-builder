@@ -9,9 +9,12 @@ import {
   Trash2,
   Pencil,
   Check,
+  Share2,
+  Copy,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -23,10 +26,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStudioStore } from '@/stores/studioStore';
 import { useSavedScenes } from '@/hooks/useSavedScenes';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export function StudioToolbar() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const newRoom = useStudioStore((s) => s.newRoom);
   const requestCameraReset = useStudioStore((s) => s.requestCameraReset);
   const captureScreenshot = useStudioStore((s) => s.captureScreenshot);
@@ -41,6 +45,45 @@ export function StudioToolbar() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
+
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareTitle, setShareTitle] = useState('');
+  const [shareDesc, setShareDesc] = useState('');
+  const [sharing, setSharing] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+
+  const handleShare = async () => {
+    if (!user) return;
+    setSharing(true);
+    const token = (crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`).replace(/-/g, '').slice(0, 16);
+    const { error } = await supabase.from('shared_designs').insert({
+      user_id: user.id,
+      scene_data: serialize() as never,
+      title: shareTitle.trim() || 'Untitled Design',
+      description: shareDesc.trim() || null,
+      share_token: token,
+      is_public: true,
+    });
+    setSharing(false);
+    if (error) {
+      toast.error('Could not share design.');
+      return;
+    }
+    setShareUrl(`${window.location.origin}/shared/${token}`);
+  };
+
+  const socialShare = (network: 'twitter' | 'facebook' | 'pinterest') => {
+    if (!shareUrl) return;
+    const u = encodeURIComponent(shareUrl);
+    const text = encodeURIComponent(shareTitle || 'Check out my room design!');
+    const urls = {
+      twitter: `https://twitter.com/intent/tweet?url=${u}&text=${text}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${u}`,
+      pinterest: `https://pinterest.com/pin/create/button/?url=${u}&description=${text}`,
+    };
+    window.open(urls[network], '_blank', 'noopener,width=600,height=500');
+  };
+
 
   const handleSave = async () => {
     if (!sceneName.trim()) return;
@@ -98,6 +141,77 @@ export function StudioToolbar() {
       >
         <Eye className="h-4 w-4" /> Reset View
       </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-1.5"
+        onClick={() => {
+          if (!isAuthenticated) return toast.error('Please sign in to share designs.');
+          setShareUrl(null);
+          setShareOpen(true);
+        }}
+      >
+        <Share2 className="h-4 w-4" /> Share
+      </Button>
+
+      {/* Share dialog */}
+      <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Share Your Design</DialogTitle>
+          </DialogHeader>
+          {!shareUrl ? (
+            <div className="space-y-3">
+              <Input
+                placeholder="Design title"
+                value={shareTitle}
+                onChange={(e) => setShareTitle(e.target.value)}
+              />
+              <Textarea
+                placeholder="Description (optional)"
+                value={shareDesc}
+                onChange={(e) => setShareDesc(e.target.value)}
+              />
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShareOpen(false)}>Cancel</Button>
+                <Button onClick={handleShare} disabled={sharing}>
+                  {sharing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Create Share Link
+                </Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Input readOnly value={shareUrl} />
+                <Button
+                  size="icon"
+                  onClick={() => {
+                    navigator.clipboard.writeText(shareUrl);
+                    toast.success('Link copied!');
+                  }}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => socialShare('twitter')}>Twitter</Button>
+                <Button variant="outline" className="flex-1" onClick={() => socialShare('facebook')}>Facebook</Button>
+                <Button variant="outline" className="flex-1" onClick={() => socialShare('pinterest')}>Pinterest</Button>
+              </div>
+              <div>
+                <p className="mb-1 text-xs font-medium text-muted-foreground">Embed code</p>
+                <Textarea
+                  readOnly
+                  className="font-mono text-xs"
+                  value={`<iframe src="${shareUrl}" width="800" height="600" frameborder="0"></iframe>`}
+                />
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
 
       {/* Save dialog */}
       <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
