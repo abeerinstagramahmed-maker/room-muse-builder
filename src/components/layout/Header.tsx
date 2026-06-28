@@ -19,7 +19,9 @@ import {
 
 const navLinks = [
   { href: '/catalog', label: 'Shop' },
+  { href: '/showrooms', label: 'Showrooms' },
   { href: '/design-my-room', label: 'Design My Room' },
+  { href: '/gallery', label: 'Gallery' },
   { href: '/pricing', label: 'Pricing' },
 ];
 
