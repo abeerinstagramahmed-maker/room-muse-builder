@@ -30,7 +30,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export function StudioToolbar() {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const newRoom = useStudioStore((s) => s.newRoom);
   const requestCameraReset = useStudioStore((s) => s.requestCameraReset);
   const captureScreenshot = useStudioStore((s) => s.captureScreenshot);
@@ -45,6 +45,45 @@ export function StudioToolbar() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
+
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareTitle, setShareTitle] = useState('');
+  const [shareDesc, setShareDesc] = useState('');
+  const [sharing, setSharing] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+
+  const handleShare = async () => {
+    if (!user) return;
+    setSharing(true);
+    const token = (crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`).replace(/-/g, '').slice(0, 16);
+    const { error } = await supabase.from('shared_designs').insert({
+      user_id: user.id,
+      scene_data: serialize() as never,
+      title: shareTitle.trim() || 'Untitled Design',
+      description: shareDesc.trim() || null,
+      share_token: token,
+      is_public: true,
+    });
+    setSharing(false);
+    if (error) {
+      toast.error('Could not share design.');
+      return;
+    }
+    setShareUrl(`${window.location.origin}/shared/${token}`);
+  };
+
+  const socialShare = (network: 'twitter' | 'facebook' | 'pinterest') => {
+    if (!shareUrl) return;
+    const u = encodeURIComponent(shareUrl);
+    const text = encodeURIComponent(shareTitle || 'Check out my room design!');
+    const urls = {
+      twitter: `https://twitter.com/intent/tweet?url=${u}&text=${text}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${u}`,
+      pinterest: `https://pinterest.com/pin/create/button/?url=${u}&description=${text}`,
+    };
+    window.open(urls[network], '_blank', 'noopener,width=600,height=500');
+  };
+
 
   const handleSave = async () => {
     if (!sceneName.trim()) return;
