@@ -63,6 +63,9 @@ const App = () => (
                 <Route path="/designer" element={<ProtectedRoute><Studio /></ProtectedRoute>} />
                 <Route path="/studio" element={<ProtectedRoute><Studio /></ProtectedRoute>} />
                 <Route path="/design-my-room" element={<DesignMyRoom />} />
+                <Route path="/showrooms" element={<Showrooms />} />
+                <Route path="/gallery" element={<Gallery />} />
+                <Route path="/shared/:token" element={<SharedDesign />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                 <Route path="/order-confirmation" element={<OrderConfirmation />} />
