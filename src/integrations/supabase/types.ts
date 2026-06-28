@@ -507,6 +507,42 @@ export type Database = {
         }
         Relationships: []
       }
+      showrooms: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_featured: boolean
+          name: string
+          room_type: string
+          scene_data: Json
+          sort_order: number
+          thumbnail_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_featured?: boolean
+          name: string
+          room_type: string
+          scene_data: Json
+          sort_order?: number
+          thumbnail_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_featured?: boolean
+          name?: string
+          room_type?: string
+          scene_data?: Json
+          sort_order?: number
+          thumbnail_url?: string | null
+        }
+        Relationships: []
+      }
       store_settings: {
         Row: {
           created_at: string
