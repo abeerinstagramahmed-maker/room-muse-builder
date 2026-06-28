@@ -387,6 +387,54 @@ export type Database = {
           },
         ]
       }
+      room_analyses: {
+        Row: {
+          created_at: string
+          detected_furniture: Json
+          estimated_depth: number | null
+          estimated_height: number | null
+          estimated_width: number | null
+          floor_type: string | null
+          id: string
+          image_url: string
+          lighting_conditions: string | null
+          room_type: string | null
+          style_suggestions: Json
+          user_id: string | null
+          wall_color: string | null
+        }
+        Insert: {
+          created_at?: string
+          detected_furniture?: Json
+          estimated_depth?: number | null
+          estimated_height?: number | null
+          estimated_width?: number | null
+          floor_type?: string | null
+          id?: string
+          image_url: string
+          lighting_conditions?: string | null
+          room_type?: string | null
+          style_suggestions?: Json
+          user_id?: string | null
+          wall_color?: string | null
+        }
+        Update: {
+          created_at?: string
+          detected_furniture?: Json
+          estimated_depth?: number | null
+          estimated_height?: number | null
+          estimated_width?: number | null
+          floor_type?: string | null
+          id?: string
+          image_url?: string
+          lighting_conditions?: string | null
+          room_type?: string | null
+          style_suggestions?: Json
+          user_id?: string | null
+          wall_color?: string | null
+        }
+        Relationships: []
+      }
       saved_designs: {
         Row: {
           ai_note: string | null
