@@ -38,7 +38,7 @@ export default function SharedDesign() {
         .select('*')
         .eq('share_token', token)
         .maybeSingle();
-      setDesign(data as SharedDesignRow | null);
+      setDesign((data as unknown as SharedDesignRow) ?? null);
       setLoading(false);
     })();
   }, [token]);
