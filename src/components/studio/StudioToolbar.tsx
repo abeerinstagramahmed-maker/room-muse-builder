@@ -141,6 +141,77 @@ export function StudioToolbar() {
       >
         <Eye className="h-4 w-4" /> Reset View
       </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-1.5"
+        onClick={() => {
+          if (!isAuthenticated) return toast.error('Please sign in to share designs.');
+          setShareUrl(null);
+          setShareOpen(true);
+        }}
+      >
+        <Share2 className="h-4 w-4" /> Share
+      </Button>
+
+      {/* Share dialog */}
+      <Dialog open={shareOpen} onOpenChange={setShareOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Share Your Design</DialogTitle>
+          </DialogHeader>
+          {!shareUrl ? (
+            <div className="space-y-3">
+              <Input
+                placeholder="Design title"
+                value={shareTitle}
+                onChange={(e) => setShareTitle(e.target.value)}
+              />
+              <Textarea
+                placeholder="Description (optional)"
+                value={shareDesc}
+                onChange={(e) => setShareDesc(e.target.value)}
+              />
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShareOpen(false)}>Cancel</Button>
+                <Button onClick={handleShare} disabled={sharing}>
+                  {sharing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Create Share Link
+                </Button>
+              </DialogFooter>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Input readOnly value={shareUrl} />
+                <Button
+                  size="icon"
+                  onClick={() => {
+                    navigator.clipboard.writeText(shareUrl);
+                    toast.success('Link copied!');
+                  }}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" className="flex-1" onClick={() => socialShare('twitter')}>Twitter</Button>
+                <Button variant="outline" className="flex-1" onClick={() => socialShare('facebook')}>Facebook</Button>
+                <Button variant="outline" className="flex-1" onClick={() => socialShare('pinterest')}>Pinterest</Button>
+              </div>
+              <div>
+                <p className="mb-1 text-xs font-medium text-muted-foreground">Embed code</p>
+                <Textarea
+                  readOnly
+                  className="font-mono text-xs"
+                  value={`<iframe src="${shareUrl}" width="800" height="600" frameborder="0"></iframe>`}
+                />
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
 
       {/* Save dialog */}
       <Dialog open={saveOpen} onOpenChange={setSaveOpen}>
