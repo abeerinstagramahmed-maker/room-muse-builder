@@ -29,6 +29,8 @@ interface StudioState {
   selectedId: string | null;
   selectedWall: WallId | null;
   transformMode: TransformMode;
+  /** Optional photo (e.g. AI-cleaned room) shown as scene backdrop. */
+  backgroundImageUrl: string | null;
   /** Increment to request a camera reset from the editor. */
   cameraResetToken: number;
   /** Resolver supplied by the canvas for screenshot capture. */
@@ -39,6 +41,7 @@ interface StudioState {
   setFlooring: (id: string) => void;
   toggleGrid: () => void;
   setTransformMode: (mode: TransformMode) => void;
+  setBackgroundImage: (url: string | null) => void;
 
   addFurniture: (item: Omit<PlacedFurniture, 'instanceId'>) => void;
   updateFurniture: (instanceId: string, patch: Partial<PlacedFurniture>) => void;
@@ -52,6 +55,12 @@ interface StudioState {
 
   newRoom: () => void;
   loadScene: (data: SceneData) => void;
+  applyRoomAnalysis: (input: {
+    room?: Partial<RoomDimensions>;
+    wallColor?: string;
+    backgroundImageUrl?: string | null;
+    furniture?: Omit<PlacedFurniture, 'instanceId'>[];
+  }) => void;
   serialize: () => SceneData;
 }
 
