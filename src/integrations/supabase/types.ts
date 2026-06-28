@@ -80,6 +80,35 @@ export type Database = {
         }
         Relationships: []
       }
+      design_likes: {
+        Row: {
+          created_at: string
+          design_id: string | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          design_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          design_id?: string | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "design_likes_design_id_fkey"
+            columns: ["design_id"]
+            isOneToOne: false
+            referencedRelation: "shared_designs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       newsletter_subscribers: {
         Row: {
           email: string
@@ -507,6 +536,45 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_designs: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean
+          remix_count: number
+          room_type: string | null
+          scene_data: Json
+          share_token: string
+          title: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          remix_count?: number
+          room_type?: string | null
+          scene_data: Json
+          share_token: string
+          title?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          remix_count?: number
+          room_type?: string | null
+          scene_data?: Json
+          share_token?: string
+          title?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       showrooms: {
         Row: {
           created_at: string
@@ -672,6 +740,10 @@ export type Database = {
         Returns: boolean
       }
       increment_design_count: { Args: { p_user_id: string }; Returns: number }
+      increment_remix_count: {
+        Args: { p_design_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"
