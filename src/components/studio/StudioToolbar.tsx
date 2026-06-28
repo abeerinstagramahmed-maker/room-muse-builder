@@ -9,9 +9,12 @@ import {
   Trash2,
   Pencil,
   Check,
+  Share2,
+  Copy,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Dialog,
   DialogContent,
@@ -23,6 +26,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStudioStore } from '@/stores/studioStore';
 import { useSavedScenes } from '@/hooks/useSavedScenes';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export function StudioToolbar() {
