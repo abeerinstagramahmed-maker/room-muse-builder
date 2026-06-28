@@ -73,6 +73,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   selectedId: null,
   selectedWall: null,
   transformMode: 'translate',
+  backgroundImageUrl: null,
   cameraResetToken: 0,
   captureScreenshot: null,
 
@@ -82,6 +83,7 @@ export const useStudioStore = create<StudioState>((set, get) => ({
   setFlooring: (id) => set({ flooringId: id }),
   toggleGrid: () => set((s) => ({ gridVisible: !s.gridVisible })),
   setTransformMode: (transformMode) => set({ transformMode }),
+  setBackgroundImage: (backgroundImageUrl) => set({ backgroundImageUrl }),
 
   addFurniture: (item) => {
     const instanceId = newInstanceId();
