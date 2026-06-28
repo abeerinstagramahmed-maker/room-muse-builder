@@ -141,7 +141,29 @@ export const useStudioStore = create<StudioState>((set, get) => ({
       flooringId: DEFAULT_FLOORING_ID,
       furniture: [],
       selectedId: null,
+      backgroundImageUrl: null,
     }),
+
+  applyRoomAnalysis: ({ room, wallColor, backgroundImageUrl, furniture }) =>
+    set((s) => ({
+      room: { ...s.room, ...(room ?? {}) },
+      wallColors: wallColor
+        ? {
+            north: wallColor,
+            south: wallColor,
+            east: wallColor,
+            west: wallColor,
+          }
+        : s.wallColors,
+      backgroundImageUrl:
+        backgroundImageUrl !== undefined ? backgroundImageUrl : s.backgroundImageUrl,
+      furniture: (furniture ?? []).map((f) => ({
+        ...f,
+        instanceId: newInstanceId(),
+      })),
+      selectedId: null,
+    })),
+
 
   loadScene: (data) =>
     set({
