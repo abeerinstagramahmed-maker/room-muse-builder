@@ -56,4 +56,23 @@ export const PRODUCT_CATEGORIES: ProductCategoryDef[] = [
   { id: 'Lamp', label: 'Lamp' },
   { id: 'Storage', label: 'Storage' },
   { id: 'Decor', label: 'Decor' },
+  { id: 'Wall Art', label: 'Wall Art' },
+  { id: 'Mirror', label: 'Mirror' },
+  { id: 'Wall Shelf', label: 'Wall Shelf' },
+  { id: 'Lighting', label: 'Lighting' },
+  { id: 'Plant', label: 'Plant' },
 ];
+
+/** Categories whose items mount on a wall rather than the floor. */
+export const WALL_CATEGORIES = new Set([
+  'Wall Art',
+  'Mirror',
+  'Wall Shelf',
+  'Art',
+  'Painting',
+  'Frame',
+]);
+
+export function mountTypeForCategory(category: string | null | undefined): 'floor' | 'wall' {
+  return category && WALL_CATEGORIES.has(category) ? 'wall' : 'floor';
+}
