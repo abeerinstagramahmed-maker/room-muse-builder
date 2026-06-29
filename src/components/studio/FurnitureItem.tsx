@@ -29,10 +29,11 @@ function ModelMesh({ item }: Props) {
 
 function PlaceholderMesh({ item }: Props) {
   const [w, h, d] = item.size;
+  const isWall = item.mountType === 'wall';
   return (
-    <mesh position={[0, h / 2, 0]} castShadow>
+    <mesh position={[0, isWall ? 0 : h / 2, 0]} castShadow>
       <boxGeometry args={[w, h, d]} />
-      <meshStandardMaterial color="#b08968" roughness={0.7} />
+      <meshStandardMaterial color={isWall ? '#6b7280' : '#b08968'} roughness={0.7} />
     </mesh>
   );
 }
