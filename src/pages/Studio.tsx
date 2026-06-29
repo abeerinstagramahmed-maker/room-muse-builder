@@ -3,6 +3,7 @@ import { StudioToolbar } from '@/components/studio/StudioToolbar';
 import { CatalogSidebar } from '@/components/studio/CatalogSidebar';
 import { PropertiesSidebar } from '@/components/studio/PropertiesSidebar';
 import { RoomEditor } from '@/components/studio/RoomEditor';
+import { useStudioShortcuts } from '@/hooks/useStudioShortcuts';
 
 /**
  * AI Interior Design Studio — MVP.
