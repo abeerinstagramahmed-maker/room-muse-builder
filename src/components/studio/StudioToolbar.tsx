@@ -209,7 +209,45 @@ export function StudioToolbar() {
         <Share2 className="h-4 w-4" /> Share
       </Button>
 
-      {/* Share dialog */}
+      {/* Templates dialog */}
+      <Dialog open={templatesOpen} onOpenChange={setTemplatesOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Start From a Template</DialogTitle>
+            <DialogDescription>
+              Pick a room type to set dimensions, wall colour and flooring.
+              This replaces your current scene.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-2">
+            {ROOM_TEMPLATES.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => {
+                  applyTemplate(t);
+                  setTemplatesOpen(false);
+                  toast.success(`Started "${t.label}" template.`);
+                }}
+                className="flex flex-col gap-1 rounded-lg border p-3 text-left transition-colors hover:border-primary hover:bg-muted/50"
+              >
+                <span className="flex items-center gap-2">
+                  <span
+                    className="h-4 w-4 rounded-full border"
+                    style={{ backgroundColor: t.wallColor }}
+                  />
+                  <span className="text-sm font-medium">{t.label}</span>
+                </span>
+                <span className="text-xs text-muted-foreground">{t.description}</span>
+                <span className="text-[11px] text-muted-foreground">
+                  {t.room.width}′ × {t.room.depth}′ × {t.room.height}′
+                </span>
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+
       <Dialog open={shareOpen} onOpenChange={setShareOpen}>
         <DialogContent>
           <DialogHeader>
