@@ -128,6 +128,45 @@ export function StudioToolbar() {
         variant="ghost"
         size="sm"
         className="gap-1.5"
+        onClick={() => setTemplatesOpen(true)}
+      >
+        <LayoutTemplate className="h-4 w-4" /> Templates
+      </Button>
+      <Separator orientation="vertical" className="mx-1 h-6" />
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        title="Undo (Ctrl+Z)"
+        disabled={!canUndo}
+        onClick={undo}
+      >
+        <Undo2 className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        title="Redo (Ctrl+Shift+Z)"
+        disabled={!canRedo}
+        onClick={redo}
+      >
+        <Redo2 className="h-4 w-4" />
+      </Button>
+      <Button
+        variant={snapEnabled ? 'secondary' : 'ghost'}
+        size="icon"
+        className="h-8 w-8"
+        title="Toggle snapping"
+        onClick={toggleSnap}
+      >
+        <Magnet className="h-4 w-4" />
+      </Button>
+      <Separator orientation="vertical" className="mx-1 h-6" />
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-1.5"
         onClick={() => {
           if (!isAuthenticated) return toast.error('Please sign in to save scenes.');
           setSaveOpen(true);
