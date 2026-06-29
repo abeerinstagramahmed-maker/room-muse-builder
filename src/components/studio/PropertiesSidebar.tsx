@@ -33,7 +33,7 @@ function SelectedItemPanel() {
   const item = furniture.find((f) => f.instanceId === selectedId);
   if (!item) return null;
 
-  const setPos = (axis: 0 | 2, value: number) => {
+  const setPos = (axis: 0 | 1 | 2, value: number) => {
     const next = [...item.position] as [number, number, number];
     next[axis] = value;
     updateFurniture(item.instanceId, { position: next });
