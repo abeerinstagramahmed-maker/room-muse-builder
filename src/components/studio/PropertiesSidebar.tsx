@@ -252,10 +252,17 @@ function RoomPanel() {
         <Switch checked={gridVisible} onCheckedChange={toggleGrid} />
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        Tip: click a wall in the editor to paint it. Click a furniture item to move,
-        rotate, duplicate or delete it.
-      </p>
+      <div className="space-y-1 rounded-md bg-muted/50 p-2.5 text-xs text-muted-foreground">
+        <p className="font-medium text-foreground">Shortcuts</p>
+        <p>Move (M) · Rotate (R) · Grid (G)</p>
+        <p>Delete · Duplicate (Ctrl+D)</p>
+        <p>Undo (Ctrl+Z) · Redo (Ctrl+Shift+Z)</p>
+        <p className="pt-1">
+          Wall Art &amp; Mirrors mount on walls — adjust their mount height in the
+          item panel.
+        </p>
+      </div>
+
     </div>
   );
 }
