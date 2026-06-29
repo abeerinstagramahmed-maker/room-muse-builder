@@ -11,6 +11,10 @@ import {
   Check,
   Share2,
   Copy,
+  Undo2,
+  Redo2,
+  Magnet,
+  LayoutTemplate,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,12 +24,15 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStudioStore } from '@/stores/studioStore';
 import { useSavedScenes } from '@/hooks/useSavedScenes';
 import { useAuth } from '@/hooks/useAuth';
+import { ROOM_TEMPLATES } from '@/lib/roomTemplates';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -36,6 +43,14 @@ export function StudioToolbar() {
   const captureScreenshot = useStudioStore((s) => s.captureScreenshot);
   const serialize = useStudioStore((s) => s.serialize);
   const loadScene = useStudioStore((s) => s.loadScene);
+  const undo = useStudioStore((s) => s.undo);
+  const redo = useStudioStore((s) => s.redo);
+  const canUndo = useStudioStore((s) => s.past.length > 0);
+  const canRedo = useStudioStore((s) => s.future.length > 0);
+  const snapEnabled = useStudioStore((s) => s.snapEnabled);
+  const toggleSnap = useStudioStore((s) => s.toggleSnap);
+  const applyTemplate = useStudioStore((s) => s.applyTemplate);
+
 
   const { scenes, loading, saveScene, renameScene, deleteScene } = useSavedScenes();
 
