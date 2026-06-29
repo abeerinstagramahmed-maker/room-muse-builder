@@ -11,6 +11,10 @@ import {
   Check,
   Share2,
   Copy,
+  Undo2,
+  Redo2,
+  Magnet,
+  LayoutTemplate,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,12 +24,15 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useStudioStore } from '@/stores/studioStore';
 import { useSavedScenes } from '@/hooks/useSavedScenes';
 import { useAuth } from '@/hooks/useAuth';
+import { ROOM_TEMPLATES } from '@/lib/roomTemplates';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -36,6 +43,14 @@ export function StudioToolbar() {
   const captureScreenshot = useStudioStore((s) => s.captureScreenshot);
   const serialize = useStudioStore((s) => s.serialize);
   const loadScene = useStudioStore((s) => s.loadScene);
+  const undo = useStudioStore((s) => s.undo);
+  const redo = useStudioStore((s) => s.redo);
+  const canUndo = useStudioStore((s) => s.past.length > 0);
+  const canRedo = useStudioStore((s) => s.future.length > 0);
+  const snapEnabled = useStudioStore((s) => s.snapEnabled);
+  const toggleSnap = useStudioStore((s) => s.toggleSnap);
+  const applyTemplate = useStudioStore((s) => s.applyTemplate);
+
 
   const { scenes, loading, saveScene, renameScene, deleteScene } = useSavedScenes();
 
@@ -51,6 +66,7 @@ export function StudioToolbar() {
   const [shareDesc, setShareDesc] = useState('');
   const [sharing, setSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
 
   const handleShare = async () => {
     if (!user) return;
@@ -112,6 +128,45 @@ export function StudioToolbar() {
         variant="ghost"
         size="sm"
         className="gap-1.5"
+        onClick={() => setTemplatesOpen(true)}
+      >
+        <LayoutTemplate className="h-4 w-4" /> Templates
+      </Button>
+      <Separator orientation="vertical" className="mx-1 h-6" />
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        title="Undo (Ctrl+Z)"
+        disabled={!canUndo}
+        onClick={undo}
+      >
+        <Undo2 className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        title="Redo (Ctrl+Shift+Z)"
+        disabled={!canRedo}
+        onClick={redo}
+      >
+        <Redo2 className="h-4 w-4" />
+      </Button>
+      <Button
+        variant={snapEnabled ? 'secondary' : 'ghost'}
+        size="icon"
+        className="h-8 w-8"
+        title="Toggle snapping"
+        onClick={toggleSnap}
+      >
+        <Magnet className="h-4 w-4" />
+      </Button>
+      <Separator orientation="vertical" className="mx-1 h-6" />
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-1.5"
         onClick={() => {
           if (!isAuthenticated) return toast.error('Please sign in to save scenes.');
           setSaveOpen(true);
@@ -154,7 +209,45 @@ export function StudioToolbar() {
         <Share2 className="h-4 w-4" /> Share
       </Button>
 
-      {/* Share dialog */}
+      {/* Templates dialog */}
+      <Dialog open={templatesOpen} onOpenChange={setTemplatesOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Start From a Template</DialogTitle>
+            <DialogDescription>
+              Pick a room type to set dimensions, wall colour and flooring.
+              This replaces your current scene.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-2">
+            {ROOM_TEMPLATES.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => {
+                  applyTemplate(t);
+                  setTemplatesOpen(false);
+                  toast.success(`Started "${t.label}" template.`);
+                }}
+                className="flex flex-col gap-1 rounded-lg border p-3 text-left transition-colors hover:border-primary hover:bg-muted/50"
+              >
+                <span className="flex items-center gap-2">
+                  <span
+                    className="h-4 w-4 rounded-full border"
+                    style={{ backgroundColor: t.wallColor }}
+                  />
+                  <span className="text-sm font-medium">{t.label}</span>
+                </span>
+                <span className="text-xs text-muted-foreground">{t.description}</span>
+                <span className="text-[11px] text-muted-foreground">
+                  {t.room.width}′ × {t.room.depth}′ × {t.room.height}′
+                </span>
+              </button>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+
       <Dialog open={shareOpen} onOpenChange={setShareOpen}>
         <DialogContent>
           <DialogHeader>

@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { useStudioProducts, productSize, StudioProduct } from '@/hooks/useStudioProducts';
-import { PRODUCT_CATEGORIES } from '@/lib/studioConstants';
+import { PRODUCT_CATEGORIES, mountTypeForCategory } from '@/lib/studioConstants';
 import { useStudioStore } from '@/stores/studioStore';
 import { cn } from '@/lib/utils';
 
@@ -25,17 +25,34 @@ export function CatalogSidebar() {
   }, [products, search, category]);
 
   const handleAdd = (p: StudioProduct) => {
-    const size = productSize(p);
+    const mountType = mountTypeForCategory(p.category);
+    if (mountType === 'wall') {
+      const [w, h] = productSize(p);
+      addFurniture({
+        productId: p.id,
+        name: p.name,
+        modelUrl: p.modelUrl,
+        // Thin depth so it sits flat against the wall.
+        size: [w, h, 0.15],
+        position: [0, Math.max(2.5, room.height * 0.55), -(room.depth / 2 - 0.12)],
+        rotationY: 0,
+        scale: 1,
+        mountType: 'wall',
+      });
+      return;
+    }
     addFurniture({
       productId: p.id,
       name: p.name,
       modelUrl: p.modelUrl,
-      size,
+      size: productSize(p),
       position: [0, 0, 0],
       rotationY: 0,
       scale: 1,
+      mountType: 'floor',
     });
   };
+
 
   return (
     <aside className="flex h-full w-72 flex-col border-r bg-card">

@@ -33,7 +33,7 @@ function SelectedItemPanel() {
   const item = furniture.find((f) => f.instanceId === selectedId);
   if (!item) return null;
 
-  const setPos = (axis: 0 | 2, value: number) => {
+  const setPos = (axis: 0 | 1 | 2, value: number) => {
     const next = [...item.position] as [number, number, number];
     next[axis] = value;
     updateFurniture(item.instanceId, { position: next });
@@ -88,6 +88,19 @@ function SelectedItemPanel() {
         </div>
       </div>
 
+      {item.mountType === 'wall' && (
+        <div>
+          <Label className="text-xs">Mount Height (ft)</Label>
+          <Input
+            type="number"
+            step="0.25"
+            min={0}
+            value={item.position[1].toFixed(2)}
+            onChange={(e) => setPos(1, Number(e.target.value))}
+          />
+        </div>
+      )}
+
       <div>
         <Label className="text-xs">Rotation: {rotationDeg}°</Label>
         <Slider
@@ -100,6 +113,7 @@ function SelectedItemPanel() {
           }
         />
       </div>
+
 
       <div className="rounded-md bg-muted/50 p-2 text-xs text-muted-foreground">
         Dimensions: {item.size[0]}′ W × {item.size[2]}′ D × {item.size[1]}′ H
@@ -238,10 +252,17 @@ function RoomPanel() {
         <Switch checked={gridVisible} onCheckedChange={toggleGrid} />
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        Tip: click a wall in the editor to paint it. Click a furniture item to move,
-        rotate, duplicate or delete it.
-      </p>
+      <div className="space-y-1 rounded-md bg-muted/50 p-2.5 text-xs text-muted-foreground">
+        <p className="font-medium text-foreground">Shortcuts</p>
+        <p>Move (M) · Rotate (R) · Grid (G)</p>
+        <p>Delete · Duplicate (Ctrl+D)</p>
+        <p>Undo (Ctrl+Z) · Redo (Ctrl+Shift+Z)</p>
+        <p className="pt-1">
+          Wall Art &amp; Mirrors mount on walls — adjust their mount height in the
+          item panel.
+        </p>
+      </div>
+
     </div>
   );
 }

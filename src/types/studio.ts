@@ -31,6 +31,9 @@ export interface ProductCategoryDef {
   label: string;
 }
 
+/** How a placed item attaches to the scene. */
+export type MountType = 'floor' | 'wall';
+
 /** A furniture instance placed in the scene. */
 export interface PlacedFurniture {
   /** Unique per-instance id (not the product id). */
@@ -44,6 +47,8 @@ export interface PlacedFurniture {
   /** Y-axis rotation in radians. */
   rotationY: number;
   scale: number;
+  /** Floor-standing or wall-mounted (art, mirrors, shelves). */
+  mountType?: MountType;
 }
 
 /** Serializable scene representation stored in saved_scenes.scene_data. */
