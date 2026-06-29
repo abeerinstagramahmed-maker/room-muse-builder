@@ -41,10 +41,13 @@ export function FurnitureItem({ item }: Props) {
   const groupRef = useRef<THREE.Group>(null);
   const selectedId = useStudioStore((s) => s.selectedId);
   const transformMode = useStudioStore((s) => s.transformMode);
+  const snapEnabled = useStudioStore((s) => s.snapEnabled);
   const select = useStudioStore((s) => s.select);
   const updateFurniture = useStudioStore((s) => s.updateFurniture);
+  const beginHistory = useStudioStore((s) => s.beginHistory);
 
   const isSelected = selectedId === item.instanceId;
+  const isWall = item.mountType === 'wall';
 
   // Keep the group transform in sync with store when not actively editing.
   useEffect(() => {
@@ -57,8 +60,8 @@ export function FurnitureItem({ item }: Props) {
   const commitTransform = () => {
     const g = groupRef.current;
     if (!g) return;
-    // Clamp to floor (never below y=0).
-    const y = Math.max(0, g.position.y);
+    // Floor items stay on the ground; wall items keep their height.
+    const y = isWall ? g.position.y : Math.max(0, g.position.y);
     g.position.y = y;
     updateFurniture(item.instanceId, {
       position: [g.position.x, y, g.position.z],
@@ -78,7 +81,7 @@ export function FurnitureItem({ item }: Props) {
       <Suspense fallback={<PlaceholderMesh item={item} />}>
         {item.modelUrl ? <ModelMesh item={item} /> : <PlaceholderMesh item={item} />}
       </Suspense>
-      {isSelected && (
+      {isSelected && !isWall && (
         <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[Math.max(item.size[0], item.size[2]) * 0.6, Math.max(item.size[0], item.size[2]) * 0.7, 48]} />
           <meshBasicMaterial color="#3b82f6" transparent opacity={0.9} />
@@ -91,11 +94,12 @@ export function FurnitureItem({ item }: Props) {
     return (
       <TransformControls
         mode={transformMode}
-        showY={false}
+        showY={isWall && transformMode === 'translate'}
         showX={transformMode === 'translate'}
         showZ={transformMode === 'translate'}
-        translationSnap={transformMode === 'translate' ? 0.25 : undefined}
-        rotationSnap={transformMode === 'rotate' ? Math.PI / 24 : undefined}
+        translationSnap={transformMode === 'translate' && snapEnabled ? 0.25 : undefined}
+        rotationSnap={transformMode === 'rotate' && snapEnabled ? Math.PI / 24 : undefined}
+        onMouseDown={beginHistory}
         onMouseUp={commitTransform}
         onObjectChange={commitTransform}
       >
