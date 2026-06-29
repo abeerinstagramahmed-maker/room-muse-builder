@@ -66,6 +66,7 @@ export function StudioToolbar() {
   const [shareDesc, setShareDesc] = useState('');
   const [sharing, setSharing] = useState(false);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [templatesOpen, setTemplatesOpen] = useState(false);
 
   const handleShare = async () => {
     if (!user) return;
