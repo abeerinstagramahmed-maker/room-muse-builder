@@ -11,6 +11,7 @@ import { useStudioShortcuts } from '@/hooks/useStudioShortcuts';
  * disabled (see src/services/ai).
  */
 const Studio = () => {
+  useStudioShortcuts();
   return (
     <>
       <SEOHead
