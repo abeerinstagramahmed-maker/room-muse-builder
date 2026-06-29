@@ -88,6 +88,19 @@ function SelectedItemPanel() {
         </div>
       </div>
 
+      {item.mountType === 'wall' && (
+        <div>
+          <Label className="text-xs">Mount Height (ft)</Label>
+          <Input
+            type="number"
+            step="0.25"
+            min={0}
+            value={item.position[1].toFixed(2)}
+            onChange={(e) => setPos(1, Number(e.target.value))}
+          />
+        </div>
+      )}
+
       <div>
         <Label className="text-xs">Rotation: {rotationDeg}°</Label>
         <Slider
@@ -100,6 +113,7 @@ function SelectedItemPanel() {
           }
         />
       </div>
+
 
       <div className="rounded-md bg-muted/50 p-2 text-xs text-muted-foreground">
         Dimensions: {item.size[0]}′ W × {item.size[2]}′ D × {item.size[1]}′ H
