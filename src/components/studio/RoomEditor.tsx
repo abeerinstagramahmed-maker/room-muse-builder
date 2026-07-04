@@ -115,7 +115,7 @@ export function RoomEditor() {
         />
       )}
 
-      <OrbitControls makeDefault enableDamping dampingFactor={0.08} maxPolarAngle={Math.PI / 2.05} />
+      <OrbitControls makeDefault enableDamping dampingFactor={0.08} maxPolarAngle={Math.PI / 2.05} enableRotate={!measureMode} />
       <CameraRig />
       <ScreenshotBridge />
 
