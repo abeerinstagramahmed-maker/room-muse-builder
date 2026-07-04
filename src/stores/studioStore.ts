@@ -37,6 +37,8 @@ interface StudioState {
   flooringId: string;
   gridVisible: boolean;
   snapEnabled: boolean;
+  measureMode: boolean;
+  measurements: Measurement[];
   furniture: PlacedFurniture[];
   selectedId: string | null;
   selectedWall: WallId | null;
