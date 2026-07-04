@@ -146,6 +146,13 @@ export const useStudioStore = create<StudioState>((set, get) => {
     },
     toggleGrid: () => set((s) => ({ gridVisible: !s.gridVisible })),
     toggleSnap: () => set((s) => ({ snapEnabled: !s.snapEnabled })),
+    toggleMeasureMode: () =>
+      set((s) => ({ measureMode: !s.measureMode, selectedId: null, selectedWall: null })),
+    addMeasurement: (a, b) =>
+      set((s) => ({
+        measurements: [...s.measurements, { id: newInstanceId(), a, b }],
+      })),
+    clearMeasurements: () => set({ measurements: [] }),
     setTransformMode: (transformMode) => set({ transformMode }),
     setBackgroundImage: (backgroundImageUrl) => set({ backgroundImageUrl }),
 
