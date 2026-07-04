@@ -59,6 +59,9 @@ interface StudioState {
   setFlooring: (id: string) => void;
   toggleGrid: () => void;
   toggleSnap: () => void;
+  toggleMeasureMode: () => void;
+  addMeasurement: (a: [number, number, number], b: [number, number, number]) => void;
+  clearMeasurements: () => void;
   setTransformMode: (mode: TransformMode) => void;
   setBackgroundImage: (url: string | null) => void;
 
