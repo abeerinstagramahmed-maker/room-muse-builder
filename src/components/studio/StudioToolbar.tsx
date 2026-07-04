@@ -233,6 +233,41 @@ export function StudioToolbar() {
         <Share2 className="h-4 w-4" /> Share
       </Button>
 
+      <Separator orientation="vertical" className="mx-1 h-6" />
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-1.5"
+        title={roomTotal > 0 ? `Add all placed furniture ($${roomTotal.toFixed(0)}) to cart` : undefined}
+        onClick={buyThisRoom}
+      >
+        <Sofa className="h-4 w-4" /> Buy This Room
+        {roomTotal > 0 && (
+          <span className="text-xs text-muted-foreground">${roomTotal.toFixed(0)}</span>
+        )}
+      </Button>
+
+      <div className="ml-auto">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative h-8 w-8"
+          title="Cart"
+          onClick={() => setCartOpen(true)}
+        >
+          <ShoppingCart className="h-4 w-4" />
+          {totalItems > 0 && (
+            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+              {totalItems}
+            </span>
+          )}
+        </Button>
+      </div>
+
+      <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
+
+
+
       {/* Templates dialog */}
       <Dialog open={templatesOpen} onOpenChange={setTemplatesOpen}>
         <DialogContent>
