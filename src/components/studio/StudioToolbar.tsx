@@ -14,6 +14,8 @@ import {
   Undo2,
   Redo2,
   Magnet,
+  Ruler,
+  Eraser,
   LayoutTemplate,
   ShoppingCart,
   Sofa,
@@ -55,6 +57,10 @@ export function StudioToolbar() {
   const canRedo = useStudioStore((s) => s.future.length > 0);
   const snapEnabled = useStudioStore((s) => s.snapEnabled);
   const toggleSnap = useStudioStore((s) => s.toggleSnap);
+  const measureMode = useStudioStore((s) => s.measureMode);
+  const toggleMeasureMode = useStudioStore((s) => s.toggleMeasureMode);
+  const measurements = useStudioStore((s) => s.measurements);
+  const clearMeasurements = useStudioStore((s) => s.clearMeasurements);
   const applyTemplate = useStudioStore((s) => s.applyTemplate);
   const furniture = useStudioStore((s) => s.furniture);
   const { addItem, totalItems } = useCart();
@@ -186,6 +192,26 @@ export function StudioToolbar() {
       >
         <Magnet className="h-4 w-4" />
       </Button>
+      <Button
+        variant={measureMode ? 'secondary' : 'ghost'}
+        size="icon"
+        className="h-8 w-8"
+        title="Measure (click two points)"
+        onClick={toggleMeasureMode}
+      >
+        <Ruler className="h-4 w-4" />
+      </Button>
+      {measurements.length > 0 && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          title="Clear all measurements"
+          onClick={clearMeasurements}
+        >
+          <Eraser className="h-4 w-4" />
+        </Button>
+      )}
       <Separator orientation="vertical" className="mx-1 h-6" />
       <Button
         variant="ghost"

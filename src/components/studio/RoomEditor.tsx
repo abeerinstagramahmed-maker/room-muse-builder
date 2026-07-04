@@ -4,6 +4,8 @@ import { OrbitControls, GizmoHelper, GizmoViewport, Grid } from '@react-three/dr
 import * as THREE from 'three';
 import { Room } from './Room';
 import { FurnitureItem } from './FurnitureItem';
+import { MeasurementLayer } from './MeasurementLayer';
+import { DimensionLabels } from './DimensionLabels';
 import { useStudioStore } from '@/stores/studioStore';
 
 /** Resets the camera when cameraResetToken changes. */
@@ -65,6 +67,7 @@ function BackgroundCatcher() {
 export function RoomEditor() {
   const furniture = useStudioStore((s) => s.furniture);
   const gridVisible = useStudioStore((s) => s.gridVisible);
+  const measureMode = useStudioStore((s) => s.measureMode);
   const room = useStudioStore((s) => s.room);
   const initialDist = useRef(Math.max(room.width, room.depth) * 1.1 + 8);
 
@@ -93,6 +96,10 @@ export function RoomEditor() {
         <FurnitureItem key={item.instanceId} item={item} />
       ))}
 
+      <MeasurementLayer />
+      <DimensionLabels />
+
+
       {gridVisible && (
         <Grid
           args={[80, 80]}
@@ -108,7 +115,7 @@ export function RoomEditor() {
         />
       )}
 
-      <OrbitControls makeDefault enableDamping dampingFactor={0.08} maxPolarAngle={Math.PI / 2.05} />
+      <OrbitControls makeDefault enableDamping dampingFactor={0.08} maxPolarAngle={Math.PI / 2.05} enableRotate={!measureMode} />
       <CameraRig />
       <ScreenshotBridge />
 

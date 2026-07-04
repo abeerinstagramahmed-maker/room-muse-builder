@@ -15,6 +15,12 @@ import { RoomTemplate, makeWallColors } from '@/lib/roomTemplates';
 
 export type TransformMode = 'translate' | 'rotate';
 
+export interface Measurement {
+  id: string;
+  a: [number, number, number];
+  b: [number, number, number];
+}
+
 let instanceCounter = 0;
 function newInstanceId(): string {
   instanceCounter += 1;
@@ -37,6 +43,8 @@ interface StudioState {
   flooringId: string;
   gridVisible: boolean;
   snapEnabled: boolean;
+  measureMode: boolean;
+  measurements: Measurement[];
   furniture: PlacedFurniture[];
   selectedId: string | null;
   selectedWall: WallId | null;
@@ -57,6 +65,9 @@ interface StudioState {
   setFlooring: (id: string) => void;
   toggleGrid: () => void;
   toggleSnap: () => void;
+  toggleMeasureMode: () => void;
+  addMeasurement: (a: [number, number, number], b: [number, number, number]) => void;
+  clearMeasurements: () => void;
   setTransformMode: (mode: TransformMode) => void;
   setBackgroundImage: (url: string | null) => void;
 
@@ -114,6 +125,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
     flooringId: DEFAULT_FLOORING_ID,
     gridVisible: true,
     snapEnabled: true,
+    measureMode: false,
+    measurements: [],
     furniture: [],
     selectedId: null,
     selectedWall: null,
@@ -133,6 +146,13 @@ export const useStudioStore = create<StudioState>((set, get) => {
     },
     toggleGrid: () => set((s) => ({ gridVisible: !s.gridVisible })),
     toggleSnap: () => set((s) => ({ snapEnabled: !s.snapEnabled })),
+    toggleMeasureMode: () =>
+      set((s) => ({ measureMode: !s.measureMode, selectedId: null, selectedWall: null })),
+    addMeasurement: (a, b) =>
+      set((s) => ({
+        measurements: [...s.measurements, { id: newInstanceId(), a, b }],
+      })),
+    clearMeasurements: () => set({ measurements: [] }),
     setTransformMode: (transformMode) => set({ transformMode }),
     setBackgroundImage: (backgroundImageUrl) => set({ backgroundImageUrl }),
 
