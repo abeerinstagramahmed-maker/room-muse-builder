@@ -1,17 +1,21 @@
 import { useMemo, useState } from 'react';
-import { Search, Package, Loader2, Box } from 'lucide-react';
+import { Search, Package, Loader2, Box, ShoppingCart } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useStudioProducts, productSize, StudioProduct } from '@/hooks/useStudioProducts';
 import { PRODUCT_CATEGORIES, mountTypeForCategory } from '@/lib/studioConstants';
 import { useStudioStore } from '@/stores/studioStore';
+import { useCart } from '@/contexts/CartContext';
+import { studioProductToProduct } from '@/lib/studioCart';
 import { cn } from '@/lib/utils';
 
 export function CatalogSidebar() {
   const { data: products = [], isLoading } = useStudioProducts();
   const addFurniture = useStudioStore((s) => s.addFurniture);
   const room = useStudioStore((s) => s.room);
+  const { addItem } = useCart();
   const [search, setSearch] = useState('');
   const [category, setCategory] = useState<string | null>(null);
 
