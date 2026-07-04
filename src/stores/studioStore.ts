@@ -125,6 +125,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
     flooringId: DEFAULT_FLOORING_ID,
     gridVisible: true,
     snapEnabled: true,
+    measureMode: false,
+    measurements: [],
     furniture: [],
     selectedId: null,
     selectedWall: null,
