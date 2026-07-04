@@ -56,6 +56,24 @@ export function StudioToolbar() {
   const snapEnabled = useStudioStore((s) => s.snapEnabled);
   const toggleSnap = useStudioStore((s) => s.toggleSnap);
   const applyTemplate = useStudioStore((s) => s.applyTemplate);
+  const furniture = useStudioStore((s) => s.furniture);
+  const { addItem, totalItems } = useCart();
+  const { data: products = [] } = useStudioProducts();
+  const [cartOpen, setCartOpen] = useState(false);
+
+  const roomProducts = furniture
+    .map((f) => products.find((p) => p.id === f.productId))
+    .filter((p): p is NonNullable<typeof p> => Boolean(p));
+  const roomTotal = roomProducts.reduce((sum, p) => sum + p.price, 0);
+
+  const buyThisRoom = () => {
+    if (roomProducts.length === 0) {
+      toast.error('Place some furniture first.');
+      return;
+    }
+    roomProducts.forEach((p) => addItem(studioProductToProduct(p)));
+    setCartOpen(true);
+  };
 
 
   const { scenes, loading, saveScene, renameScene, deleteScene } = useSavedScenes();
