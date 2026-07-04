@@ -14,6 +14,8 @@ import {
   Undo2,
   Redo2,
   Magnet,
+  Ruler,
+  Eraser,
   LayoutTemplate,
   ShoppingCart,
   Sofa,
