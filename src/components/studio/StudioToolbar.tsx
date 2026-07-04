@@ -57,6 +57,10 @@ export function StudioToolbar() {
   const canRedo = useStudioStore((s) => s.future.length > 0);
   const snapEnabled = useStudioStore((s) => s.snapEnabled);
   const toggleSnap = useStudioStore((s) => s.toggleSnap);
+  const measureMode = useStudioStore((s) => s.measureMode);
+  const toggleMeasureMode = useStudioStore((s) => s.toggleMeasureMode);
+  const measurements = useStudioStore((s) => s.measurements);
+  const clearMeasurements = useStudioStore((s) => s.clearMeasurements);
   const applyTemplate = useStudioStore((s) => s.applyTemplate);
   const furniture = useStudioStore((s) => s.furniture);
   const { addItem, totalItems } = useCart();
