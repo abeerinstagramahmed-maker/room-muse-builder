@@ -4,6 +4,8 @@ import { OrbitControls, GizmoHelper, GizmoViewport, Grid } from '@react-three/dr
 import * as THREE from 'three';
 import { Room } from './Room';
 import { FurnitureItem } from './FurnitureItem';
+import { MeasurementLayer } from './MeasurementLayer';
+import { DimensionLabels } from './DimensionLabels';
 import { useStudioStore } from '@/stores/studioStore';
 
 /** Resets the camera when cameraResetToken changes. */
