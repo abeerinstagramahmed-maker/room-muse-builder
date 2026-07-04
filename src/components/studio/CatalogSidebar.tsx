@@ -113,12 +113,15 @@ export function CatalogSidebar() {
             </p>
           )}
           {filtered.map((p) => (
-            <button
+            <div
               key={p.id}
-              onClick={() => handleAdd(p)}
               className="group flex flex-col overflow-hidden rounded-lg border bg-background text-left transition-shadow hover:shadow-md"
             >
-              <div className="relative aspect-square w-full overflow-hidden bg-muted">
+              <button
+                onClick={() => handleAdd(p)}
+                title="Click to place in room"
+                className="relative aspect-square w-full overflow-hidden bg-muted"
+              >
                 {p.thumbnailUrl ? (
                   <img
                     src={p.thumbnailUrl}
@@ -136,12 +139,20 @@ export function CatalogSidebar() {
                     No 3D
                   </Badge>
                 )}
-              </div>
-              <div className="p-2">
+              </button>
+              <div className="flex flex-1 flex-col p-2">
                 <p className="line-clamp-1 text-xs font-medium">{p.name}</p>
                 <p className="text-xs text-muted-foreground">${p.price.toFixed(0)}</p>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 h-7 w-full gap-1 text-[11px]"
+                  onClick={() => addItem(studioProductToProduct(p))}
+                >
+                  <ShoppingCart className="h-3 w-3" /> Add to Cart
+                </Button>
               </div>
-            </button>
+            </div>
           ))}
         </div>
       </ScrollArea>
