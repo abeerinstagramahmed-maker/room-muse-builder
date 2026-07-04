@@ -15,6 +15,12 @@ import { RoomTemplate, makeWallColors } from '@/lib/roomTemplates';
 
 export type TransformMode = 'translate' | 'rotate';
 
+export interface Measurement {
+  id: string;
+  a: [number, number, number];
+  b: [number, number, number];
+}
+
 let instanceCounter = 0;
 function newInstanceId(): string {
   instanceCounter += 1;
