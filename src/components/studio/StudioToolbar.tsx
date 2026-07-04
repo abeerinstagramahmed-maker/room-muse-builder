@@ -15,6 +15,8 @@ import {
   Redo2,
   Magnet,
   LayoutTemplate,
+  ShoppingCart,
+  Sofa,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,6 +36,10 @@ import { useSavedScenes } from '@/hooks/useSavedScenes';
 import { useAuth } from '@/hooks/useAuth';
 import { ROOM_TEMPLATES } from '@/lib/roomTemplates';
 import { supabase } from '@/integrations/supabase/client';
+import { useCart } from '@/contexts/CartContext';
+import { useStudioProducts } from '@/hooks/useStudioProducts';
+import { studioProductToProduct } from '@/lib/studioCart';
+import { CartDrawer } from '@/components/studio/CartDrawer';
 import { toast } from 'sonner';
 
 export function StudioToolbar() {
@@ -50,6 +56,24 @@ export function StudioToolbar() {
   const snapEnabled = useStudioStore((s) => s.snapEnabled);
   const toggleSnap = useStudioStore((s) => s.toggleSnap);
   const applyTemplate = useStudioStore((s) => s.applyTemplate);
+  const furniture = useStudioStore((s) => s.furniture);
+  const { addItem, totalItems } = useCart();
+  const { data: products = [] } = useStudioProducts();
+  const [cartOpen, setCartOpen] = useState(false);
+
+  const roomProducts = furniture
+    .map((f) => products.find((p) => p.id === f.productId))
+    .filter((p): p is NonNullable<typeof p> => Boolean(p));
+  const roomTotal = roomProducts.reduce((sum, p) => sum + p.price, 0);
+
+  const buyThisRoom = () => {
+    if (roomProducts.length === 0) {
+      toast.error('Place some furniture first.');
+      return;
+    }
+    roomProducts.forEach((p) => addItem(studioProductToProduct(p)));
+    setCartOpen(true);
+  };
 
 
   const { scenes, loading, saveScene, renameScene, deleteScene } = useSavedScenes();
@@ -208,6 +232,41 @@ export function StudioToolbar() {
       >
         <Share2 className="h-4 w-4" /> Share
       </Button>
+
+      <Separator orientation="vertical" className="mx-1 h-6" />
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-1.5"
+        title={roomTotal > 0 ? `Add all placed furniture ($${roomTotal.toFixed(0)}) to cart` : undefined}
+        onClick={buyThisRoom}
+      >
+        <Sofa className="h-4 w-4" /> Buy This Room
+        {roomTotal > 0 && (
+          <span className="text-xs text-muted-foreground">${roomTotal.toFixed(0)}</span>
+        )}
+      </Button>
+
+      <div className="ml-auto">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative h-8 w-8"
+          title="Cart"
+          onClick={() => setCartOpen(true)}
+        >
+          <ShoppingCart className="h-4 w-4" />
+          {totalItems > 0 && (
+            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+              {totalItems}
+            </span>
+          )}
+        </Button>
+      </div>
+
+      <CartDrawer open={cartOpen} onOpenChange={setCartOpen} />
+
+
 
       {/* Templates dialog */}
       <Dialog open={templatesOpen} onOpenChange={setTemplatesOpen}>
