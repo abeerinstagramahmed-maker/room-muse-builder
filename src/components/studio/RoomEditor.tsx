@@ -67,6 +67,7 @@ function BackgroundCatcher() {
 export function RoomEditor() {
   const furniture = useStudioStore((s) => s.furniture);
   const gridVisible = useStudioStore((s) => s.gridVisible);
+  const measureMode = useStudioStore((s) => s.measureMode);
   const room = useStudioStore((s) => s.room);
   const initialDist = useRef(Math.max(room.width, room.depth) * 1.1 + 8);
 
@@ -94,6 +95,10 @@ export function RoomEditor() {
       {furniture.map((item) => (
         <FurnitureItem key={item.instanceId} item={item} />
       ))}
+
+      <MeasurementLayer />
+      <DimensionLabels />
+
 
       {gridVisible && (
         <Grid
