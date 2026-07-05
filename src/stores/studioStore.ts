@@ -21,6 +21,32 @@ export interface Measurement {
   b: [number, number, number];
 }
 
+/** Axis-aligned footprint overlap test between two floor items. */
+function footprintsOverlap(a: PlacedFurniture, b: PlacedFurniture): boolean {
+  const halfA = [(a.size[0] * a.scale) / 2, (a.size[2] * a.scale) / 2];
+  const halfB = [(b.size[0] * b.scale) / 2, (b.size[2] * b.scale) / 2];
+  const dx = Math.abs(a.position[0] - b.position[0]);
+  const dz = Math.abs(a.position[2] - b.position[2]);
+  // Small tolerance so touching edges do not count as a collision.
+  const tol = 0.02;
+  return dx < halfA[0] + halfB[0] - tol && dz < halfA[1] + halfB[1] - tol;
+}
+
+/** Returns instanceIds of floor items whose footprints overlap another item. */
+function computeCollisions(furniture: PlacedFurniture[]): string[] {
+  const floor = furniture.filter((f) => f.mountType !== 'wall');
+  const hits = new Set<string>();
+  for (let i = 0; i < floor.length; i++) {
+    for (let j = i + 1; j < floor.length; j++) {
+      if (footprintsOverlap(floor[i], floor[j])) {
+        hits.add(floor[i].instanceId);
+        hits.add(floor[j].instanceId);
+      }
+    }
+  }
+  return Array.from(hits);
+}
+
 let instanceCounter = 0;
 function newInstanceId(): string {
   instanceCounter += 1;
@@ -49,6 +75,10 @@ interface StudioState {
   selectedId: string | null;
   selectedWall: WallId | null;
   transformMode: TransformMode;
+  /** Whether collision highlighting is active. */
+  collisionEnabled: boolean;
+  /** instanceIds of floor items currently overlapping another item. */
+  collidingIds: string[];
   /** Optional photo (e.g. AI-cleaned room) shown as scene backdrop. */
   backgroundImageUrl: string | null;
   /** Increment to request a camera reset from the editor. */
@@ -70,6 +100,8 @@ interface StudioState {
   clearMeasurements: () => void;
   setTransformMode: (mode: TransformMode) => void;
   setBackgroundImage: (url: string | null) => void;
+
+  toggleCollision: () => void;
 
   addFurniture: (item: Omit<PlacedFurniture, 'instanceId'>) => void;
   updateFurniture: (instanceId: string, patch: Partial<PlacedFurniture>) => void;
@@ -131,6 +163,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
     selectedId: null,
     selectedWall: null,
     transformMode: 'translate',
+    collisionEnabled: true,
+    collidingIds: [],
     backgroundImageUrl: null,
     cameraResetToken: 0,
     captureScreenshot: null,
@@ -155,22 +189,38 @@ export const useStudioStore = create<StudioState>((set, get) => {
     clearMeasurements: () => set({ measurements: [] }),
     setTransformMode: (transformMode) => set({ transformMode }),
     setBackgroundImage: (backgroundImageUrl) => set({ backgroundImageUrl }),
+    toggleCollision: () =>
+      set((s) => {
+        const collisionEnabled = !s.collisionEnabled;
+        return {
+          collisionEnabled,
+          collidingIds: collisionEnabled ? computeCollisions(s.furniture) : [],
+        };
+      }),
 
     addFurniture: (item) => {
       record();
       const instanceId = newInstanceId();
-      set((s) => ({
-        furniture: [...s.furniture, { ...item, instanceId }],
-        selectedId: instanceId,
-      }));
+      set((s) => {
+        const furniture = [...s.furniture, { ...item, instanceId }];
+        return {
+          furniture,
+          selectedId: instanceId,
+          collidingIds: s.collisionEnabled ? computeCollisions(furniture) : [],
+        };
+      });
     },
 
     updateFurniture: (instanceId, patch) =>
-      set((s) => ({
-        furniture: s.furniture.map((f) =>
+      set((s) => {
+        const furniture = s.furniture.map((f) =>
           f.instanceId === instanceId ? { ...f, ...patch } : f,
-        ),
-      })),
+        );
+        return {
+          furniture,
+          collidingIds: s.collisionEnabled ? computeCollisions(furniture) : [],
+        };
+      }),
 
     duplicateFurniture: (instanceId) => {
       const original = get().furniture.find((f) => f.instanceId === instanceId);
@@ -196,10 +246,14 @@ export const useStudioStore = create<StudioState>((set, get) => {
 
     deleteFurniture: (instanceId) => {
       record();
-      set((s) => ({
-        furniture: s.furniture.filter((f) => f.instanceId !== instanceId),
-        selectedId: s.selectedId === instanceId ? null : s.selectedId,
-      }));
+      set((s) => {
+        const furniture = s.furniture.filter((f) => f.instanceId !== instanceId);
+        return {
+          furniture,
+          selectedId: s.selectedId === instanceId ? null : s.selectedId,
+          collidingIds: s.collisionEnabled ? computeCollisions(furniture) : [],
+        };
+      });
     },
 
     deleteSelected: () => {

@@ -15,6 +15,7 @@ import {
   Redo2,
   Magnet,
   Ruler,
+  AlertTriangle,
   Eraser,
   LayoutTemplate,
   ShoppingCart,
@@ -58,6 +59,9 @@ export function StudioToolbar() {
   const snapEnabled = useStudioStore((s) => s.snapEnabled);
   const toggleSnap = useStudioStore((s) => s.toggleSnap);
   const measureMode = useStudioStore((s) => s.measureMode);
+  const collisionEnabled = useStudioStore((s) => s.collisionEnabled);
+  const toggleCollision = useStudioStore((s) => s.toggleCollision);
+  const collidingCount = useStudioStore((s) => s.collidingIds.length);
   const toggleMeasureMode = useStudioStore((s) => s.toggleMeasureMode);
   const measurements = useStudioStore((s) => s.measurements);
   const clearMeasurements = useStudioStore((s) => s.clearMeasurements);
@@ -200,6 +204,17 @@ export function StudioToolbar() {
         onClick={toggleMeasureMode}
       >
         <Ruler className="h-4 w-4" />
+      </Button>
+      <Button
+        variant={collisionEnabled ? 'secondary' : 'ghost'}
+        size="icon"
+        className="h-8 w-8"
+        title="Toggle collision detection"
+        onClick={toggleCollision}
+      >
+        <AlertTriangle
+          className={collidingCount > 0 ? 'h-4 w-4 text-destructive' : 'h-4 w-4'}
+        />
       </Button>
       {measurements.length > 0 && (
         <Button

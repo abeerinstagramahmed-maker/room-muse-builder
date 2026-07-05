@@ -49,6 +49,9 @@ export function FurnitureItem({ item }: Props) {
 
   const isSelected = selectedId === item.instanceId;
   const isWall = item.mountType === 'wall';
+  const isColliding = useStudioStore(
+    (s) => s.collisionEnabled && s.collidingIds.includes(item.instanceId),
+  );
 
   // Keep the group transform in sync with store when not actively editing.
   useEffect(() => {
@@ -85,7 +88,13 @@ export function FurnitureItem({ item }: Props) {
       {isSelected && !isWall && (
         <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>
           <ringGeometry args={[Math.max(item.size[0], item.size[2]) * 0.6, Math.max(item.size[0], item.size[2]) * 0.7, 48]} />
-          <meshBasicMaterial color="#3b82f6" transparent opacity={0.9} />
+          <meshBasicMaterial color={isColliding ? '#ef4444' : '#3b82f6'} transparent opacity={0.9} />
+        </mesh>
+      )}
+      {isColliding && (
+        <mesh position={[0, item.size[1] / 2, 0]}>
+          <boxGeometry args={[item.size[0] * item.scale, item.size[1] * item.scale, item.size[2] * item.scale]} />
+          <meshBasicMaterial color="#ef4444" transparent opacity={0.18} depthWrite={false} />
         </mesh>
       )}
     </group>
