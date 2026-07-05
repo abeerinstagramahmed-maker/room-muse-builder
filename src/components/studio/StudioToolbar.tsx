@@ -16,6 +16,8 @@ import {
   Magnet,
   Ruler,
   AlertTriangle,
+  Map as MapIcon,
+  ListChecks,
   Eraser,
   LayoutTemplate,
   ShoppingCart,
