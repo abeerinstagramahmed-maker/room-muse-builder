@@ -76,3 +76,32 @@ export const WALL_CATEGORIES = new Set([
 export function mountTypeForCategory(category: string | null | undefined): 'floor' | 'wall' {
   return category && WALL_CATEGORIES.has(category) ? 'wall' : 'floor';
 }
+
+/** Lighting presets simulating times of day / moods. */
+export interface LightingPreset {
+  id: string;
+  label: string;
+  /** Ambient light intensity. */
+  ambient: number;
+  /** Directional (sun) light intensity. */
+  directional: number;
+  /** Sky/background color. */
+  background: string;
+  /** Directional light color (warm vs cool). */
+  sunColor: string;
+  /** Hemisphere ground color. */
+  groundColor: string;
+}
+
+export const LIGHTING_PRESETS: LightingPreset[] = [
+  { id: 'daylight', label: 'Daylight', ambient: 0.4, directional: 1.1, background: '#f1f0ee', sunColor: '#fff6e8', groundColor: '#b9b4ab' },
+  { id: 'morning', label: 'Morning', ambient: 0.45, directional: 0.9, background: '#f3efe6', sunColor: '#ffe9c9', groundColor: '#bcb3a4' },
+  { id: 'evening', label: 'Evening', ambient: 0.3, directional: 0.7, background: '#e9ddd2', sunColor: '#ffb877', groundColor: '#8f8073' },
+  { id: 'night', label: 'Night', ambient: 0.18, directional: 0.35, background: '#2a2d34', sunColor: '#9fb4ff', groundColor: '#2a2d34' },
+];
+
+export const DEFAULT_LIGHTING_ID = 'daylight';
+
+export function getLighting(id: string): LightingPreset {
+  return LIGHTING_PRESETS.find((l) => l.id === id) ?? LIGHTING_PRESETS[0];
+}
