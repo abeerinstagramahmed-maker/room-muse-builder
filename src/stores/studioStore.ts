@@ -101,6 +101,8 @@ interface StudioState {
   setTransformMode: (mode: TransformMode) => void;
   setBackgroundImage: (url: string | null) => void;
 
+  toggleCollision: () => void;
+
   addFurniture: (item: Omit<PlacedFurniture, 'instanceId'>) => void;
   updateFurniture: (instanceId: string, patch: Partial<PlacedFurniture>) => void;
   duplicateFurniture: (instanceId: string) => void;
