@@ -195,6 +195,10 @@ function RoomPanel() {
   const setFlooring = useStudioStore((s) => s.setFlooring);
   const gridVisible = useStudioStore((s) => s.gridVisible);
   const toggleGrid = useStudioStore((s) => s.toggleGrid);
+  const lightingId = useStudioStore((s) => s.lightingId);
+  const setLighting = useStudioStore((s) => s.setLighting);
+  const brightness = useStudioStore((s) => s.brightness);
+  const setBrightness = useStudioStore((s) => s.setBrightness);
 
   const dim = (key: 'width' | 'depth' | 'height', label: string) => {
     const lim = ROOM_LIMITS[key];
