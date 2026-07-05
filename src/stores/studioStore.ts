@@ -8,6 +8,7 @@ import {
 } from '@/types/studio';
 import {
   DEFAULT_FLOORING_ID,
+  DEFAULT_LIGHTING_ID,
   DEFAULT_ROOM,
   DEFAULT_WALL_COLORS,
 } from '@/lib/studioConstants';
