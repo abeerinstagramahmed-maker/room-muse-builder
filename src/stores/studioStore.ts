@@ -106,6 +106,8 @@ interface StudioState {
   setBackgroundImage: (url: string | null) => void;
 
   toggleCollision: () => void;
+  setLighting: (id: string) => void;
+  setBrightness: (value: number) => void;
 
   addFurniture: (item: Omit<PlacedFurniture, 'instanceId'>) => void;
   updateFurniture: (instanceId: string, patch: Partial<PlacedFurniture>) => void;
