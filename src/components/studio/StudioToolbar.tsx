@@ -59,6 +59,9 @@ export function StudioToolbar() {
   const snapEnabled = useStudioStore((s) => s.snapEnabled);
   const toggleSnap = useStudioStore((s) => s.toggleSnap);
   const measureMode = useStudioStore((s) => s.measureMode);
+  const collisionEnabled = useStudioStore((s) => s.collisionEnabled);
+  const toggleCollision = useStudioStore((s) => s.toggleCollision);
+  const collidingCount = useStudioStore((s) => s.collidingIds.length);
   const toggleMeasureMode = useStudioStore((s) => s.toggleMeasureMode);
   const measurements = useStudioStore((s) => s.measurements);
   const clearMeasurements = useStudioStore((s) => s.clearMeasurements);
