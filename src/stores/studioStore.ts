@@ -163,6 +163,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
     selectedId: null,
     selectedWall: null,
     transformMode: 'translate',
+    collisionEnabled: true,
+    collidingIds: [],
     backgroundImageUrl: null,
     cameraResetToken: 0,
     captureScreenshot: null,
