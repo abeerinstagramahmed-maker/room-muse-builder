@@ -75,6 +75,10 @@ interface StudioState {
   selectedId: string | null;
   selectedWall: WallId | null;
   transformMode: TransformMode;
+  /** Whether collision highlighting is active. */
+  collisionEnabled: boolean;
+  /** instanceIds of floor items currently overlapping another item. */
+  collidingIds: string[];
   /** Optional photo (e.g. AI-cleaned room) shown as scene backdrop. */
   backgroundImageUrl: string | null;
   /** Increment to request a camera reset from the editor. */
