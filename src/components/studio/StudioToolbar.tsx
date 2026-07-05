@@ -15,6 +15,7 @@ import {
   Redo2,
   Magnet,
   Ruler,
+  AlertTriangle,
   Eraser,
   LayoutTemplate,
   ShoppingCart,
