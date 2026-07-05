@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { useStudioStore } from '@/stores/studioStore';
 import {
   FLOORING_OPTIONS,
+  LIGHTING_PRESETS,
   PAINT_PRESETS,
   ROOM_LIMITS,
 } from '@/lib/studioConstants';
