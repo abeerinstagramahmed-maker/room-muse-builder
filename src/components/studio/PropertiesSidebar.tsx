@@ -1,4 +1,4 @@
-import { Move, RotateCw, Copy, Trash2, Grid3x3, Box, Paintbrush } from 'lucide-react';
+import { Move, RotateCw, Copy, Trash2, Grid3x3, Box, Paintbrush, Sun } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { useStudioStore } from '@/stores/studioStore';
 import {
   FLOORING_OPTIONS,
+  LIGHTING_PRESETS,
   PAINT_PRESETS,
   ROOM_LIMITS,
 } from '@/lib/studioConstants';
@@ -195,6 +196,10 @@ function RoomPanel() {
   const setFlooring = useStudioStore((s) => s.setFlooring);
   const gridVisible = useStudioStore((s) => s.gridVisible);
   const toggleGrid = useStudioStore((s) => s.toggleGrid);
+  const lightingId = useStudioStore((s) => s.lightingId);
+  const setLighting = useStudioStore((s) => s.setLighting);
+  const brightness = useStudioStore((s) => s.brightness);
+  const setBrightness = useStudioStore((s) => s.setBrightness);
 
   const dim = (key: 'width' | 'depth' | 'height', label: string) => {
     const lim = ROOM_LIMITS[key];
@@ -250,6 +255,36 @@ function RoomPanel() {
           <Grid3x3 className="h-4 w-4" /> Floor Grid
         </Label>
         <Switch checked={gridVisible} onCheckedChange={toggleGrid} />
+      </div>
+
+      <div className="space-y-2">
+        <Label className="flex items-center gap-2 text-xs">
+          <Sun className="h-4 w-4" /> Lighting
+        </Label>
+        <div className="grid grid-cols-2 gap-1.5">
+          {LIGHTING_PRESETS.map((l) => (
+            <button
+              key={l.id}
+              onClick={() => setLighting(l.id)}
+              className={cn(
+                'rounded-md border p-1.5 text-xs transition-colors',
+                lightingId === l.id ? 'border-primary bg-primary/5' : 'hover:bg-muted',
+              )}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
+        <Label className="text-xs">
+          Brightness: {Math.round(brightness * 100)}%
+        </Label>
+        <Slider
+          min={0.3}
+          max={1.8}
+          step={0.05}
+          value={[brightness]}
+          onValueChange={([v]) => setBrightness(v)}
+        />
       </div>
 
       <div className="space-y-1 rounded-md bg-muted/50 p-2.5 text-xs text-muted-foreground">

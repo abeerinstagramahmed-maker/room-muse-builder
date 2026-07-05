@@ -8,6 +8,7 @@ import {
 } from '@/types/studio';
 import {
   DEFAULT_FLOORING_ID,
+  DEFAULT_LIGHTING_ID,
   DEFAULT_ROOM,
   DEFAULT_WALL_COLORS,
 } from '@/lib/studioConstants';
@@ -79,6 +80,10 @@ interface StudioState {
   collisionEnabled: boolean;
   /** instanceIds of floor items currently overlapping another item. */
   collidingIds: string[];
+  /** Active lighting preset id (time of day / mood). */
+  lightingId: string;
+  /** Master brightness multiplier applied on top of the preset. */
+  brightness: number;
   /** Optional photo (e.g. AI-cleaned room) shown as scene backdrop. */
   backgroundImageUrl: string | null;
   /** Increment to request a camera reset from the editor. */
@@ -102,6 +107,8 @@ interface StudioState {
   setBackgroundImage: (url: string | null) => void;
 
   toggleCollision: () => void;
+  setLighting: (id: string) => void;
+  setBrightness: (value: number) => void;
 
   addFurniture: (item: Omit<PlacedFurniture, 'instanceId'>) => void;
   updateFurniture: (instanceId: string, patch: Partial<PlacedFurniture>) => void;
@@ -165,6 +172,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
     transformMode: 'translate',
     collisionEnabled: true,
     collidingIds: [],
+    lightingId: DEFAULT_LIGHTING_ID,
+    brightness: 1,
     backgroundImageUrl: null,
     cameraResetToken: 0,
     captureScreenshot: null,
@@ -197,6 +206,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
           collidingIds: collisionEnabled ? computeCollisions(s.furniture) : [],
         };
       }),
+    setLighting: (lightingId) => set({ lightingId }),
+    setBrightness: (brightness) => set({ brightness }),
 
     addFurniture: (item) => {
       record();

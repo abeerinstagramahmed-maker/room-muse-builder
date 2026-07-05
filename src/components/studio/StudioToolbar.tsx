@@ -16,6 +16,8 @@ import {
   Magnet,
   Ruler,
   AlertTriangle,
+  Map as MapIcon,
+  ListChecks,
   Eraser,
   LayoutTemplate,
   ShoppingCart,
@@ -42,6 +44,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCart } from '@/contexts/CartContext';
 import { useStudioProducts } from '@/hooks/useStudioProducts';
 import { studioProductToProduct } from '@/lib/studioCart';
+import { buildFloorPlanSVG, buildShoppingListCSV, downloadTextFile } from '@/lib/floorPlan';
 import { CartDrawer } from '@/components/studio/CartDrawer';
 import { toast } from 'sonner';
 
@@ -151,6 +154,20 @@ export function StudioToolbar() {
     else toast.error('Editor is not ready yet.');
   };
 
+  const handleFloorPlan = () => {
+    const room = useStudioStore.getState().room;
+    const svg = buildFloorPlanSVG(room, furniture);
+    downloadTextFile(`floor-plan-${Date.now()}.svg`, svg, 'image/svg+xml');
+    toast.success('Floor plan exported.');
+  };
+
+  const handleShoppingList = () => {
+    if (furniture.length === 0) return toast.error('Add furniture first.');
+    const csv = buildShoppingListCSV(furniture);
+    downloadTextFile(`shopping-list-${Date.now()}.csv`, csv, 'text/csv');
+    toast.success('Shopping list exported.');
+  };
+
   return (
     <div className="flex items-center gap-1.5 border-b bg-card px-4 py-2">
       <h1 className="mr-4 text-sm font-bold tracking-tight">Room Studio</h1>
@@ -252,6 +269,17 @@ export function StudioToolbar() {
       </Button>
       <Button variant="ghost" size="sm" className="gap-1.5" onClick={handleScreenshot}>
         <Camera className="h-4 w-4" /> Screenshot
+      </Button>
+      <Button variant="ghost" size="sm" className="gap-1.5" onClick={handleFloorPlan}>
+        <MapIcon className="h-4 w-4" /> Floor Plan
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-1.5"
+        onClick={handleShoppingList}
+      >
+        <ListChecks className="h-4 w-4" /> Shopping List
       </Button>
       <Button
         variant="ghost"

@@ -7,6 +7,7 @@ import { FurnitureItem } from './FurnitureItem';
 import { MeasurementLayer } from './MeasurementLayer';
 import { DimensionLabels } from './DimensionLabels';
 import { useStudioStore } from '@/stores/studioStore';
+import { getLighting } from '@/lib/studioConstants';
 
 /** Resets the camera when cameraResetToken changes. */
 function CameraRig() {
@@ -69,6 +70,9 @@ export function RoomEditor() {
   const gridVisible = useStudioStore((s) => s.gridVisible);
   const measureMode = useStudioStore((s) => s.measureMode);
   const room = useStudioStore((s) => s.room);
+  const lightingId = useStudioStore((s) => s.lightingId);
+  const brightness = useStudioStore((s) => s.brightness);
+  const lighting = getLighting(lightingId);
   const initialDist = useRef(Math.max(room.width, room.depth) * 1.1 + 8);
 
   return (
@@ -78,12 +82,13 @@ export function RoomEditor() {
       gl={{ preserveDrawingBuffer: true, antialias: true }}
       camera={{ position: [initialDist.current, initialDist.current * 0.8, initialDist.current], fov: 45 }}
     >
-      <color attach="background" args={['#f1f0ee']} />
-      <hemisphereLight intensity={0.6} groundColor="#b9b4ab" />
-      <ambientLight intensity={0.4} />
+      <color attach="background" args={[lighting.background]} />
+      <hemisphereLight intensity={0.6 * brightness} groundColor={lighting.groundColor} />
+      <ambientLight intensity={lighting.ambient * brightness} />
       <directionalLight
         position={[10, 18, 8]}
-        intensity={1.1}
+        intensity={lighting.directional * brightness}
+        color={lighting.sunColor}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
