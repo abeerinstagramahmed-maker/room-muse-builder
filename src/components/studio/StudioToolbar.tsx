@@ -201,6 +201,17 @@ export function StudioToolbar() {
       >
         <Ruler className="h-4 w-4" />
       </Button>
+      <Button
+        variant={collisionEnabled ? 'secondary' : 'ghost'}
+        size="icon"
+        className="h-8 w-8"
+        title="Toggle collision detection"
+        onClick={toggleCollision}
+      >
+        <AlertTriangle
+          className={collidingCount > 0 ? 'h-4 w-4 text-destructive' : 'h-4 w-4'}
+        />
+      </Button>
       {measurements.length > 0 && (
         <Button
           variant="ghost"
