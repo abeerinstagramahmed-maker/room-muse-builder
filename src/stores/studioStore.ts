@@ -206,6 +206,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
           collidingIds: collisionEnabled ? computeCollisions(s.furniture) : [],
         };
       }),
+    setLighting: (lightingId) => set({ lightingId }),
+    setBrightness: (brightness) => set({ brightness }),
 
     addFurniture: (item) => {
       record();
