@@ -172,6 +172,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
     transformMode: 'translate',
     collisionEnabled: true,
     collidingIds: [],
+    lightingId: DEFAULT_LIGHTING_ID,
+    brightness: 1,
     backgroundImageUrl: null,
     cameraResetToken: 0,
     captureScreenshot: null,
