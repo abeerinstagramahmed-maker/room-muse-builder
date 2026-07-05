@@ -189,22 +189,38 @@ export const useStudioStore = create<StudioState>((set, get) => {
     clearMeasurements: () => set({ measurements: [] }),
     setTransformMode: (transformMode) => set({ transformMode }),
     setBackgroundImage: (backgroundImageUrl) => set({ backgroundImageUrl }),
+    toggleCollision: () =>
+      set((s) => {
+        const collisionEnabled = !s.collisionEnabled;
+        return {
+          collisionEnabled,
+          collidingIds: collisionEnabled ? computeCollisions(s.furniture) : [],
+        };
+      }),
 
     addFurniture: (item) => {
       record();
       const instanceId = newInstanceId();
-      set((s) => ({
-        furniture: [...s.furniture, { ...item, instanceId }],
-        selectedId: instanceId,
-      }));
+      set((s) => {
+        const furniture = [...s.furniture, { ...item, instanceId }];
+        return {
+          furniture,
+          selectedId: instanceId,
+          collidingIds: s.collisionEnabled ? computeCollisions(furniture) : [],
+        };
+      });
     },
 
     updateFurniture: (instanceId, patch) =>
-      set((s) => ({
-        furniture: s.furniture.map((f) =>
+      set((s) => {
+        const furniture = s.furniture.map((f) =>
           f.instanceId === instanceId ? { ...f, ...patch } : f,
-        ),
-      })),
+        );
+        return {
+          furniture,
+          collidingIds: s.collisionEnabled ? computeCollisions(furniture) : [],
+        };
+      }),
 
     duplicateFurniture: (instanceId) => {
       const original = get().furniture.find((f) => f.instanceId === instanceId);
