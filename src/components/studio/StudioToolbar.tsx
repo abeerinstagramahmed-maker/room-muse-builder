@@ -253,6 +253,17 @@ export function StudioToolbar() {
       <Button variant="ghost" size="sm" className="gap-1.5" onClick={handleScreenshot}>
         <Camera className="h-4 w-4" /> Screenshot
       </Button>
+      <Button variant="ghost" size="sm" className="gap-1.5" onClick={handleFloorPlan}>
+        <Map className="h-4 w-4" /> Floor Plan
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="gap-1.5"
+        onClick={handleShoppingList}
+      >
+        <ListChecks className="h-4 w-4" /> Shopping List
+      </Button>
       <Button
         variant="ghost"
         size="sm"
