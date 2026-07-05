@@ -21,6 +21,32 @@ export interface Measurement {
   b: [number, number, number];
 }
 
+/** Axis-aligned footprint overlap test between two floor items. */
+function footprintsOverlap(a: PlacedFurniture, b: PlacedFurniture): boolean {
+  const halfA = [(a.size[0] * a.scale) / 2, (a.size[2] * a.scale) / 2];
+  const halfB = [(b.size[0] * b.scale) / 2, (b.size[2] * b.scale) / 2];
+  const dx = Math.abs(a.position[0] - b.position[0]);
+  const dz = Math.abs(a.position[2] - b.position[2]);
+  // Small tolerance so touching edges do not count as a collision.
+  const tol = 0.02;
+  return dx < halfA[0] + halfB[0] - tol && dz < halfA[1] + halfB[1] - tol;
+}
+
+/** Returns instanceIds of floor items whose footprints overlap another item. */
+function computeCollisions(furniture: PlacedFurniture[]): string[] {
+  const floor = furniture.filter((f) => f.mountType !== 'wall');
+  const hits = new Set<string>();
+  for (let i = 0; i < floor.length; i++) {
+    for (let j = i + 1; j < floor.length; j++) {
+      if (footprintsOverlap(floor[i], floor[j])) {
+        hits.add(floor[i].instanceId);
+        hits.add(floor[j].instanceId);
+      }
+    }
+  }
+  return Array.from(hits);
+}
+
 let instanceCounter = 0;
 function newInstanceId(): string {
   instanceCounter += 1;
