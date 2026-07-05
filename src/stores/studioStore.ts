@@ -79,6 +79,10 @@ interface StudioState {
   collisionEnabled: boolean;
   /** instanceIds of floor items currently overlapping another item. */
   collidingIds: string[];
+  /** Active lighting preset id (time of day / mood). */
+  lightingId: string;
+  /** Master brightness multiplier applied on top of the preset. */
+  brightness: number;
   /** Optional photo (e.g. AI-cleaned room) shown as scene backdrop. */
   backgroundImageUrl: string | null;
   /** Increment to request a camera reset from the editor. */
