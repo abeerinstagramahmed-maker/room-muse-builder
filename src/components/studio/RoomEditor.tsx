@@ -7,6 +7,7 @@ import { FurnitureItem } from './FurnitureItem';
 import { MeasurementLayer } from './MeasurementLayer';
 import { DimensionLabels } from './DimensionLabels';
 import { useStudioStore } from '@/stores/studioStore';
+import { getLighting } from '@/lib/studioConstants';
 
 /** Resets the camera when cameraResetToken changes. */
 function CameraRig() {
