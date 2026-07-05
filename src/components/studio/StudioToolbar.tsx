@@ -151,6 +151,20 @@ export function StudioToolbar() {
     else toast.error('Editor is not ready yet.');
   };
 
+  const handleFloorPlan = () => {
+    const room = useStudioStore.getState().room;
+    const svg = buildFloorPlanSVG(room, furniture);
+    downloadTextFile(`floor-plan-${Date.now()}.svg`, svg, 'image/svg+xml');
+    toast.success('Floor plan exported.');
+  };
+
+  const handleShoppingList = () => {
+    if (furniture.length === 0) return toast.error('Add furniture first.');
+    const csv = buildShoppingListCSV(furniture);
+    downloadTextFile(`shopping-list-${Date.now()}.csv`, csv, 'text/csv');
+    toast.success('Shopping list exported.');
+  };
+
   return (
     <div className="flex items-center gap-1.5 border-b bg-card px-4 py-2">
       <h1 className="mr-4 text-sm font-bold tracking-tight">Room Studio</h1>
