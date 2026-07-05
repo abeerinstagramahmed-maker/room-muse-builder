@@ -246,10 +246,14 @@ export const useStudioStore = create<StudioState>((set, get) => {
 
     deleteFurniture: (instanceId) => {
       record();
-      set((s) => ({
-        furniture: s.furniture.filter((f) => f.instanceId !== instanceId),
-        selectedId: s.selectedId === instanceId ? null : s.selectedId,
-      }));
+      set((s) => {
+        const furniture = s.furniture.filter((f) => f.instanceId !== instanceId);
+        return {
+          furniture,
+          selectedId: s.selectedId === instanceId ? null : s.selectedId,
+          collidingIds: s.collisionEnabled ? computeCollisions(furniture) : [],
+        };
+      });
     },
 
     deleteSelected: () => {
