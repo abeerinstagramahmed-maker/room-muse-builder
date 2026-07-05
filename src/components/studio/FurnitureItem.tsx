@@ -49,6 +49,9 @@ export function FurnitureItem({ item }: Props) {
 
   const isSelected = selectedId === item.instanceId;
   const isWall = item.mountType === 'wall';
+  const isColliding = useStudioStore(
+    (s) => s.collisionEnabled && s.collidingIds.includes(item.instanceId),
+  );
 
   // Keep the group transform in sync with store when not actively editing.
   useEffect(() => {
