@@ -256,6 +256,36 @@ function RoomPanel() {
         <Switch checked={gridVisible} onCheckedChange={toggleGrid} />
       </div>
 
+      <div className="space-y-2">
+        <Label className="flex items-center gap-2 text-xs">
+          <Sun className="h-4 w-4" /> Lighting
+        </Label>
+        <div className="grid grid-cols-2 gap-1.5">
+          {LIGHTING_PRESETS.map((l) => (
+            <button
+              key={l.id}
+              onClick={() => setLighting(l.id)}
+              className={cn(
+                'rounded-md border p-1.5 text-xs transition-colors',
+                lightingId === l.id ? 'border-primary bg-primary/5' : 'hover:bg-muted',
+              )}
+            >
+              {l.label}
+            </button>
+          ))}
+        </div>
+        <Label className="text-xs">
+          Brightness: {Math.round(brightness * 100)}%
+        </Label>
+        <Slider
+          min={0.3}
+          max={1.8}
+          step={0.05}
+          value={[brightness]}
+          onValueChange={([v]) => setBrightness(v)}
+        />
+      </div>
+
       <div className="space-y-1 rounded-md bg-muted/50 p-2.5 text-xs text-muted-foreground">
         <p className="font-medium text-foreground">Shortcuts</p>
         <p>Move (M) · Rotate (R) · Grid (G)</p>
