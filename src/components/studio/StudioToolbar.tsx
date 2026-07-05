@@ -44,6 +44,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCart } from '@/contexts/CartContext';
 import { useStudioProducts } from '@/hooks/useStudioProducts';
 import { studioProductToProduct } from '@/lib/studioCart';
+import { buildFloorPlanSVG, buildShoppingListCSV, downloadTextFile } from '@/lib/floorPlan';
 import { CartDrawer } from '@/components/studio/CartDrawer';
 import { toast } from 'sonner';
 
@@ -270,7 +271,7 @@ export function StudioToolbar() {
         <Camera className="h-4 w-4" /> Screenshot
       </Button>
       <Button variant="ghost" size="sm" className="gap-1.5" onClick={handleFloorPlan}>
-        <Map className="h-4 w-4" /> Floor Plan
+        <MapIcon className="h-4 w-4" /> Floor Plan
       </Button>
       <Button
         variant="ghost"
