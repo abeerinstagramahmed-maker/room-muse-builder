@@ -189,6 +189,47 @@ function WallPanel() {
   );
 }
 
+const SNAP_OPTIONS = [
+  { value: 0.25, label: '3"' },
+  { value: 0.5, label: '6"' },
+  { value: 1, label: '1 ft' },
+  { value: 2, label: '2 ft' },
+];
+
+function SnapControl() {
+  const snapEnabled = useStudioStore((s) => s.snapEnabled);
+  const toggleSnap = useStudioStore((s) => s.toggleSnap);
+  const snapSize = useStudioStore((s) => s.snapSize);
+  const setSnapSize = useStudioStore((s) => s.setSnapSize);
+
+  return (
+    <div className="space-y-2 rounded-md border p-2.5">
+      <div className="flex items-center justify-between">
+        <Label className="flex items-center gap-2 text-xs">
+          <Magnet className="h-4 w-4" /> Snap to Grid
+        </Label>
+        <Switch checked={snapEnabled} onCheckedChange={toggleSnap} />
+      </div>
+      {snapEnabled && (
+        <div className="grid grid-cols-4 gap-1.5">
+          {SNAP_OPTIONS.map((o) => (
+            <button
+              key={o.value}
+              onClick={() => setSnapSize(o.value)}
+              className={cn(
+                'rounded-md border py-1 text-xs transition-colors',
+                snapSize === o.value ? 'border-primary bg-primary/5' : 'hover:bg-muted',
+              )}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function RoomPanel() {
   const room = useStudioStore((s) => s.room);
   const setRoom = useStudioStore((s) => s.setRoom);
