@@ -279,6 +279,9 @@ export function StudioToolbar() {
       <Button variant="ghost" size="sm" className="gap-1.5" onClick={handleFloorPlan}>
         <MapIcon className="h-4 w-4" /> Floor Plan
       </Button>
+      <Button variant="ghost" size="sm" className="gap-1.5" onClick={handleFloorPlanPDF}>
+        <MapIcon className="h-4 w-4" /> Floor Plan PDF
+      </Button>
       <Button
         variant="ghost"
         size="sm"
