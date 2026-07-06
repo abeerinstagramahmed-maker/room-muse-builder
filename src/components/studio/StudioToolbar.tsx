@@ -161,6 +161,12 @@ export function StudioToolbar() {
     toast.success('Floor plan exported.');
   };
 
+  const handleFloorPlanPDF = () => {
+    const room = useStudioStore.getState().room;
+    const ok = printFloorPlanPDF(room, furniture);
+    if (!ok) toast.error('Allow pop-ups to export the PDF.');
+  };
+
   const handleShoppingList = () => {
     if (furniture.length === 0) return toast.error('Add furniture first.');
     const csv = buildShoppingListCSV(furniture);
