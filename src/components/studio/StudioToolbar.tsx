@@ -169,7 +169,7 @@ export function StudioToolbar() {
   };
 
   return (
-    <div className="flex items-center gap-1.5 border-b bg-card px-4 py-2">
+    <div className="flex items-center gap-1.5 overflow-x-auto border-b bg-card px-4 py-2 [&>*]:shrink-0">
       <h1 className="mr-4 text-sm font-bold tracking-tight">Room Studio</h1>
 
       <Button variant="ghost" size="sm" className="gap-1.5" onClick={newRoom}>
