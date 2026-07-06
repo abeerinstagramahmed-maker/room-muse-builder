@@ -44,7 +44,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCart } from '@/contexts/CartContext';
 import { useStudioProducts } from '@/hooks/useStudioProducts';
 import { studioProductToProduct } from '@/lib/studioCart';
-import { buildFloorPlanSVG, buildShoppingListCSV, downloadTextFile } from '@/lib/floorPlan';
+import { buildFloorPlanSVG, buildShoppingListCSV, downloadTextFile, printFloorPlanPDF } from '@/lib/floorPlan';
 import { CartDrawer } from '@/components/studio/CartDrawer';
 import { toast } from 'sonner';
 
