@@ -43,6 +43,7 @@ export function FurnitureItem({ item }: Props) {
   const selectedId = useStudioStore((s) => s.selectedId);
   const transformMode = useStudioStore((s) => s.transformMode);
   const snapEnabled = useStudioStore((s) => s.snapEnabled);
+  const snapSize = useStudioStore((s) => s.snapSize);
   const select = useStudioStore((s) => s.select);
   const updateFurniture = useStudioStore((s) => s.updateFurniture);
   const beginHistory = useStudioStore((s) => s.beginHistory);
