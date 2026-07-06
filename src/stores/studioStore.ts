@@ -373,7 +373,10 @@ export const useStudioStore = create<StudioState>((set, get) => {
           ...f,
           instanceId: f.instanceId ?? newInstanceId(),
         })),
+        lightingId: data.lightingId ?? DEFAULT_LIGHTING_ID,
+        brightness: data.brightness ?? 1,
         selectedId: null,
+        cameraResetToken: get().cameraResetToken + 1,
       });
     },
 
@@ -385,6 +388,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
         wallColors: s.wallColors,
         flooringId: s.flooringId,
         furniture: s.furniture,
+        lightingId: s.lightingId,
+        brightness: s.brightness,
       };
     },
   };
