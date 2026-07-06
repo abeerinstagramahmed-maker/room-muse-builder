@@ -108,7 +108,7 @@ export function FurnitureItem({ item }: Props) {
         showY={isWall && transformMode === 'translate'}
         showX={transformMode === 'translate'}
         showZ={transformMode === 'translate'}
-        translationSnap={transformMode === 'translate' && snapEnabled ? 0.25 : undefined}
+        translationSnap={transformMode === 'translate' && snapEnabled ? snapSize : undefined}
         rotationSnap={transformMode === 'rotate' && snapEnabled ? Math.PI / 24 : undefined}
         onMouseDown={beginHistory}
         onMouseUp={commitTransform}
