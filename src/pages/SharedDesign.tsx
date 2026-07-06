@@ -103,6 +103,18 @@ export default function SharedDesign() {
               <Button className="w-full gap-2" onClick={handleRemix}>
                 <Copy className="h-4 w-4" /> Remix This Design
               </Button>
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={() => {
+                  if (!design) return;
+                  loadScene(design.scene_data);
+                  toast.success('Opened in studio with the same layout & lighting.');
+                  navigate('/studio');
+                }}
+              >
+                Open in Studio
+              </Button>
 
               <Card className="p-4">
                 <h2 className="mb-2 font-semibold">Items in this room</h2>
