@@ -1,4 +1,4 @@
-import { Move, RotateCw, Copy, Trash2, Grid3x3, Box, Paintbrush, Sun } from 'lucide-react';
+import { Move, RotateCw, Copy, Trash2, Grid3x3, Box, Paintbrush, Sun, Magnet } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
