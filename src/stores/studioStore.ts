@@ -193,6 +193,7 @@ export const useStudioStore = create<StudioState>((set, get) => {
     },
     toggleGrid: () => set((s) => ({ gridVisible: !s.gridVisible })),
     toggleSnap: () => set((s) => ({ snapEnabled: !s.snapEnabled })),
+    setSnapSize: (snapSize) => set({ snapSize }),
     toggleMeasureMode: () =>
       set((s) => ({ measureMode: !s.measureMode, selectedId: null, selectedWall: null })),
     addMeasurement: (a, b) =>
