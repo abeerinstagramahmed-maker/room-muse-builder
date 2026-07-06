@@ -40,6 +40,8 @@ export interface PlacedFurniture {
   instanceId: string;
   productId: string;
   name: string;
+  /** Catalog category (used for exports and legends). */
+  category?: string;
   modelUrl: string | null;
   /** Footprint/size in feet [width, height, depth]. */
   size: [number, number, number];
@@ -58,4 +60,8 @@ export interface SceneData {
   wallColors: WallColors;
   flooringId: string;
   furniture: PlacedFurniture[];
+  /** Optional lighting preset so shared scenes reopen with the same mood. */
+  lightingId?: string;
+  /** Optional master brightness multiplier. */
+  brightness?: number;
 }
