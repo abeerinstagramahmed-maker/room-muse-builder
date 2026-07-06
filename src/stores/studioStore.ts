@@ -70,6 +70,8 @@ interface StudioState {
   flooringId: string;
   gridVisible: boolean;
   snapEnabled: boolean;
+  /** Grid increment (in feet) used when snapping is enabled. */
+  snapSize: number;
   measureMode: boolean;
   measurements: Measurement[];
   furniture: PlacedFurniture[];
