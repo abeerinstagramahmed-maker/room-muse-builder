@@ -102,6 +102,7 @@ interface StudioState {
   setFlooring: (id: string) => void;
   toggleGrid: () => void;
   toggleSnap: () => void;
+  setSnapSize: (value: number) => void;
   toggleMeasureMode: () => void;
   addMeasurement: (a: [number, number, number], b: [number, number, number]) => void;
   clearMeasurements: () => void;
