@@ -43,6 +43,7 @@ export function FurnitureItem({ item }: Props) {
   const selectedId = useStudioStore((s) => s.selectedId);
   const transformMode = useStudioStore((s) => s.transformMode);
   const snapEnabled = useStudioStore((s) => s.snapEnabled);
+  const snapSize = useStudioStore((s) => s.snapSize);
   const select = useStudioStore((s) => s.select);
   const updateFurniture = useStudioStore((s) => s.updateFurniture);
   const beginHistory = useStudioStore((s) => s.beginHistory);
@@ -107,7 +108,7 @@ export function FurnitureItem({ item }: Props) {
         showY={isWall && transformMode === 'translate'}
         showX={transformMode === 'translate'}
         showZ={transformMode === 'translate'}
-        translationSnap={transformMode === 'translate' && snapEnabled ? 0.25 : undefined}
+        translationSnap={transformMode === 'translate' && snapEnabled ? snapSize : undefined}
         rotationSnap={transformMode === 'rotate' && snapEnabled ? Math.PI / 24 : undefined}
         onMouseDown={beginHistory}
         onMouseUp={commitTransform}

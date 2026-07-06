@@ -70,6 +70,8 @@ interface StudioState {
   flooringId: string;
   gridVisible: boolean;
   snapEnabled: boolean;
+  /** Grid increment (in feet) used when snapping is enabled. */
+  snapSize: number;
   measureMode: boolean;
   measurements: Measurement[];
   furniture: PlacedFurniture[];
@@ -100,6 +102,7 @@ interface StudioState {
   setFlooring: (id: string) => void;
   toggleGrid: () => void;
   toggleSnap: () => void;
+  setSnapSize: (value: number) => void;
   toggleMeasureMode: () => void;
   addMeasurement: (a: [number, number, number], b: [number, number, number]) => void;
   clearMeasurements: () => void;
@@ -164,6 +167,7 @@ export const useStudioStore = create<StudioState>((set, get) => {
     flooringId: DEFAULT_FLOORING_ID,
     gridVisible: true,
     snapEnabled: true,
+    snapSize: 0.25,
     measureMode: false,
     measurements: [],
     furniture: [],
@@ -189,6 +193,7 @@ export const useStudioStore = create<StudioState>((set, get) => {
     },
     toggleGrid: () => set((s) => ({ gridVisible: !s.gridVisible })),
     toggleSnap: () => set((s) => ({ snapEnabled: !s.snapEnabled })),
+    setSnapSize: (snapSize) => set({ snapSize }),
     toggleMeasureMode: () =>
       set((s) => ({ measureMode: !s.measureMode, selectedId: null, selectedWall: null })),
     addMeasurement: (a, b) =>
@@ -368,7 +373,10 @@ export const useStudioStore = create<StudioState>((set, get) => {
           ...f,
           instanceId: f.instanceId ?? newInstanceId(),
         })),
+        lightingId: data.lightingId ?? DEFAULT_LIGHTING_ID,
+        brightness: data.brightness ?? 1,
         selectedId: null,
+        cameraResetToken: get().cameraResetToken + 1,
       });
     },
 
@@ -380,6 +388,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
         wallColors: s.wallColors,
         flooringId: s.flooringId,
         furniture: s.furniture,
+        lightingId: s.lightingId,
+        brightness: s.brightness,
       };
     },
   };

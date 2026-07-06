@@ -44,7 +44,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useCart } from '@/contexts/CartContext';
 import { useStudioProducts } from '@/hooks/useStudioProducts';
 import { studioProductToProduct } from '@/lib/studioCart';
-import { buildFloorPlanSVG, buildShoppingListCSV, downloadTextFile } from '@/lib/floorPlan';
+import { buildFloorPlanSVG, buildShoppingListCSV, downloadTextFile, printFloorPlanPDF } from '@/lib/floorPlan';
 import { CartDrawer } from '@/components/studio/CartDrawer';
 import { toast } from 'sonner';
 
@@ -161,6 +161,12 @@ export function StudioToolbar() {
     toast.success('Floor plan exported.');
   };
 
+  const handleFloorPlanPDF = () => {
+    const room = useStudioStore.getState().room;
+    const ok = printFloorPlanPDF(room, furniture);
+    if (!ok) toast.error('Allow pop-ups to export the PDF.');
+  };
+
   const handleShoppingList = () => {
     if (furniture.length === 0) return toast.error('Add furniture first.');
     const csv = buildShoppingListCSV(furniture);
@@ -272,6 +278,9 @@ export function StudioToolbar() {
       </Button>
       <Button variant="ghost" size="sm" className="gap-1.5" onClick={handleFloorPlan}>
         <MapIcon className="h-4 w-4" /> Floor Plan
+      </Button>
+      <Button variant="ghost" size="sm" className="gap-1.5" onClick={handleFloorPlanPDF}>
+        <MapIcon className="h-4 w-4" /> Floor Plan PDF
       </Button>
       <Button
         variant="ghost"

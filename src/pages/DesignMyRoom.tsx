@@ -179,6 +179,7 @@ export default function DesignMyRoom() {
       furniture: suggestions.map((s) => ({
         productId: s.productId,
         name: s.name,
+        category: s.slot,
         modelUrl: null,
         size: s.size,
         position: s.position,
