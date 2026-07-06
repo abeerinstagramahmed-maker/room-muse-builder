@@ -42,7 +42,7 @@ const Studio = () => {
                     <Package className="h-4 w-4" /> Catalog
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[85vw] max-w-sm p-0">
+                <SheetContent side="left" className="w-72 p-0">
                   <CatalogSidebar />
                 </SheetContent>
               </Sheet>
@@ -53,7 +53,7 @@ const Studio = () => {
                     <SlidersHorizontal className="h-4 w-4" /> Properties
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-[85vw] max-w-sm p-0">
+                <SheetContent side="right" className="w-72 p-0">
                   <PropertiesSidebar />
                 </SheetContent>
               </Sheet>
