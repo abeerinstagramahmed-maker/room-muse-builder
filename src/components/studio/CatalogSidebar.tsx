@@ -35,6 +35,7 @@ export function CatalogSidebar() {
       addFurniture({
         productId: p.id,
         name: p.name,
+        category: p.category,
         modelUrl: p.modelUrl,
         // Thin depth so it sits flat against the wall.
         size: [w, h, 0.15],
@@ -48,6 +49,7 @@ export function CatalogSidebar() {
     addFurniture({
       productId: p.id,
       name: p.name,
+      category: p.category,
       modelUrl: p.modelUrl,
       size: productSize(p),
       position: [0, 0, 0],
