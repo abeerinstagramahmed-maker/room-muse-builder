@@ -165,7 +165,9 @@ export default function DesignMyRoom() {
         },
       });
       if (error) throw error;
-      setSuggestions((data?.suggestions as Suggestion[]) ?? []);
+      const list = (data?.suggestions as Suggestion[]) ?? [];
+      setSuggestions(list);
+      setSelectedIds(new Set(list.map((s) => s.productId)));
     } catch (e: unknown) {
       toast({
         title: 'Could not load suggestions',
