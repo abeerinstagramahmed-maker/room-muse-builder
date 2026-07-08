@@ -191,10 +191,12 @@ function buildEmailContent(
               <p>Hi ${shipping.firstName || 'there'},</p>
               <p>Your order has been confirmed and our team is preparing it for fulfillment.</p>
               
-              <h3 style="margin-top: 24px;">Order Summary</h3>
+              <h3 style="margin-top: 24px;">Shopping List (${items.length} item${items.length === 1 ? '' : 's'})</h3>
               <table style="width: 100%; border-collapse: collapse;">
                 ${itemsHtml}
               </table>
+
+              <h3 style="margin-top: 24px;">Order Summary</h3>
               
               <div style="margin-top: 24px; padding: 16px; background: #f8f8f8; border-radius: 8px;">
                 <table style="width: 100%;">
