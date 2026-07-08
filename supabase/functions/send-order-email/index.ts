@@ -143,10 +143,15 @@ function buildEmailContent(
           ${item.product_image ? `<img src="${item.product_image}" alt="${item.product_name}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;" />` : ''}
           <div>
             <strong>${item.product_name}</strong>
-            <br /><span style="color: #666;">Qty: ${item.quantity}</span>
+            <br /><span style="color: #666;">Qty: ${item.quantity}${item.selected_color ? ` &middot; ${item.selected_color}` : ''}</span>
           </div>
         </div>
       </td>
+      <td style="padding: 12px 0; border-bottom: 1px solid #f0f0f0; text-align: right; font-weight: 600;">
+        $${item.total_price.toFixed(2)}
+      </td>
+    </tr>
+  `).join('');
       <td style="padding: 12px 0; border-bottom: 1px solid #f0f0f0; text-align: right; font-weight: 600;">
         $${item.total_price.toFixed(2)}
       </td>
