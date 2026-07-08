@@ -179,7 +179,26 @@ export default function DesignMyRoom() {
     }
   };
 
+  const toggleSelected = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
   const handleDesignInStudio = () => {
+    if (!analysis) return;
+    // If AI suggested products, open the review step so the user can confirm
+    // which items get placed before entering the studio.
+    if (suggestions.length > 0) {
+      setReviewOpen(true);
+      return;
+    }
+    applyDesign([]);
+  };
+
+  const applyDesign = (chosen: Suggestion[]) => {
     if (!analysis) return;
     applyRoomAnalysis({
       room: {
@@ -189,7 +208,7 @@ export default function DesignMyRoom() {
       },
       wallColor: analysis.wall_color,
       backgroundImageUrl: cleanedUrl,
-      furniture: suggestions.map((s) => ({
+      furniture: chosen.map((s) => ({
         productId: s.productId,
         name: s.name,
         category: s.slot,
@@ -201,6 +220,12 @@ export default function DesignMyRoom() {
       })),
     });
     navigate('/studio');
+  };
+
+  const confirmReview = () => {
+    const chosen = suggestions.filter((s) => selectedIds.has(s.productId));
+    setReviewOpen(false);
+    applyDesign(chosen);
   };
 
   return (
