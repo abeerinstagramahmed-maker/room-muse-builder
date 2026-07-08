@@ -152,11 +152,7 @@ function buildEmailContent(
       </td>
     </tr>
   `).join('');
-      <td style="padding: 12px 0; border-bottom: 1px solid #f0f0f0; text-align: right; font-weight: 600;">
-        $${item.total_price.toFixed(2)}
-      </td>
-    </tr>
-  `).join('');
+
 
   const baseStyle = `
     <style>
