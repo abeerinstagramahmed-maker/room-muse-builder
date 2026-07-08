@@ -358,7 +358,8 @@ export default function DesignMyRoom() {
                     AI Furniture Suggestions
                   </Button>
                   <Button onClick={handleDesignInStudio} className="gap-2 bg-gradient-to-r from-primary to-ai-coral text-white">
-                    <Sparkles className="h-4 w-4" /> Design in Studio
+                    <Sparkles className="h-4 w-4" />
+                    {suggestions.length > 0 ? 'Review & Apply Design' : 'Design in Studio'}
                   </Button>
                 </div>
               </div>
