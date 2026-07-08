@@ -1,11 +1,20 @@
 import { useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, Sparkles, Loader2, Eraser, Wand2, ImageIcon, X } from 'lucide-react';
+import { Upload, Sparkles, Loader2, Eraser, Wand2, ImageIcon, X, Check } from 'lucide-react';
 import { Header } from '@/components/layout/Header';
 import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthContext } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -55,6 +64,8 @@ export default function DesignMyRoom() {
   const [suggesting, setSuggesting] = useState(false);
   const [analysis, setAnalysis] = useState<RoomAnalysis | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const handleFile = useCallback((f: File) => {
     if (!ACCEPTED.includes(f.type)) {
@@ -154,7 +165,9 @@ export default function DesignMyRoom() {
         },
       });
       if (error) throw error;
-      setSuggestions((data?.suggestions as Suggestion[]) ?? []);
+      const list = (data?.suggestions as Suggestion[]) ?? [];
+      setSuggestions(list);
+      setSelectedIds(new Set(list.map((s) => s.productId)));
     } catch (e: unknown) {
       toast({
         title: 'Could not load suggestions',
@@ -166,7 +179,26 @@ export default function DesignMyRoom() {
     }
   };
 
+  const toggleSelected = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
   const handleDesignInStudio = () => {
+    if (!analysis) return;
+    // If AI suggested products, open the review step so the user can confirm
+    // which items get placed before entering the studio.
+    if (suggestions.length > 0) {
+      setReviewOpen(true);
+      return;
+    }
+    applyDesign([]);
+  };
+
+  const applyDesign = (chosen: Suggestion[]) => {
     if (!analysis) return;
     applyRoomAnalysis({
       room: {
@@ -176,7 +208,7 @@ export default function DesignMyRoom() {
       },
       wallColor: analysis.wall_color,
       backgroundImageUrl: cleanedUrl,
-      furniture: suggestions.map((s) => ({
+      furniture: chosen.map((s) => ({
         productId: s.productId,
         name: s.name,
         category: s.slot,
@@ -188,6 +220,12 @@ export default function DesignMyRoom() {
       })),
     });
     navigate('/studio');
+  };
+
+  const confirmReview = () => {
+    const chosen = suggestions.filter((s) => selectedIds.has(s.productId));
+    setReviewOpen(false);
+    applyDesign(chosen);
   };
 
   return (
@@ -320,7 +358,8 @@ export default function DesignMyRoom() {
                     AI Furniture Suggestions
                   </Button>
                   <Button onClick={handleDesignInStudio} className="gap-2 bg-gradient-to-r from-primary to-ai-coral text-white">
-                    <Sparkles className="h-4 w-4" /> Design in Studio
+                    <Sparkles className="h-4 w-4" />
+                    {suggestions.length > 0 ? 'Review & Apply Design' : 'Design in Studio'}
                   </Button>
                 </div>
               </div>
@@ -349,6 +388,56 @@ export default function DesignMyRoom() {
           </div>
         )}
       </main>
+
+      {/* Apply AI design review step */}
+      <Dialog open={reviewOpen} onOpenChange={setReviewOpen}>
+        <DialogContent className="max-h-[85vh] max-w-lg overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Review AI design</DialogTitle>
+            <DialogDescription>
+              Confirm which recommended items to place in your room. Uncheck anything you don't want.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2">
+            {suggestions.map((s) => {
+              const checked = selectedIds.has(s.productId);
+              return (
+                <button
+                  type="button"
+                  key={s.productId}
+                  onClick={() => toggleSelected(s.productId)}
+                  className={cn(
+                    'flex w-full items-center gap-3 rounded-lg border p-2 text-left transition-colors',
+                    checked ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50',
+                  )}
+                >
+                  <Checkbox checked={checked} onCheckedChange={() => toggleSelected(s.productId)} />
+                  {s.imageUrl && (
+                    <img src={s.imageUrl} alt={s.name} className="h-14 w-14 rounded-md object-cover" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{s.name}</p>
+                    <p className="text-xs capitalize text-muted-foreground">{s.slot}</p>
+                    {s.reason && <p className="truncate text-xs text-muted-foreground">{s.reason}</p>}
+                  </div>
+                  <span className="text-sm font-semibold">${Number(s.price).toFixed(2)}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <DialogFooter className="flex-col gap-2 sm:flex-row sm:justify-between">
+            <p className="self-center text-sm text-muted-foreground">
+              {selectedIds.size} of {suggestions.length} selected
+            </p>
+            <Button onClick={confirmReview} disabled={selectedIds.size === 0} className="gap-2">
+              <Check className="h-4 w-4" /> Apply to Room
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }

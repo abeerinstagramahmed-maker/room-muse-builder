@@ -143,7 +143,7 @@ function buildEmailContent(
           ${item.product_image ? `<img src="${item.product_image}" alt="${item.product_name}" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;" />` : ''}
           <div>
             <strong>${item.product_name}</strong>
-            <br /><span style="color: #666;">Qty: ${item.quantity}</span>
+            <br /><span style="color: #666;">Qty: ${item.quantity}${item.selected_color ? ` &middot; ${item.selected_color}` : ''}</span>
           </div>
         </div>
       </td>
@@ -152,6 +152,7 @@ function buildEmailContent(
       </td>
     </tr>
   `).join('');
+
 
   const baseStyle = `
     <style>
@@ -186,10 +187,12 @@ function buildEmailContent(
               <p>Hi ${shipping.firstName || 'there'},</p>
               <p>Your order has been confirmed and our team is preparing it for fulfillment.</p>
               
-              <h3 style="margin-top: 24px;">Order Summary</h3>
+              <h3 style="margin-top: 24px;">Shopping List (${items.length} item${items.length === 1 ? '' : 's'})</h3>
               <table style="width: 100%; border-collapse: collapse;">
                 ${itemsHtml}
               </table>
+
+              <h3 style="margin-top: 24px;">Order Summary</h3>
               
               <div style="margin-top: 24px; padding: 16px; background: #f8f8f8; border-radius: 8px;">
                 <table style="width: 100%;">
