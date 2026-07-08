@@ -64,6 +64,8 @@ export default function DesignMyRoom() {
   const [suggesting, setSuggesting] = useState(false);
   const [analysis, setAnalysis] = useState<RoomAnalysis | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
   const handleFile = useCallback((f: File) => {
     if (!ACCEPTED.includes(f.type)) {
