@@ -32,13 +32,26 @@ export const PAINT_PRESETS: PaintPreset[] = [
 ];
 
 export const FLOORING_OPTIONS: FlooringOption[] = [
-  { id: 'hardwood', label: 'Hardwood', color: '#9c6b3f', roughness: 0.6 },
-  { id: 'oak', label: 'Oak', color: '#c9a36b', roughness: 0.65 },
-  { id: 'walnut', label: 'Walnut', color: '#5a3a28', roughness: 0.55 },
-  { id: 'white-tile', label: 'White Tile', color: '#ececec', roughness: 0.25 },
-  { id: 'gray-tile', label: 'Gray Tile', color: '#9a9a9e', roughness: 0.3 },
-  { id: 'carpet', label: 'Carpet', color: '#b6ada0', roughness: 0.95 },
+  { id: 'hardwood', label: 'Hardwood', color: '#9c6b3f', roughness: 0.6, pattern: 'plank' },
+  { id: 'oak', label: 'Oak', color: '#c9a36b', roughness: 0.65, pattern: 'plank' },
+  { id: 'walnut', label: 'Walnut', color: '#5a3a28', roughness: 0.55, pattern: 'plank' },
+  { id: 'herringbone', label: 'Herringbone', color: '#b88a58', roughness: 0.6, pattern: 'herringbone' },
+  { id: 'white-tile', label: 'White Tile', color: '#ececec', roughness: 0.25, pattern: 'tile' },
+  { id: 'gray-tile', label: 'Gray Tile', color: '#9a9a9e', roughness: 0.3, pattern: 'tile' },
+  { id: 'checker', label: 'Checker Tile', color: '#e6e1d8', roughness: 0.3, pattern: 'checker' },
+  { id: 'marble', label: 'Marble', color: '#efece6', roughness: 0.15, pattern: 'tile' },
+  { id: 'concrete', label: 'Concrete', color: '#a4a19b', roughness: 0.85, pattern: 'solid' },
+  { id: 'carpet', label: 'Carpet', color: '#b6ada0', roughness: 0.95, pattern: 'solid' },
 ];
+
+export const OPENING_PRESETS = {
+  window: { label: 'Window', width: 3, height: 4, sill: 3 },
+  'wide-window': { label: 'Wide Window', width: 6, height: 4.5, sill: 2.5 },
+  door: { label: 'Door', width: 3, height: 7, sill: 0 },
+  'double-door': { label: 'French Doors', width: 5, height: 7, sill: 0 },
+} as const;
+
+export const RUG_COLORS = ['#d9cbb4', '#8a9a8b', '#b5694f', '#3e4a5e', '#e8e2d6', '#6b5b4e', '#c9a14a', '#9d8fb0'];
 
 export const DEFAULT_FLOORING_ID = 'oak';
 

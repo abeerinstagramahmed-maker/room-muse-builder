@@ -1,6 +1,8 @@
 import { create } from 'zustand';
 import {
   PlacedFurniture,
+  Rug,
+  WallOpening,
   RoomDimensions,
   SceneData,
   WallColors,
@@ -60,6 +62,8 @@ interface SceneSnapshot {
   flooringId: string;
   furniture: PlacedFurniture[];
   backgroundImageUrl: string | null;
+  openings: WallOpening[];
+  rugs: Rug[];
 }
 
 const HISTORY_LIMIT = 50;
@@ -75,6 +79,10 @@ interface StudioState {
   measureMode: boolean;
   measurements: Measurement[];
   furniture: PlacedFurniture[];
+  openings: WallOpening[];
+  rugs: Rug[];
+  selectedOpeningId: string | null;
+  selectedRugId: string | null;
   selectedId: string | null;
   selectedWall: WallId | null;
   transformMode: TransformMode;
@@ -130,6 +138,15 @@ interface StudioState {
   requestCameraReset: () => void;
   registerCapture: (fn: (() => void) | null) => void;
 
+  addOpening: (o: Omit<WallOpening, 'id'>) => void;
+  updateOpening: (id: string, patch: Partial<WallOpening>) => void;
+  removeOpening: (id: string) => void;
+  selectOpening: (id: string | null) => void;
+  addRug: (r: Omit<Rug, 'id'>) => void;
+  updateRug: (id: string, patch: Partial<Rug>) => void;
+  removeRug: (id: string) => void;
+  selectRug: (id: string | null) => void;
+  startRoom: (input: { room: RoomDimensions; wallColor: string; flooringId: string; openings?: Omit<WallOpening, 'id'>[]; rugs?: Omit<Rug, 'id'>[] }) => void;
   newRoom: () => void;
   applyTemplate: (template: RoomTemplate) => void;
   loadScene: (data: SceneData) => void;
@@ -151,6 +168,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
       flooringId: s.flooringId,
       furniture: s.furniture,
       backgroundImageUrl: s.backgroundImageUrl,
+      openings: s.openings,
+      rugs: s.rugs,
     };
   };
 
@@ -171,6 +190,10 @@ export const useStudioStore = create<StudioState>((set, get) => {
     measureMode: false,
     measurements: [],
     furniture: [],
+    openings: [],
+    rugs: [],
+    selectedOpeningId: null,
+    selectedRugId: null,
     selectedId: null,
     selectedWall: null,
     transformMode: 'translate',
@@ -282,8 +305,54 @@ export const useStudioStore = create<StudioState>((set, get) => {
       if (id) get().duplicateFurniture(id);
     },
 
-    select: (selectedId) => set({ selectedId, selectedWall: null }),
-    selectWall: (selectedWall) => set({ selectedWall, selectedId: null }),
+    select: (selectedId) => set({ selectedId, selectedWall: null, selectedRugId: null, selectedOpeningId: null }),
+    selectWall: (selectedWall) => set({ selectedWall, selectedId: null, selectedRugId: null }),
+
+    addOpening: (o) => {
+      record();
+      const id = newInstanceId();
+      set((s) => ({ openings: [...s.openings, { ...o, id }], selectedOpeningId: id, selectedWall: o.wall, selectedId: null }));
+    },
+    updateOpening: (id, patch) =>
+      set((s) => ({ openings: s.openings.map((o) => (o.id === id ? { ...o, ...patch } : o)) })),
+    removeOpening: (id) => {
+      record();
+      set((s) => ({ openings: s.openings.filter((o) => o.id !== id), selectedOpeningId: null }));
+    },
+    selectOpening: (id) => {
+      const o = get().openings.find((x) => x.id === id);
+      set({ selectedOpeningId: id, selectedWall: o ? o.wall : get().selectedWall, selectedId: null, selectedRugId: null });
+    },
+    addRug: (r) => {
+      record();
+      const id = newInstanceId();
+      set((s) => ({ rugs: [...s.rugs, { ...r, id }], selectedRugId: id, selectedId: null, selectedWall: null }));
+    },
+    updateRug: (id, patch) =>
+      set((s) => ({ rugs: s.rugs.map((r) => (r.id === id ? { ...r, ...patch } : r)) })),
+    removeRug: (id) => {
+      record();
+      set((s) => ({ rugs: s.rugs.filter((r) => r.id !== id), selectedRugId: null }));
+    },
+    selectRug: (selectedRugId) => set({ selectedRugId, selectedId: null, selectedWall: null }),
+    startRoom: ({ room, wallColor, flooringId, openings = [], rugs = [] }) => {
+      record();
+      set({
+        room: { ...room },
+        wallColors: makeWallColors(wallColor),
+        flooringId,
+        furniture: [],
+        openings: openings.map((o) => ({ ...o, id: newInstanceId() })),
+        rugs: rugs.map((r) => ({ ...r, id: newInstanceId() })),
+        selectedId: null,
+        selectedWall: null,
+        selectedRugId: null,
+        selectedOpeningId: null,
+        collidingIds: [],
+        backgroundImageUrl: null,
+        cameraResetToken: get().cameraResetToken + 1,
+      });
+    },
 
     beginHistory: () => record(),
 
@@ -299,6 +368,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
           flooringId: previous.flooringId,
           furniture: previous.furniture,
           backgroundImageUrl: previous.backgroundImageUrl,
+          openings: previous.openings,
+          rugs: previous.rugs,
           selectedId: null,
         };
       }),
@@ -315,6 +386,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
           flooringId: next.flooringId,
           furniture: next.furniture,
           backgroundImageUrl: next.backgroundImageUrl,
+          openings: next.openings,
+          rugs: next.rugs,
           selectedId: null,
         };
       }),
@@ -330,6 +403,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
         wallColors: { ...DEFAULT_WALL_COLORS },
         flooringId: DEFAULT_FLOORING_ID,
         furniture: [],
+        openings: [],
+        rugs: [],
         selectedId: null,
         backgroundImageUrl: null,
       });
@@ -342,6 +417,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
         wallColors: makeWallColors(template.wallColor),
         flooringId: template.flooringId,
         furniture: [],
+        openings: [],
+        rugs: [],
         selectedId: null,
         backgroundImageUrl: null,
         cameraResetToken: get().cameraResetToken + 1,
@@ -373,6 +450,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
           ...f,
           instanceId: f.instanceId ?? newInstanceId(),
         })),
+        openings: data.openings ?? [],
+        rugs: data.rugs ?? [],
         lightingId: data.lightingId ?? DEFAULT_LIGHTING_ID,
         brightness: data.brightness ?? 1,
         selectedId: null,
@@ -390,6 +469,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
         furniture: s.furniture,
         lightingId: s.lightingId,
         brightness: s.brightness,
+        openings: s.openings,
+        rugs: s.rugs,
       };
     },
   };
