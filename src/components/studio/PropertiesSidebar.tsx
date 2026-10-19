@@ -14,6 +14,7 @@ import {
 } from '@/lib/studioConstants';
 import { cn } from '@/lib/utils';
 import { WallId } from '@/types/studio';
+import { RugsPanel, WallOpeningsPanel } from './StructurePanels';
 
 const WALL_LABELS: Record<WallId, string> = {
   north: 'North Wall',
@@ -352,6 +353,8 @@ export function PropertiesSidebar() {
       <ScrollArea className="flex-1">
         <SelectedItemPanel />
         <WallPanel />
+        <WallOpeningsPanel />
+        <RugsPanel />
         <RoomPanel />
       </ScrollArea>
     </aside>
