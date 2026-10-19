@@ -18,6 +18,7 @@ export interface FlooringOption {
   color: string;
   /** Roughness for the PBR material. */
   roughness: number;
+  pattern?: 'plank' | 'herringbone' | 'tile' | 'checker' | 'solid';
 }
 
 export interface PaintPreset {
@@ -53,6 +54,34 @@ export interface PlacedFurniture {
   mountType?: MountType;
 }
 
+export type OpeningType = 'window' | 'door' | 'double-door' | 'wide-window';
+
+/** A window or door cut into a wall. Units in feet. */
+export interface WallOpening {
+  id: string;
+  type: OpeningType;
+  wall: WallId;
+  /** Center offset along the wall from its midpoint. */
+  offset: number;
+  width: number;
+  height: number;
+  /** Height of the opening's bottom edge above the floor. */
+  sill: number;
+}
+
+export type RugShape = 'rect' | 'round';
+
+export interface Rug {
+  id: string;
+  shape: RugShape;
+  color: string;
+  pattern: 'solid' | 'stripe' | 'border';
+  width: number;
+  depth: number;
+  x: number;
+  z: number;
+}
+
 /** Serializable scene representation stored in saved_scenes.scene_data. */
 export interface SceneData {
   version: 1;
@@ -64,4 +93,6 @@ export interface SceneData {
   lightingId?: string;
   /** Optional master brightness multiplier. */
   brightness?: number;
+  openings?: WallOpening[];
+  rugs?: Rug[];
 }
