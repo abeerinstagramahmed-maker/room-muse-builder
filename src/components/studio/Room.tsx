@@ -1,8 +1,10 @@
-import { useMemo } from 'react';
+import { useMemo, useRef } from 'react';
+import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useStudioStore } from '@/stores/studioStore';
 import { getFlooring } from '@/lib/studioConstants';
 import { FlooringOption, Rug, WallId, WallOpening } from '@/types/studio';
+import { isWallCutAway } from '@/lib/studioCamera';
 
 const TRIM = '#f7f5f0';
 
@@ -12,7 +14,8 @@ function floorTexture(f: FlooringOption, w: number, d: number): THREE.CanvasText
   const size = 512;
   const c = document.createElement('canvas');
   c.width = c.height = size;
-  const g = c.getContext('2d')!;
+  const g = c.getContext('2d');
+  if (!g) return null;
   const base = new THREE.Color(f.color);
   const shade = (k: number) => {
     const col = base.clone().multiplyScalar(k);
@@ -80,7 +83,8 @@ function floorTexture(f: FlooringOption, w: number, d: number): THREE.CanvasText
 function rugTexture(r: Rug): THREE.CanvasTexture {
   const c = document.createElement('canvas');
   c.width = c.height = 256;
-  const g = c.getContext('2d')!;
+  const g = c.getContext('2d');
+  if (!g) return new THREE.CanvasTexture(c);
   const base = new THREE.Color(r.color);
   const alt = `#${base.clone().lerp(new THREE.Color('#ffffff'), 0.45).getHexString()}`;
   g.fillStyle = r.color;
@@ -209,9 +213,14 @@ interface WallProps {
   height: number;
   position: [number, number, number];
   rotationY: number;
+  cutaway: boolean;
 }
 
-function Wall({ id, length, height, position, rotationY }: WallProps) {
+function Wall({ id, length, height, position, rotationY, cutaway }: WallProps) {
+  const group = useRef<THREE.Group>(null);
+  useFrame(({ camera }) => {
+    if (group.current) group.current.visible = !cutaway || !isWallCutAway(id, camera.position, useStudioStore.getState().room);
+  });
   const color = useStudioStore((s) => s.wallColors[id]);
   const selected = useStudioStore((s) => s.selectedWall === id);
   const selectWall = useStudioStore((s) => s.selectWall);
@@ -242,7 +251,7 @@ function Wall({ id, length, height, position, rotationY }: WallProps) {
   }, [length, height, openings]);
 
   return (
-    <group position={position} rotation={[0, rotationY, 0]}>
+    <group ref={group} name={`wall-${id}`} position={position} rotation={[0, rotationY, 0]}>
       <mesh
         geometry={geometry}
         receiveShadow
@@ -268,7 +277,7 @@ function Wall({ id, length, height, position, rotationY }: WallProps) {
 }
 
 /** Room shell: textured floor, ceiling, four walls with cut-out windows/doors, and rugs. */
-export function Room() {
+export function Room({ cutaway = false }: { cutaway?: boolean }) {
   const room = useStudioStore((s) => s.room);
   const flooringId = useStudioStore((s) => s.flooringId);
   const rugs = useStudioStore((s) => s.rugs);
@@ -294,15 +303,15 @@ export function Room() {
         <planeGeometry args={[w, d]} />
       </mesh>
 
-      <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, h, 0]}>
+      <mesh visible={!cutaway} rotation={[Math.PI / 2, 0, 0]} position={[0, h, 0]}>
         <planeGeometry args={[w, d]} />
         <meshStandardMaterial color="#f4f4f5" side={THREE.DoubleSide} />
       </mesh>
 
-      <Wall id="north" length={w} height={h} position={[0, 0, -halfD]} rotationY={0} />
-      <Wall id="south" length={w} height={h} position={[0, 0, halfD]} rotationY={Math.PI} />
-      <Wall id="west" length={d} height={h} position={[-halfW, 0, 0]} rotationY={Math.PI / 2} />
-      <Wall id="east" length={d} height={h} position={[halfW, 0, 0]} rotationY={-Math.PI / 2} />
+      <Wall cutaway={cutaway} id="north" length={w} height={h} position={[0, 0, -halfD]} rotationY={0} />
+      <Wall cutaway={cutaway} id="south" length={w} height={h} position={[0, 0, halfD]} rotationY={Math.PI} />
+      <Wall cutaway={cutaway} id="west" length={d} height={h} position={[-halfW, 0, 0]} rotationY={Math.PI / 2} />
+      <Wall cutaway={cutaway} id="east" length={d} height={h} position={[halfW, 0, 0]} rotationY={-Math.PI / 2} />
 
       {rugs.map((r) => (
         <RugMesh key={r.id} rug={r} />

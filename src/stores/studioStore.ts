@@ -15,6 +15,7 @@ import {
   DEFAULT_WALL_COLORS,
 } from '@/lib/studioConstants';
 import { RoomTemplate, makeWallColors } from '@/lib/roomTemplates';
+import { CameraView } from '@/lib/studioCamera';
 
 export type TransformMode = 'translate' | 'rotate';
 
@@ -98,6 +99,8 @@ interface StudioState {
   backgroundImageUrl: string | null;
   /** Increment to request a camera reset from the editor. */
   cameraResetToken: number;
+  cameraView: CameraView;
+  setCameraView: (view: CameraView) => void;
   /** Resolver supplied by the canvas for screenshot capture. */
   captureScreenshot: (() => void) | null;
 
@@ -203,6 +206,8 @@ export const useStudioStore = create<StudioState>((set, get) => {
     brightness: 1,
     backgroundImageUrl: null,
     cameraResetToken: 0,
+    cameraView: 'dollhouse',
+    setCameraView: (cameraView) => set((s) => ({ cameraView, cameraResetToken: s.cameraResetToken + 1 })),
     captureScreenshot: null,
     past: [],
     future: [],
@@ -393,7 +398,7 @@ export const useStudioStore = create<StudioState>((set, get) => {
       }),
 
     requestCameraReset: () =>
-      set((s) => ({ cameraResetToken: s.cameraResetToken + 1 })),
+      set((s) => ({ cameraView: 'dollhouse', cameraResetToken: s.cameraResetToken + 1 })),
     registerCapture: (fn) => set({ captureScreenshot: fn }),
 
     newRoom: () => {
