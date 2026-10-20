@@ -61,7 +61,7 @@ export function CatalogSidebar() {
 
 
   return (
-    <aside className="flex h-full w-72 flex-col border-r bg-card">
+    <aside className="flex h-full w-full min-h-0 flex-col bg-card">
       <div className="border-b p-4">
         <h2 className="flex items-center gap-2 text-sm font-semibold">
           <Package className="h-4 w-4" /> Product Catalog
