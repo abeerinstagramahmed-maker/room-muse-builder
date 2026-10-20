@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Package, SlidersHorizontal } from 'lucide-react';
+import { Package, SlidersHorizontal, LayoutGrid } from 'lucide-react';
+import { StartHub } from '@/components/studio/StartHub';
+import { useStudioStore } from '@/stores/studioStore';
 import { SEOHead } from '@/components/SEOHead';
 import { StudioToolbar } from '@/components/studio/StudioToolbar';
 import { CatalogSidebar } from '@/components/studio/CatalogSidebar';
@@ -20,6 +22,7 @@ const Studio = () => {
   const isMobile = useIsMobile();
   const [catalogOpen, setCatalogOpen] = useState(false);
   const [propsOpen, setPropsOpen] = useState(false);
+  const [hubOpen, setHubOpen] = useState(() => useStudioStore.getState().furniture.length === 0);
 
   return (
     <>
@@ -27,8 +30,12 @@ const Studio = () => {
         title="3D Room Studio | Design Your Space"
         description="Plan your room in 3D: adjust dimensions, paint walls, choose flooring, and place furniture from the catalog. Save and export your designs."
       />
-      <div className="flex h-screen flex-col overflow-hidden bg-background">
+      <div className="relative flex h-screen flex-col overflow-hidden bg-background">
         <StudioToolbar />
+        <StartHub open={hubOpen} onOpenChange={setHubOpen} />
+        <Button size="sm" variant="secondary" className="absolute right-4 top-16 z-20 gap-1.5 shadow-md md:right-80" onClick={() => setHubOpen(true)}>
+          <LayoutGrid className="h-4 w-4" /> Change room
+        </Button>
 
         {isMobile ? (
           <main className="relative min-h-0 flex-1">
