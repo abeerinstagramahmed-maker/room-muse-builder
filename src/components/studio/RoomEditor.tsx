@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
-import { OrbitControls, GizmoHelper, GizmoViewport, Grid } from '@react-three/drei';
+import { OrbitControls, GizmoHelper, GizmoViewport, Grid, OrthographicCamera, PerspectiveCamera, Environment, Lightformer } from '@react-three/drei';
+import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import * as THREE from 'three';
 import { Room } from './Room';
 import { FurnitureItem } from './FurnitureItem';
@@ -8,23 +9,30 @@ import { MeasurementLayer } from './MeasurementLayer';
 import { DimensionLabels } from './DimensionLabels';
 import { useStudioStore } from '@/stores/studioStore';
 import { getLighting } from '@/lib/studioConstants';
+import { cameraPose } from '@/lib/studioCamera';
 
 /** Resets the camera when cameraResetToken changes. */
-function CameraRig() {
-  const { camera, controls } = useThree() as any;
+function CameraRig({ controlsRef }: { controlsRef: React.RefObject<OrbitControlsImpl> }) {
+  const { camera, size } = useThree();
   const token = useStudioStore((s) => s.cameraResetToken);
+  const view = useStudioStore((s) => s.cameraView);
   const room = useStudioStore((s) => s.room);
 
   useEffect(() => {
-    const dist = Math.max(room.width, room.depth) * 1.1 + 8;
-    camera.position.set(dist, dist * 0.8, dist);
-    camera.lookAt(0, room.height / 2, 0);
+    const pose = cameraPose(view, room, size.width / size.height);
+    camera.position.set(...pose.position);
+    camera.up.set(0, 1, 0);
+    camera.lookAt(...pose.target);
+    if (camera instanceof THREE.OrthographicCamera) {
+      camera.zoom = Math.min(size.width / room.width, size.height / room.depth) * 0.7;
+      camera.updateProjectionMatrix();
+    }
+    const controls = controlsRef.current;
     if (controls) {
-      controls.target.set(0, room.height / 2, 0);
+      controls.target.set(...pose.target);
       controls.update();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [camera, token, view, room.width, room.depth, room.height, size.width, size.height, controlsRef]);
 
   return null;
 }
@@ -74,6 +82,8 @@ export function RoomEditor() {
   const brightness = useStudioStore((s) => s.brightness);
   const lighting = getLighting(lightingId);
   const initialDist = useRef(Math.max(room.width, room.depth) * 1.1 + 8);
+  const view = useStudioStore((s) => s.cameraView);
+  const controlsRef = useRef<OrbitControlsImpl>(null);
 
   return (
     <Canvas
@@ -82,7 +92,11 @@ export function RoomEditor() {
       gl={{ preserveDrawingBuffer: true, antialias: true }}
       camera={{ position: [initialDist.current, initialDist.current * 0.8, initialDist.current], fov: 45 }}
     >
+      {view === 'top' ? <OrthographicCamera makeDefault position={[0, 40, 0.001]} near={0.1} far={500} /> : <PerspectiveCamera makeDefault fov={45} near={0.1} far={500} />}
       <color attach="background" args={[lighting.background]} />
+      <Environment resolution={128}>
+        <Lightformer intensity={0.5 * brightness} position={[0, 15, 0]} rotation-x={-Math.PI / 2} scale={[25, 25, 1]} />
+      </Environment>
       <hemisphereLight intensity={0.6 * brightness} groundColor={lighting.groundColor} />
       <ambientLight intensity={lighting.ambient * brightness} />
       <directionalLight
@@ -95,7 +109,7 @@ export function RoomEditor() {
       />
 
       <BackgroundCatcher />
-      <Room />
+      <Room cutaway />
 
       {furniture.map((item) => (
         <FurnitureItem key={item.instanceId} item={item} />
@@ -120,11 +134,11 @@ export function RoomEditor() {
         />
       )}
 
-      <OrbitControls makeDefault enableDamping dampingFactor={0.08} maxPolarAngle={Math.PI / 2.05} enableRotate={!measureMode} />
-      <CameraRig />
+      <OrbitControls ref={controlsRef} makeDefault enableDamping dampingFactor={0.08} maxPolarAngle={Math.PI / 2} enableRotate={!measureMode && view === 'dollhouse'} />
+      <CameraRig controlsRef={controlsRef} />
       <ScreenshotBridge />
 
-      <GizmoHelper alignment="bottom-right" margin={[70, 70]}>
+      <GizmoHelper alignment="top-right" margin={[70, 120]}>
         <GizmoViewport axisColors={['#ef4444', '#22c55e', '#3b82f6']} labelColor="white" />
       </GizmoHelper>
     </Canvas>

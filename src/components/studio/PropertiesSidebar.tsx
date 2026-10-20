@@ -15,6 +15,9 @@ import {
 import { cn } from '@/lib/utils';
 import { WallId } from '@/types/studio';
 import { RugsPanel, WallOpeningsPanel } from './StructurePanels';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
+export type PropertiesSection = 'room' | 'materials';
 
 const WALL_LABELS: Record<WallId, string> = {
   north: 'North Wall',
@@ -231,7 +234,7 @@ function SnapControl() {
   );
 }
 
-function RoomPanel() {
+function RoomPanel({ section }: { section: PropertiesSection }) {
   const room = useStudioStore((s) => s.room);
   const setRoom = useStudioStore((s) => s.setRoom);
   const flooringId = useStudioStore((s) => s.flooringId);
@@ -263,14 +266,14 @@ function RoomPanel() {
 
   return (
     <div className="space-y-4 p-4">
-      <h3 className="text-sm font-semibold">Room Properties</h3>
-      <div className="space-y-3">
+      <h3 className="text-sm font-semibold">{section === 'room' ? 'Room dimensions' : 'Floor & lighting'}</h3>
+      {section === 'room' && <div className="space-y-3">
         {dim('width', 'Width')}
         {dim('depth', 'Depth')}
         {dim('height', 'Height')}
-      </div>
+      </div>}
 
-      <div>
+      {section === 'materials' && <div>
         <Label className="text-xs">Flooring</Label>
         <div className="mt-1.5 grid grid-cols-2 gap-1.5">
           {FLOORING_OPTIONS.map((f) => (
@@ -290,7 +293,7 @@ function RoomPanel() {
             </button>
           ))}
         </div>
-      </div>
+      </div>}
 
       <div className="flex items-center justify-between rounded-md border p-2.5">
         <Label className="flex items-center gap-2 text-xs">
@@ -347,15 +350,26 @@ function RoomPanel() {
   );
 }
 
-export function PropertiesSidebar() {
+export function PropertiesSidebar({ section = 'room', onSectionChange }: { section?: PropertiesSection; onSectionChange?: (section: PropertiesSection) => void }) {
+  const selectedWall = useStudioStore((s) => s.selectedWall);
+  const selectWall = useStudioStore((s) => s.selectWall);
   return (
-    <aside className="flex h-full w-72 flex-col border-l bg-card">
+    <aside className="flex h-full w-full min-h-0 flex-col bg-card">
+      <Tabs value={section} onValueChange={(value) => onSectionChange?.(value as PropertiesSection)} className="px-4 pt-3">
+        <TabsList className="w-full"><TabsTrigger value="room" className="flex-1">Edit room</TabsTrigger><TabsTrigger value="materials" className="flex-1">Materials</TabsTrigger></TabsList>
+      </Tabs>
       <ScrollArea className="flex-1">
         <SelectedItemPanel />
+        <RoomPanel section={section} />
+        <div className="px-4 pt-3">
+          <Label className="text-xs">Walls</Label>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            {(Object.keys(WALL_LABELS) as WallId[]).map((wall) => <Button key={wall} size="sm" variant={selectedWall === wall ? 'default' : 'outline'} onClick={() => selectWall(wall)}>{WALL_LABELS[wall]}</Button>)}
+          </div>
+        </div>
         <WallPanel />
         <WallOpeningsPanel />
         <RugsPanel />
-        <RoomPanel />
       </ScrollArea>
     </aside>
   );
