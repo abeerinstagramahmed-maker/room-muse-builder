@@ -17,7 +17,7 @@ const door = (wall: WallOpening['wall'], offset = 0, double = false): O => {
   return { type: double ? 'double-door' : 'door', wall, offset, width: p.width, height: p.height, sill: 0 };
 };
 
-const TEMPLATE_OPENINGS: Record<string, O[]> = {
+export const TEMPLATE_OPENINGS: Record<string, O[]> = {
   'living-room': [win('north', 0, true), door('east', 6), win('west', -3)],
   bedroom: [win('north', 0), door('south', 4)],
   'home-office': [win('north', 0), door('east', 3.5)],
@@ -52,7 +52,7 @@ export function StartHub({ open, onOpenChange }: { open: boolean; onOpenChange: 
 
   return (
     <Dialog open={open} onOpenChange={(v) => (v ? onOpenChange(v) : close())}>
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="max-h-[90dvh] max-w-4xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl">
             {view === 'start' ? 'Ways to start' : view === 'choose' ? 'Choose a room' : 'Scan your room'}
@@ -90,18 +90,24 @@ export function StartHub({ open, onOpenChange }: { open: boolean; onOpenChange: 
         {view === 'choose' && (
           <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
             {ROOM_TEMPLATES.map((t) => (
-              <button
+              <Button
+                variant="ghost"
                 key={t.id}
                 onClick={() => {
                   startRoom({ room: t.room, wallColor: t.wallColor, flooringId: t.flooringId, openings: TEMPLATE_OPENINGS[t.id] ?? [win('north')] });
                   close();
                 }}
-                className="rounded-xl border p-3 text-left transition-colors hover:bg-muted"
+                className="group relative flex h-auto flex-col items-stretch gap-0 overflow-hidden rounded-lg bg-card p-0 text-left whitespace-normal shadow-card hover:bg-accent"
               >
-                <div className="mb-2 h-16 rounded-md border" style={{ background: `linear-gradient(to bottom, ${t.wallColor} 65%, hsl(var(--muted)) 65%)` }} />
-                <p className="text-sm font-semibold">{t.label}</p>
-                <p className="text-xs text-muted-foreground">{t.room.width}′ × {t.room.depth}′ · {t.description}</p>
-              </button>
+                <div className="relative aspect-[4/3] w-full overflow-hidden">
+                  <img src={`/room-templates/${t.id}.jpg`} alt={`${t.label} empty 3D room with windows and doors`} className="h-full w-full object-cover" />
+                  <span className="absolute right-2 top-2 rounded-full bg-background/90 px-2.5 py-1 text-xs font-medium shadow-card">{t.room.width * t.room.depth} sq.ft</span>
+                </div>
+                <div className="space-y-1 p-3">
+                  <p className="text-sm font-semibold">{t.label}</p>
+                  <p className="text-xs text-muted-foreground">{t.room.width}′ × {t.room.depth}′ × {t.room.height}′</p>
+                </div>
+              </Button>
             ))}
           </div>
         )}

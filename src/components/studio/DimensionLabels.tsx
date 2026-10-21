@@ -10,7 +10,7 @@ function Label({
   text: string;
 }) {
   return (
-    <Html position={position} center distanceFactor={14}>
+    <Html position={position} center zIndexRange={[10, 0]} style={{ pointerEvents: 'none' }}>
       <div className="pointer-events-none whitespace-nowrap rounded bg-foreground/80 px-1.5 py-0.5 text-[10px] font-medium text-background shadow">
         {text}
       </div>
