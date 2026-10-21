@@ -7,6 +7,8 @@ export interface RoomDimensions {
   width: number;
   depth: number;
   height: number;
+  /** Optional corner cut-out (back-right) that makes the room L-shaped. */
+  notch?: { width: number; depth: number };
 }
 
 export type WallColors = Record<WallId, string>;
