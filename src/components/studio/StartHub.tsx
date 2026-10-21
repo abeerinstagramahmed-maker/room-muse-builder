@@ -17,7 +17,7 @@ const door = (wall: WallOpening['wall'], offset = 0, double = false): O => {
   return { type: double ? 'double-door' : 'door', wall, offset, width: p.width, height: p.height, sill: 0 };
 };
 
-const TEMPLATE_OPENINGS: Record<string, O[]> = {
+export const TEMPLATE_OPENINGS: Record<string, O[]> = {
   'living-room': [win('north', 0, true), door('east', 6), win('west', -3)],
   bedroom: [win('north', 0), door('south', 4)],
   'home-office': [win('north', 0), door('east', 3.5)],
