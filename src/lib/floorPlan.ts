@@ -1,3 +1,4 @@
+import { notchRect } from './roomLayout';
 import { PlacedFurniture, RoomDimensions } from '@/types/studio';
 
 /** Pixels per foot used when rasterizing the 2D floor plan. */
@@ -44,6 +45,9 @@ export function buildFloorPlanSVG(
   // Convert world (x,z) with origin at center to SVG top-left coordinates.
   const toX = (x: number) => PADDING + (x + room.width / 2) * PPF;
   const toY = (z: number) => PADDING + (z + room.depth / 2) * PPF;
+
+  const notch = notchRect(room);
+  const notchSvg = notch ? `<rect x="${toX(notch.x0).toFixed(1)}" y="${toY(notch.z0).toFixed(1)}" width="${((notch.x1 - notch.x0) * PPF).toFixed(1)}" height="${((notch.z1 - notch.z0) * PPF).toFixed(1)}" fill="#d4d0c8" stroke="#3a3a3e" stroke-width="3" />` : '';
 
   const items = floorItems
     .map((f, i) => {
@@ -93,6 +97,7 @@ export function buildFloorPlanSVG(
   <text x="${PADDING - 20}" y="${PADDING + d / 2}" text-anchor="middle" font-size="13" font-family="sans-serif" fill="#666" transform="rotate(-90 ${
     PADDING - 20
   } ${PADDING + d / 2})">Depth: ${formatFeet(room.depth)}</text>
+  ${notchSvg}
   ${items}
   ${legend}
 </svg>`;

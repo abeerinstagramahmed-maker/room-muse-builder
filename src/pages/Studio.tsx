@@ -12,6 +12,7 @@ import { CameraDock } from '@/components/studio/CameraDock';
 import { Button } from '@/components/ui/button';
 import { useStudioShortcuts } from '@/hooks/useStudioShortcuts';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { floorArea } from '@/lib/roomLayout';
 
 /**
  * AI Interior Design Studio — MVP.
@@ -58,7 +59,7 @@ const Studio = () => {
           <RoomEditor />
           <div className="absolute inset-x-3 top-3 z-20 flex flex-wrap items-center justify-between gap-2 sm:inset-x-5 sm:top-5">
             <Button variant="glass" className="h-11 rounded-full shadow-card" aria-expanded={catalogOpen} onClick={toggleCatalog}><Package /> Catalog</Button>
-            <div className="hidden rounded-full bg-background/80 px-4 py-2 text-xs text-muted-foreground backdrop-blur sm:block">{room.width}′ × {room.depth}′ · {room.width * room.depth} sq.ft</div>
+            <div className="hidden rounded-full bg-background/80 px-4 py-2 text-xs text-muted-foreground backdrop-blur sm:block">{room.width}′ × {room.depth}′ · {floorArea(room)} sq.ft{room.notch ? ' · L-shaped' : ''}</div>
             <div className="flex gap-2">
               <Button size="icon" variant="glass" className="h-11 w-11 rounded-full" aria-label="Properties" aria-expanded={propsOpen} onClick={() => propsOpen ? setPropsOpen(false) : openProperties('room')}><SlidersHorizontal /></Button>
               <Button variant="glass" className="h-11 rounded-full shadow-card" onClick={() => setHubOpen(true)}><LayoutGrid /><span className="hidden sm:inline">Change room</span></Button>

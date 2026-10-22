@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
-import { OrbitControls, GizmoHelper, GizmoViewport, Grid, OrthographicCamera, PerspectiveCamera, Environment, Lightformer } from '@react-three/drei';
+import { OrbitControls, ContactShadows, GizmoHelper, GizmoViewport, Grid, OrthographicCamera, PerspectiveCamera, Environment, Lightformer } from '@react-three/drei';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import * as THREE from 'three';
 import { Room } from './Room';
+import { DropBridge } from './DropBridge';
 import { FurnitureItem } from './FurnitureItem';
 import { MeasurementLayer } from './MeasurementLayer';
 import { DimensionLabels } from './DimensionLabels';
@@ -95,6 +96,7 @@ export function RoomEditor() {
       {view === 'top' ? <OrthographicCamera makeDefault position={[0, 40, 0.001]} near={0.1} far={500} /> : <PerspectiveCamera makeDefault fov={45} near={0.1} far={500} />}
       <color attach="background" args={[lighting.background]} />
       <Environment resolution={128}>
+        <Lightformer intensity={0.6 * brightness} color="#ffe6c7" position={[-10, 5, 0]} rotation-y={Math.PI / 2} scale={[20, 6, 1]} />
         <Lightformer intensity={0.5 * brightness} position={[0, 15, 0]} rotation-x={-Math.PI / 2} scale={[25, 25, 1]} />
       </Environment>
       <hemisphereLight intensity={0.6 * brightness} groundColor={lighting.groundColor} />
@@ -106,6 +108,11 @@ export function RoomEditor() {
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
+        shadow-bias={-0.0005}
+        shadow-camera-left={-20}
+        shadow-camera-right={20}
+        shadow-camera-top={20}
+        shadow-camera-bottom={-20}
       />
 
       <BackgroundCatcher />
@@ -115,6 +122,8 @@ export function RoomEditor() {
         <FurnitureItem key={item.instanceId} item={item} />
       ))}
 
+      <ContactShadows position={[0, 0.015, 0]} scale={Math.max(room.width, room.depth) + 4} opacity={0.45} blur={2.4} far={6} resolution={512} />
+      <DropBridge />
       <MeasurementLayer />
       <DimensionLabels />
 

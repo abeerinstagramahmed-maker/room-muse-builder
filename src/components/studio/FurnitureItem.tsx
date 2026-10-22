@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import { useGLTF, TransformControls } from '@react-three/drei';
 import { PlacedFurniture } from '@/types/studio';
 import { useStudioStore } from '@/stores/studioStore';
+import { ProceduralFurniture } from './ProceduralFurniture';
+import { clampToFloor } from '@/lib/roomLayout';
 
 interface Props {
   item: PlacedFurniture;
@@ -28,14 +30,7 @@ function ModelMesh({ item }: Props) {
 }
 
 function PlaceholderMesh({ item }: Props) {
-  const [w, h, d] = item.size;
-  const isWall = item.mountType === 'wall';
-  return (
-    <mesh position={[0, isWall ? 0 : h / 2, 0]} castShadow>
-      <boxGeometry args={[w, h, d]} />
-      <meshStandardMaterial color={isWall ? '#6b7280' : '#b08968'} roughness={0.7} />
-    </mesh>
-  );
+  return <ProceduralFurniture item={item} />;
 }
 
 export function FurnitureItem({ item }: Props) {
@@ -68,6 +63,12 @@ export function FurnitureItem({ item }: Props) {
     // Floor items stay on the ground; wall items keep their height.
     const y = isWall ? g.position.y : Math.max(0, g.position.y);
     g.position.y = y;
+    if (!isWall) {
+      const room = useStudioStore.getState().room;
+      const [x, z] = clampToFloor(g.position.x, g.position.z, room, [item.size[0] * g.scale.x / 2, item.size[2] * g.scale.x / 2]);
+      g.position.x = x;
+      g.position.z = z;
+    }
     updateFurniture(item.instanceId, {
       position: [g.position.x, y, g.position.z],
       rotationY: g.rotation.y,
