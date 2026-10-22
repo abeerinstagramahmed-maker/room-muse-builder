@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { useStudioStore } from '@/stores/studioStore';
 import { ROOM_TEMPLATES } from '@/lib/roomTemplates';
 import { OPENING_PRESETS } from '@/lib/studioConstants';
-import { WallOpening } from '@/types/studio';
+import { RoomDimensions, WallOpening } from '@/types/studio';
+import { floorArea } from '@/lib/roomLayout';
 
 type O = Omit<WallOpening, 'id'>;
 const win = (wall: WallOpening['wall'], offset = 0, wide = false): O => {
@@ -25,6 +26,11 @@ export const TEMPLATE_OPENINGS: Record<string, O[]> = {
   'studio-apartment': [win('north', -5, true), win('north', 5, true), door('south', 7)],
   'kids-room': [win('north', 0), door('east', 3.5)],
 };
+
+const L_ROOMS: { label: string; room: RoomDimensions }[] = [
+  { label: 'L-shaped Living', room: { width: 18, depth: 20, height: 9, notch: { width: 7, depth: 8 } } },
+  { label: 'L-shaped Studio', room: { width: 16, depth: 16, height: 9, notch: { width: 6, depth: 6 } } },
+];
 
 export function StartHub({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
   const startRoom = useStudioStore((s) => s.startRoom);
@@ -89,6 +95,25 @@ export function StartHub({ open, onOpenChange }: { open: boolean; onOpenChange: 
 
         {view === 'choose' && (
           <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+            {L_ROOMS.map((l) => (
+              <Button
+                variant="ghost"
+                key={l.label}
+                onClick={() => { startRoom({ room: l.room, wallColor: '#e8e4dd', flooringId: 'oak', openings: [win('north', -4), win('west', 2), door('south', 3)] }); close(); }}
+                className="relative flex h-auto flex-col items-stretch gap-0 overflow-hidden rounded-lg bg-card p-0 text-left whitespace-normal shadow-card hover:bg-accent"
+              >
+                <div className="relative flex aspect-[4/3] w-full items-center justify-center bg-muted">
+                  <svg viewBox="0 0 100 100" className="h-3/4 w-3/4" aria-hidden>
+                    <path d="M10 10 H55 V45 H90 V90 H10 Z" className="fill-secondary stroke-foreground" strokeWidth="3" />
+                  </svg>
+                  <span className="absolute right-2 top-2 rounded-full bg-background/90 px-2.5 py-1 text-xs font-medium shadow-card">{floorArea(l.room)} sq.ft</span>
+                </div>
+                <div className="space-y-1 p-3">
+                  <p className="text-sm font-semibold">{l.label}</p>
+                  <p className="text-xs text-muted-foreground">{l.room.width}′ × {l.room.depth}′ · L-shaped</p>
+                </div>
+              </Button>
+            ))}
             {ROOM_TEMPLATES.map((t) => (
               <Button
                 variant="ghost"
@@ -101,7 +126,7 @@ export function StartHub({ open, onOpenChange }: { open: boolean; onOpenChange: 
               >
                 <div className="relative aspect-[4/3] w-full overflow-hidden">
                   <img src={`/room-templates/${t.id}.jpg`} alt={`${t.label} empty 3D room with windows and doors`} className="h-full w-full object-cover" />
-                  <span className="absolute right-2 top-2 rounded-full bg-background/90 px-2.5 py-1 text-xs font-medium shadow-card">{t.room.width * t.room.depth} sq.ft</span>
+                  <span className="absolute right-2 top-2 rounded-full bg-background/90 px-2.5 py-1 text-xs font-medium shadow-card">{floorArea(t.room)} sq.ft</span>
                 </div>
                 <div className="space-y-1 p-3">
                   <p className="text-sm font-semibold">{t.label}</p>

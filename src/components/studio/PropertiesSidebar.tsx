@@ -271,6 +271,25 @@ function RoomPanel({ section }: { section: PropertiesSection }) {
         {dim('width', 'Width')}
         {dim('depth', 'Depth')}
         {dim('height', 'Height')}
+        <div className="flex items-center justify-between pt-1">
+          <Label className="text-xs">L-shaped room</Label>
+          <Switch
+            checked={!!room.notch}
+            onCheckedChange={(on) => setRoom({ notch: on ? { width: Math.round(room.width * 0.4), depth: Math.round(room.depth * 0.4) } : undefined })}
+          />
+        </div>
+        {room.notch && (['width', 'depth'] as const).map((k) => (
+          <div key={k}>
+            <Label className="text-xs">Corner cut-out {k}: {room.notch![k]} ft</Label>
+            <Slider
+              min={2}
+              max={Math.max(2, (k === 'width' ? room.width : room.depth) - 3)}
+              step={0.5}
+              value={[room.notch![k]]}
+              onValueChange={([v]) => setRoom({ notch: { ...room.notch!, [k]: v } })}
+            />
+          </div>
+        ))}
       </div>}
 
       {section === 'materials' && <div>
