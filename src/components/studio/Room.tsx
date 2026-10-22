@@ -5,6 +5,7 @@ import { useStudioStore } from '@/stores/studioStore';
 import { getFlooring } from '@/lib/studioConstants';
 import { FlooringOption, Rug, WallId, WallOpening } from '@/types/studio';
 import { isWallCutAway } from '@/lib/studioCamera';
+import { notchRect } from '@/lib/roomLayout';
 
 const TRIM = '#f7f5f0';
 
@@ -276,6 +277,36 @@ function Wall({ id, length, height, position, rotationY, cutaway }: WallProps) {
   );
 }
 
+/** Solid corner volume that turns the rectangle into an L-shaped room. */
+function NotchBlock() {
+  const room = useStudioStore((s) => s.room);
+  const north = useStudioStore((s) => s.wallColors.north);
+  const east = useStudioStore((s) => s.wallColors.east);
+  const n = notchRect(room);
+  if (!n) return null;
+  const w = n.x1 - n.x0;
+  const d = n.z1 - n.z0;
+  const h = room.height;
+  return (
+    <group position={[n.x0 + w / 2, 0, n.z0 + d / 2]}>
+      <mesh position={[0, h / 2, 0]} castShadow receiveShadow>
+        <boxGeometry args={[w + 0.02, h, d + 0.02]} />
+        {[east, east, '#d9d4cc', '#d9d4cc', north, north].map((c, i) => (
+          <meshStandardMaterial key={i} attach={`material-${i}`} color={c} roughness={0.92} />
+        ))}
+      </mesh>
+      <mesh position={[-w / 2 - 0.03, 0.25, 0]}>
+        <boxGeometry args={[0.06, 0.5, d]} />
+        <meshStandardMaterial color={TRIM} />
+      </mesh>
+      <mesh position={[0, 0.25, d / 2 + 0.03]}>
+        <boxGeometry args={[w, 0.5, 0.06]} />
+        <meshStandardMaterial color={TRIM} />
+      </mesh>
+    </group>
+  );
+}
+
 /** Room shell: textured floor, ceiling, four walls with cut-out windows/doors, and rugs. */
 export function Room({ cutaway = false }: { cutaway?: boolean }) {
   const room = useStudioStore((s) => s.room);
@@ -312,6 +343,8 @@ export function Room({ cutaway = false }: { cutaway?: boolean }) {
       <Wall cutaway={cutaway} id="south" length={w} height={h} position={[0, 0, halfD]} rotationY={Math.PI} />
       <Wall cutaway={cutaway} id="west" length={d} height={h} position={[-halfW, 0, 0]} rotationY={Math.PI / 2} />
       <Wall cutaway={cutaway} id="east" length={d} height={h} position={[halfW, 0, 0]} rotationY={-Math.PI / 2} />
+
+      <NotchBlock />
 
       {rugs.map((r) => (
         <RugMesh key={r.id} rug={r} />
