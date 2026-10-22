@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Plus, Pencil, Trash2, Search, AlertTriangle } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, AlertTriangle, Box } from 'lucide-react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { ProductFormDialog } from '@/components/admin/ProductFormDialog';
 import { useAdminProducts, ProductFormData } from '@/hooks/useAdminProducts';
@@ -124,6 +124,7 @@ export default function AdminProducts() {
                 <TableHead>Vendor</TableHead>
                 <TableHead>Price</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>3D</TableHead>
                 <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -164,6 +165,13 @@ export default function AdminProducts() {
                       <Badge variant={product.inStock ? 'default' : 'secondary'}>
                         {product.inStock ? 'In Stock' : 'Out of Stock'}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {product.modelUrl ? (
+                        <Badge variant="default" className="gap-1"><Box className="h-3 w-3" />3D Ready</Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-muted-foreground">Built-in shape</Badge>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">

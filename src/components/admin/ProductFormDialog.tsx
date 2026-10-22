@@ -31,6 +31,7 @@ import { Product } from '@/lib/types';
 import { ProductFormData } from '@/hooks/useAdminProducts';
 import { Loader2 } from 'lucide-react';
 import { ProductImageUpload } from './ProductImageUpload';
+import { ProductModelUpload } from './ProductModelUpload';
 
 const formSchema = z.object({
   name: z.string().min(1, 'Name is required'),
@@ -76,6 +77,7 @@ export function ProductFormDialog({
 }: ProductFormDialogProps) {
   const isEdit = !!product;
   const [images, setImages] = useState<string[]>([]);
+  const [modelUrl, setModelUrl] = useState<string | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -112,6 +114,7 @@ export function ProductFormDialog({
         commission_percent: 15,
       });
       setImages(product.images || []);
+      setModelUrl(product.modelUrl ?? null);
     } else {
       form.reset({
         name: '',
@@ -128,6 +131,7 @@ export function ProductFormDialog({
         commission_percent: 15,
       });
       setImages([]);
+      setModelUrl(null);
     }
   }, [product, form]);
 
@@ -151,6 +155,7 @@ export function ProductFormDialog({
       tags: values.tags ? values.tags.split(',').map(s => s.trim()).filter(Boolean) : undefined,
       in_stock: values.in_stock,
       commission_percent: values.commission_percent,
+      model_url: modelUrl,
     };
 
     const success = await onSubmit(data);
@@ -170,6 +175,11 @@ export function ProductFormDialog({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <FormLabel>3D Model</FormLabel>
+              <ProductModelUpload modelUrl={modelUrl} onChange={setModelUrl} disabled={saving} />
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
