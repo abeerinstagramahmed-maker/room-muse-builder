@@ -10,6 +10,7 @@ import { useStudioStore } from '@/stores/studioStore';
 import { useCart } from '@/contexts/CartContext';
 import { studioProductToProduct } from '@/lib/studioCart';
 import { cn } from '@/lib/utils';
+import { setDraggedProduct } from '@/lib/catalogDrag';
 
 export function CatalogSidebar() {
   const { data: products = [], isLoading } = useStudioProducts();
@@ -121,7 +122,10 @@ export function CatalogSidebar() {
             >
               <button
                 onClick={() => handleAdd(p)}
-                title="Click to place in room"
+                draggable
+                onDragStart={(e) => { setDraggedProduct(p); e.dataTransfer.effectAllowed = 'copy'; e.dataTransfer.setData('text/plain', p.id); }}
+                onDragEnd={() => setDraggedProduct(null)}
+                title="Click or drag into the room"
                 className="relative aspect-square w-full overflow-hidden bg-muted"
               >
                 {p.thumbnailUrl ? (
