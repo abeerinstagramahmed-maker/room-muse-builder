@@ -97,6 +97,7 @@ export function buildFloorPlanSVG(
   <text x="${PADDING - 20}" y="${PADDING + d / 2}" text-anchor="middle" font-size="13" font-family="sans-serif" fill="#666" transform="rotate(-90 ${
     PADDING - 20
   } ${PADDING + d / 2})">Depth: ${formatFeet(room.depth)}</text>
+  ${notchSvg}
   ${items}
   ${legend}
 </svg>`;
