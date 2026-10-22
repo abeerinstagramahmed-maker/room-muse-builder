@@ -18,6 +18,7 @@ export interface ProductFormData {
   vendor: string;
   tags?: string[];
   commission_percent: number;
+  model_url?: string | null;
 }
 
 export function useAdminProducts() {
@@ -45,6 +46,7 @@ export function useAdminProducts() {
           vendor: data.vendor,
           tags: data.tags || [],
           commission_percent: data.commission_percent,
+          model_url: data.model_url ?? null,
         });
 
       if (error) throw error;
@@ -89,6 +91,7 @@ export function useAdminProducts() {
           vendor: data.vendor,
           tags: data.tags || [],
           commission_percent: data.commission_percent,
+          model_url: data.model_url ?? null,
         })
         .eq('id', id);
 

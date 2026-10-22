@@ -21,6 +21,7 @@ interface DatabaseProduct {
   review_count: number | null;
   vendor: string;
   tags: string[] | null;
+  model_url?: string | null;
 }
 
 function parseDimensions(dimensions: Json | null): { width: number; height: number; depth: number } | undefined {
@@ -54,6 +55,7 @@ function mapDatabaseProductToProduct(dbProduct: DatabaseProduct): Product {
     reviewCount: dbProduct.review_count || 0,
     vendor: dbProduct.vendor,
     tags: dbProduct.tags || undefined,
+    modelUrl: dbProduct.model_url ?? null,
   };
 }
 

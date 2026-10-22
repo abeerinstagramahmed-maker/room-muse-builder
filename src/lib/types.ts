@@ -20,6 +20,7 @@ export interface Product {
   reviewCount: number;
   vendor: string;
   tags?: string[];
+  modelUrl?: string | null;
 }
 
 export interface CartItem {
