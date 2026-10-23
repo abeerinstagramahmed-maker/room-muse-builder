@@ -143,7 +143,7 @@ export default function AdminProducts() {
                 ))
               ) : filteredProducts.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                  <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                     {search ? 'No products found matching your search' : 'No products yet'}
                   </TableCell>
                 </TableRow>
