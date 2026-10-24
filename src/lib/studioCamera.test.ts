@@ -27,4 +27,9 @@ describe('Studio camera views', () => {
       expect(isWallCutAway(wall, { x: 0, z: 0 }, room)).toBe(false);
     }
   });
+  it('puts the eye-level camera inside the room at standing height', () => {
+    const pose = cameraPose('eye', room);
+    expect(pose.position[1]).toBe(5.5);
+    expect(Math.abs(pose.position[2])).toBeLessThan(5);
+  });
 });

@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Canvas, useThree } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { OrbitControls, ContactShadows, GizmoHelper, GizmoViewport, Grid, OrthographicCamera, PerspectiveCamera, Environment, Lightformer } from '@react-three/drei';
 import { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import * as THREE from 'three';
@@ -11,6 +11,8 @@ import { DimensionLabels } from './DimensionLabels';
 import { useStudioStore } from '@/stores/studioStore';
 import { getLighting } from '@/lib/studioConstants';
 import { cameraPose } from '@/lib/studioCamera';
+import { clampToFloor } from '@/lib/roomLayout';
+import { walkInput } from '@/lib/walkInput';
 
 /** Resets the camera when cameraResetToken changes. */
 function CameraRig({ controlsRef }: { controlsRef: React.RefObject<OrbitControlsImpl> }) {
@@ -34,6 +36,72 @@ function CameraRig({ controlsRef }: { controlsRef: React.RefObject<OrbitControls
       controls.update();
     }
   }, [camera, token, view, room.width, room.depth, room.height, size.width, size.height, controlsRef]);
+
+  return null;
+}
+
+const WALK_SPEED = 6;
+const TURN_SPEED = 1.8;
+
+/** First-person eye-level walking: drag to look, WASD/arrows or on-screen pad to move. */
+function WalkControls() {
+  const { camera, gl } = useThree();
+  const room = useStudioStore((s) => s.room);
+  const token = useStudioStore((s) => s.cameraResetToken);
+  const look = useRef({ yaw: 0, pitch: 0 });
+  const keys = useRef(new Set<string>());
+
+  useEffect(() => {
+    look.current = { yaw: 0, pitch: 0 };
+    camera.rotation.order = 'YXZ';
+  }, [camera, token]);
+
+  useEffect(() => {
+    const el = gl.domElement;
+    let last: { x: number; y: number } | null = null;
+    const down = (e: PointerEvent) => { last = { x: e.clientX, y: e.clientY }; };
+    const move = (e: PointerEvent) => {
+      if (!last) return;
+      look.current.yaw -= (e.clientX - last.x) * 0.005;
+      look.current.pitch = Math.max(-1.2, Math.min(1.2, look.current.pitch - (e.clientY - last.y) * 0.005));
+      last = { x: e.clientX, y: e.clientY };
+    };
+    const up = () => { last = null; };
+    const kd = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+      keys.current.add(e.key.toLowerCase());
+    };
+    const ku = (e: KeyboardEvent) => keys.current.delete(e.key.toLowerCase());
+    el.addEventListener('pointerdown', down);
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', up);
+    window.addEventListener('keydown', kd);
+    window.addEventListener('keyup', ku);
+    return () => {
+      el.removeEventListener('pointerdown', down);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('keydown', kd);
+      window.removeEventListener('keyup', ku);
+      walkInput.forward = walkInput.strafe = walkInput.turn = 0;
+    };
+  }, [gl]);
+
+  useFrame((_, raw) => {
+    const dt = Math.min(raw, 0.05);
+    const k = keys.current;
+    const fwd = (k.has('w') || k.has('arrowup') ? 1 : 0) - (k.has('s') || k.has('arrowdown') ? 1 : 0) + walkInput.forward;
+    const strafe = (k.has('d') ? 1 : 0) - (k.has('a') ? 1 : 0) + walkInput.strafe;
+    const turn = (k.has('arrowleft') ? 1 : 0) - (k.has('arrowright') ? 1 : 0) + walkInput.turn;
+    look.current.yaw += turn * TURN_SPEED * dt;
+    const { yaw, pitch } = look.current;
+    const dx = (-Math.sin(yaw) * fwd + Math.cos(yaw) * strafe) * WALK_SPEED * dt;
+    const dz = (-Math.cos(yaw) * fwd - Math.sin(yaw) * strafe) * WALK_SPEED * dt;
+    const [x, z] = clampToFloor(camera.position.x + dx, camera.position.z + dz, room, [0.8, 0.8]);
+    camera.position.set(x, Math.min(5.5, room.height - 0.5), z);
+    camera.rotation.set(pitch, yaw, 0, 'YXZ');
+  });
 
   return null;
 }
@@ -93,7 +161,7 @@ export function RoomEditor() {
       gl={{ preserveDrawingBuffer: true, antialias: true }}
       camera={{ position: [initialDist.current, initialDist.current * 0.8, initialDist.current], fov: 45 }}
     >
-      {view === 'top' ? <OrthographicCamera makeDefault position={[0, 40, 0.001]} near={0.1} far={500} /> : <PerspectiveCamera makeDefault fov={45} near={0.1} far={500} />}
+      {view === 'top' ? <OrthographicCamera makeDefault position={[0, 40, 0.001]} near={0.1} far={500} /> : <PerspectiveCamera makeDefault fov={view === 'eye' ? 65 : 45} near={0.1} far={500} />}
       <color attach="background" args={[lighting.background]} />
       <Environment resolution={128}>
         <Lightformer intensity={0.6 * brightness} color="#ffe6c7" position={[-10, 5, 0]} rotation-y={Math.PI / 2} scale={[20, 6, 1]} />
@@ -143,7 +211,8 @@ export function RoomEditor() {
         />
       )}
 
-      <OrbitControls ref={controlsRef} makeDefault enableDamping dampingFactor={0.08} maxPolarAngle={Math.PI / 2} enableRotate={!measureMode && view === 'dollhouse'} />
+      <OrbitControls ref={controlsRef} makeDefault enableDamping dampingFactor={0.08} maxPolarAngle={Math.PI / 2} enabled={view !== 'eye'} enableRotate={!measureMode && view === 'dollhouse'} />
+      {view === 'eye' && <WalkControls />}
       <CameraRig controlsRef={controlsRef} />
       <ScreenshotBridge />
 
