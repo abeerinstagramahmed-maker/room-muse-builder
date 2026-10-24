@@ -6,6 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { useStudioStore } from '@/stores/studioStore';
+import { FINISHES, finishGroupsForCategory } from '@/lib/finishes';
+import { alignToNearestWall } from '@/lib/placement';
+import { ArrowUpToLine } from 'lucide-react';
 import {
   FLOORING_OPTIONS,
   LIGHTING_PRESETS,
@@ -119,6 +122,33 @@ function SelectedItemPanel() {
         />
       </div>
 
+
+      {item.mountType !== 'wall' && (
+        <Button size="sm" variant="outline" className="w-full gap-1.5" onClick={() => updateFurniture(item.instanceId, alignToNearestWall(item, useStudioStore.getState().room))}>
+          <ArrowUpToLine className="h-3.5 w-3.5" /> Align to nearest wall
+        </Button>
+      )}
+
+      <div className="space-y-2">
+        <Label className="text-xs">Finish</Label>
+        {finishGroupsForCategory(item.category).map((group) => (
+          <div key={group} className="flex flex-wrap gap-1.5">
+            {FINISHES.filter((f) => f.group === group).map((f) => (
+              <button
+                key={f.id}
+                type="button"
+                title={f.label}
+                aria-label={f.label}
+                aria-pressed={item.finish === f.id}
+                onClick={() => updateFurniture(item.instanceId, { finish: item.finish === f.id ? undefined : f.id })}
+                className={`h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 ${item.finish === f.id ? 'border-primary ring-2 ring-primary/40' : 'border-border'}`}
+                style={{ backgroundColor: f.color }}
+              />
+            ))}
+          </div>
+        ))}
+        {item.finish && <p className="text-xs text-muted-foreground">{FINISHES.find((f) => f.id === item.finish)?.label}</p>}
+      </div>
 
       <div className="rounded-md bg-muted/50 p-2 text-xs text-muted-foreground">
         Dimensions: {item.size[0]}′ W × {item.size[2]}′ D × {item.size[1]}′ H
