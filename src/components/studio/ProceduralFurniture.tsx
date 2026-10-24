@@ -1,15 +1,21 @@
+import { createContext, useContext } from 'react';
 import { PlacedFurniture } from '@/types/studio';
+import { Finish, getFinish } from '@/lib/finishes';
 
-type Mat = { color: string; roughness: number; metalness?: number };
-const WOOD: Mat = { color: '#8a5a3b', roughness: 0.55 };
-const LIGHT_WOOD: Mat = { color: '#c49a6c', roughness: 0.6 };
-const FABRIC: Mat = { color: '#9c9488', roughness: 0.95 };
-const CUSHION: Mat = { color: '#b7ae9f', roughness: 1 };
-const METAL: Mat = { color: '#2f2f33', roughness: 0.35, metalness: 0.85 };
-const BRASS: Mat = { color: '#b8945a', roughness: 0.3, metalness: 0.9 };
-const LINEN: Mat = { color: '#efe9df', roughness: 0.9 };
+const FinishCtx = createContext<Finish | undefined>(undefined);
 
-function Part({ p, s, m, r = 0 }: { p: [number, number, number]; s: [number, number, number]; m: Mat; r?: number }) {
+type Mat = { color: string; roughness: number; metalness?: number; role?: 'fabric' | 'wood' | 'metal' };
+const WOOD: Mat = { color: '#8a5a3b', roughness: 0.55, role: 'wood' };
+const LIGHT_WOOD: Mat = { color: '#c49a6c', roughness: 0.6, role: 'wood' };
+const FABRIC: Mat = { color: '#9c9488', roughness: 0.95, role: 'fabric' };
+const CUSHION: Mat = { color: '#b7ae9f', roughness: 1, role: 'fabric' };
+const METAL: Mat = { color: '#2f2f33', roughness: 0.35, metalness: 0.85, role: 'metal' };
+const BRASS: Mat = { color: '#b8945a', roughness: 0.3, metalness: 0.9, role: 'metal' };
+const LINEN: Mat = { color: '#efe9df', roughness: 0.9, role: 'fabric' };
+
+function Part({ p, s, m: base, r = 0 }: { p: [number, number, number]; s: [number, number, number]; m: Mat; r?: number }) {
+  const f = useContext(FinishCtx);
+  const m = f && base.role === f.group ? f : base;
   return (
     <mesh position={p} castShadow receiveShadow>
       {r ? <cylinderGeometry args={[s[0], s[2], s[1], 24]} /> : <boxGeometry args={s} />}
@@ -30,6 +36,10 @@ function Legs({ w, d, h, m, inset = 0.15, t = 0.12 }: { w: number; d: number; h:
 
 /** Category-aware stand-in built from shaped parts with wood, fabric and metal finishes. */
 export function ProceduralFurniture({ item }: { item: PlacedFurniture }) {
+  return <FinishCtx.Provider value={getFinish(item.finish)}><Shape item={item} /></FinishCtx.Provider>;
+}
+
+function Shape({ item }: { item: PlacedFurniture }) {
   const [w, h, d] = item.size;
   const c = (item.category ?? '').toLowerCase();
 
