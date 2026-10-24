@@ -54,6 +54,8 @@ export interface PlacedFurniture {
   scale: number;
   /** Floor-standing or wall-mounted (art, mirrors, shelves). */
   mountType?: MountType;
+  /** Selected material finish id (fabric, wood or metal variant). */
+  finish?: string;
 }
 
 export type OpeningType = 'window' | 'door' | 'double-door' | 'wide-window';

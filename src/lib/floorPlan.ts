@@ -1,3 +1,4 @@
+import { getFinish } from './finishes';
 import { notchRect } from './roomLayout';
 import { PlacedFurniture, RoomDimensions } from '@/types/studio';
 
@@ -159,12 +160,13 @@ export function buildShoppingListCSV(furniture: PlacedFurniture[]): string {
   }
   const map = new Map<string, Agg>();
   for (const f of furniture) {
-    const key = `${f.name}|${f.category ?? ''}`;
+    const finish = getFinish(f.finish)?.label;
+    const key = `${f.name}|${f.category ?? ''}|${finish ?? ''}`;
     const existing = map.get(key);
     if (existing) existing.qty += 1;
     else
       map.set(key, {
-        name: f.name,
+        name: finish ? `${f.name} (${finish})` : f.name,
         category: f.category ?? '',
         qty: 1,
         size: f.size,

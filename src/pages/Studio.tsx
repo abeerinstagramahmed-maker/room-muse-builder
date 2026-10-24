@@ -8,7 +8,7 @@ import { CatalogSidebar } from '@/components/studio/CatalogSidebar';
 import { PropertiesSidebar, PropertiesSection } from '@/components/studio/PropertiesSidebar';
 import { RoomEditor } from '@/components/studio/RoomEditor';
 import { Drawer, DrawerContent, DrawerTitle, DrawerClose } from '@/components/ui/drawer';
-import { CameraDock } from '@/components/studio/CameraDock';
+import { CameraDock, WalkPad } from '@/components/studio/CameraDock';
 import { Button } from '@/components/ui/button';
 import { useStudioShortcuts } from '@/hooks/useStudioShortcuts';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -65,6 +65,7 @@ const Studio = () => {
               <Button variant="glass" className="h-11 rounded-full shadow-card" onClick={() => setHubOpen(true)}><LayoutGrid /><span className="hidden sm:inline">Change room</span></Button>
             </div>
           </div>
+          <WalkPad />
           <CameraDock onEditRoom={() => openProperties('room')} onMaterials={() => openProperties('materials')} />
           {!isMobile && catalogOpen && <section aria-label="Catalog drawer" className="absolute bottom-24 left-4 top-20 z-20 flex w-80 flex-col overflow-hidden rounded-lg bg-card shadow-elevated">
             <div className="flex items-center justify-between px-4 pt-2"><span className="text-xs text-muted-foreground">Furnish your room</span><Button variant="ghost" size="icon" aria-label="Close catalog" onClick={() => setCatalogOpen(false)}><X /></Button></div>
